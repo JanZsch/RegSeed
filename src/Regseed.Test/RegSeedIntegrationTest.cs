@@ -137,6 +137,8 @@ namespace Regseed.Test
         [TestCase("[0|1]", 2)]
         [TestCase("a++", 2)]
         [TestCase("a+*", 2)]
+        [TestCase("a{3,1}", 1)]
+        [TestCase("[x-a]", 2)]
         [TestCase("a{,1", 1)]
         [TestCase("a{1x,1}", 3)]
         public void TryLoadRegexPattern_ReturnsFailureResultWithExpectedErrorPosition_WhenRegexPatternFaulty(string faultyPattern, int expectedErrorPosition)

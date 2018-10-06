@@ -13,7 +13,7 @@ namespace Regseed.Parser.RegexTokens
         public TEnum GetType<TEnum>() where TEnum : struct
         {
             if (typeof(TEnum) != typeof(RegexTokenType))
-                throw new TypeAccessException(ParserMessages.RegexTypeExpected);
+                throw new TypeAccessException(RegSeedErrorMessages.RegexTypeExpected);
 
             return (TEnum) (object) RegexTokenType.EndOfStream;
         }

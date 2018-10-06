@@ -28,29 +28,14 @@ namespace Regseed.Test.Expressions
         {
         }
 
-        public CharacterClassExpressionTest(List<string> letters, IParserAlphabet alphabet, IRandomGenerator random) : base(letters, alphabet, random)
+        public CharacterClassExpressionTest(IParserAlphabet alphabet, IRandomGenerator random) : base(alphabet, random)
         {
-        }
-
-        [Test]
-        public void Constructor_ThrowsArgumentException_WhenLetterListContainsInvalidLetter()
-        {
-            _alphabet.IsValid(Arg.Any<string>()).Returns(false);
-            var letters = new List<string> {"s"};
-
-            Assert.Throws<ArgumentException>(() => _ = new CharacterClassExpression(letters, _alphabet, _randomGenerator));
         }
 
         [Test]
         public void Constructor_ThrowsArgumentNullException_WhenAlphabetIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new CharacterClassExpression(new List<string>(), null, _randomGenerator));
-        }
-
-        [Test]
-        public void Constructor_ThrowsArgumentNullException_WhenLetterListIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => _ = new CharacterClassExpression(null, _alphabet, _randomGenerator));
+            Assert.Throws<ArgumentNullException>(() => _ = new CharacterClassExpression(null, _randomGenerator));
         }
 
         [Test]
@@ -58,7 +43,8 @@ namespace Regseed.Test.Expressions
         {
             _randomGenerator = new RandomGenerator(new Random());
             _alphabet.GetAllCharacters().Returns(new List<string> {"J", "F", "r", "a", "n"});
-            var expression = new CharacterClassExpression(new List<string> {"J", "r", "a", "n"}, _alphabet, _randomGenerator);
+            var expression = new CharacterClassExpression(_alphabet, _randomGenerator);
+            expression.TryAddCharacters(new List<string> {"J", "r", "a", "n"});
 
             var complement = expression.GetComplement();
             var result = complement.ToRegexString();
@@ -69,7 +55,18 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToSingleRegexString_DoesNotCallRandomGenerator_WhenCharacterClassEmpty()
         {
-            var expression = new CharacterClassExpressionTest(new List<string> {"U"}, _alphabet, _randomGenerator);
+            var expression = new CharacterClassExpressionTest(_alphabet, _randomGenerator);
+
+            var result = expression.ToSingleRegexString();
+
+            Assert.AreEqual(string.Empty, result);
+        }
+
+        [Test]
+        public void ToSingleRegexString_ReturnsEmptyString_WhenCharacterClassContainsOneCharacter()
+        {
+            var expression = new CharacterClassExpressionTest(_alphabet, _randomGenerator);
+            expression.TryAddCharacters(new List<string> {"U"});
 
             var result = expression.ToSingleRegexString();
 
@@ -78,25 +75,35 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void ToSingleRegexString_ReturnsEmptyString_WhenCharacterClassContainsOneCharacter()
-        {
-            var expression = new CharacterClassExpressionTest(new List<string>(), _alphabet, _randomGenerator);
-
-            var result = expression.ToSingleRegexString();
-
-            Assert.AreEqual(string.Empty, result);
-        }
-
-        [Test]
         public void ToSingleRegexString_ReturnsL_WhenRandomGeneratorReturns2AndSecondLetterInListIsL()
         {
             _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(1);
-            var expression = new CharacterClassExpressionTest(new List<string> {"U", "L"}, _alphabet, _randomGenerator);
+            var expression = new CharacterClassExpressionTest(_alphabet, _randomGenerator);
+            expression.TryAddCharacters(new List<string> {"U", "L"});
 
             var result = expression.ToSingleRegexString();
 
             Assert.AreEqual("L", result);
             _randomGenerator.Received(1).GetNextInteger(Arg.Any<int>(), Arg.Any<int>());
+        }
+
+        [Test]
+        public void TryAddCharacters_ReturnsFailureResult_WhenCharacterListContainsInvalidLetter()
+        {
+            _alphabet.IsValid(Arg.Any<string>()).Returns(false);
+            var letters = new List<string> {"s"};
+
+            var result = new CharacterClassExpression(_alphabet, _randomGenerator).TryAddCharacters(letters);
+
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void TryAddCharacters_ReturnsFailureResult_WhenCharacterListIsNull()
+        {
+            var result = new CharacterClassExpression(_alphabet, _randomGenerator).TryAddCharacters(null);
+
+            Assert.IsFalse(result);
         }
     }
 }

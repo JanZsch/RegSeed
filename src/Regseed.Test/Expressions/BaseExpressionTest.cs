@@ -40,9 +40,12 @@ namespace Regseed.Test.Expressions
         [TestCase(2, 2)]
         public void ToRegexString_CallsRandomGeneratorWithExpectedLowerBound_WhenIntegerIntervalsLowerBoundHasSpecifiedValue(int? value, int expectedValue)
         {
+            var interval = new IntegerInterval();
+            interval.TrySetValue(value, 12);
+            
             var expression = new BaseExpressionTest(_randomGenerator)
             {
-                RepeatRange = new IntegerInterval(value, 12)
+                RepeatRange = interval
             };
 
             expression.ToRegexString();
@@ -55,9 +58,12 @@ namespace Regseed.Test.Expressions
         [TestCase(2, 3)]
         public void ToRegexString_CallsRandomGeneratorWithExpectedUpperBound_WhenIntegerIntervalsUpperBoundHasSpecifiedValue(int? value, int expectedValue)
         {
+            var interval = new IntegerInterval();
+            interval.TrySetValue(-2, value);
+
             var expression = new BaseExpressionTest(_randomGenerator)
             {
-                RepeatRange = new IntegerInterval(-2, value)
+                RepeatRange = interval
             };
 
             expression.ToRegexString();
@@ -69,7 +75,7 @@ namespace Regseed.Test.Expressions
         public void ToRegexString_ReturnsSingleString3Times_WhenRepeatIntervalIs3To3()
         {
             var expression = new BaseExpressionTest(_randomGenerator);
-            expression.RepeatRange = new IntegerInterval(3, 3);
+            expression.RepeatRange = new IntegerInterval(3);
             _randomGenerator.GetNextInteger(3, 4).Returns(3);
 
             var result = expression.ToRegexString();

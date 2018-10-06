@@ -1,17 +1,24 @@
-using System;
-using Regseed.Resources;
+using Regseed.Common.Results;
 
 namespace Regseed.Common.Ranges
 {
     public class IntegerInterval : BaseRange<int?>
     {
-        public IntegerInterval(int? start, int? end) : base(start, end)
+        public IntegerInterval() : base(null, null)
+        {}
+
+        public IntegerInterval(int? value) : base(value, value)
+        {}
+        
+        public IResult TrySetValue(int? start, int? end)
         {
-            if (start == null || end == null || start.Value <= end.Value) 
-                return;
+            if (start != null && end != null && start.Value > end.Value) 
+                return new FailureResult();
             
-            var exceptionMessage = string.Format(ParserMessages.InvalidInterval, start.Value, end.Value);
-            throw new ArgumentException(exceptionMessage);
+            Start = start;
+            End = end;
+            
+            return new SuccessResult();
         }
     }
 }

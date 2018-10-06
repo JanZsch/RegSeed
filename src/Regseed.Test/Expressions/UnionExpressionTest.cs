@@ -46,7 +46,8 @@ namespace Regseed.Test.Expressions
         [Test]
         public void GetComplement_ReturnValueHasSameRepeatIntegerIntervalAsOriginal()
         {
-            var repeatRange = new IntegerInterval(1, 2);
+            var repeatRange = new IntegerInterval();
+            repeatRange.TrySetValue(1, 2);
             var union = new UnionExpressionTest(new List<IExpression>(), _randomGenerator) {RepeatRange = repeatRange};
 
             var result = union.GetComplement().RepeatRange;

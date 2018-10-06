@@ -24,6 +24,7 @@ namespace Regseed.Test.Factories
         [TestCase('&')]
         [TestCase('/')]
         [TestCase('(')]
+        [TestCase(' ')]
         [TestCase(')')]
         [TestCase('=')]
         [TestCase('\\')]

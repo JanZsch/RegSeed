@@ -12,14 +12,14 @@ namespace Regseed.Common.Results
 
     public class SuccessResult : BaseResult
     {
-        public SuccessResult(string message = null) : base(true)
+        public SuccessResult() : base(true)
         {
         }
     }
 
     public class FailureResult : BaseResult
     {
-        public FailureResult(string message = null) : base(false)
+        public FailureResult() : base(false)
         {
         }
     }
@@ -45,7 +45,7 @@ namespace Regseed.Common.Results
 
     public class FailureResult<TValue> : BaseResult<TValue>
     {
-        public FailureResult(string message = null) : base(false, default(TValue))
+        public FailureResult() : base(false, default(TValue))
         {
         }
     }

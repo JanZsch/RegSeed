@@ -16,7 +16,7 @@ namespace Regseed.Expressions
 
         public virtual string ToRegexString()
         {
-            var repeatRange = RepeatRange ?? new IntegerInterval(1, 1);
+            var repeatRange = RepeatRange ?? new IntegerInterval(1);
             var lowerBound = repeatRange.Start == null || repeatRange.Start < 0 ? 0 : repeatRange.Start.Value;
             var upperBound = repeatRange.End ?? int.MaxValue - 1;
             upperBound = upperBound + 1 < 0 ? 0 : upperBound + 1;

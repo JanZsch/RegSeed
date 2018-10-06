@@ -43,7 +43,7 @@ namespace Regseed.Factories
 
             if (!parseResult.IsSuccess)
                 return parseResult;
-            
+
             tokenStream.Append(new EndOfStreamToken(pattern.Length));
 
             var unionResult = TryGetUnionExpression(tokenStream, out var regex);
@@ -96,7 +96,7 @@ namespace Regseed.Factories
             var concatExpression = new ConcatenationExpression(_random);
 
             var elementaryExpressionResult = TryGetElementaryExpression(tokenStream, out var elementaryExpression);
-            
+
             if (!elementaryExpressionResult.IsSuccess)
                 return elementaryExpressionResult;
 
@@ -134,14 +134,16 @@ namespace Regseed.Factories
                 return elementaryResult;
 
             expression = toInvertExpression.GetComplement();
-            
+
             return new SuccessParseResult();
         }
 
         public IParseResult TryGetAnyCharacterExpression(ITokenStream tokenStream, out IExpression expression)
         {
             tokenStream.Pop();
-            expression = new CharacterClassExpression(_alphabet.GetAllCharacters(), _alphabet, _random);
+            var characterExpression = new CharacterClassExpression(_alphabet, _random);
+            characterExpression.TryAddCharacters(_alphabet.GetAllCharacters());
+            expression = characterExpression;
             return new SuccessParseResult();
         }
 
@@ -191,7 +193,7 @@ namespace Regseed.Factories
                 if (nextToken.GetType<RegexTokenType>() == RegexTokenType.Character)
                     characters.Add(nextToken.GetValue<string>());
                 else
-                    characters.AddRange(nextToken.GetValue<CharacterRange>().Letters);
+                    characters.AddRange(nextToken.GetValue<CharacterRange>().Characters);
 
                 nextTokenType = tokenStream.LookAhead(0).GetType<RegexTokenType>();
             }
@@ -201,7 +203,10 @@ namespace Regseed.Factories
 
             tokenStream.Pop();
 
-            var characterClassExpression = new CharacterClassExpression(characters, _alphabet, _random);
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random);
+
+            if (!characterClassExpression.TryAddCharacters(characters))
+                return new FailureParseResult(tokenStream.CurrentPosition, RegSeedErrorType.InvalidInput);
 
             expression = getComplement ? characterClassExpression.GetComplement() : characterClassExpression;
             return new SuccessParseResult();
@@ -209,9 +214,16 @@ namespace Regseed.Factories
 
         public IParseResult TryGetSingleCharacterExpression(ITokenStream tokenStream, out IExpression expression)
         {
+            expression = null;
             var token = tokenStream.Pop();
             var value = token.GetValue<string>();
-            expression = new CharacterClassExpression(new List<string> {value}, _alphabet, _random);
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random);
+
+            if (!characterClassExpression.TryAddCharacters(new List<string> {value}))
+                return new FailureParseResult(tokenStream.CurrentPosition, RegSeedErrorType.InvalidInput);
+
+            expression = characterClassExpression;
+
             return new SuccessParseResult();
         }
 
@@ -220,7 +232,7 @@ namespace Regseed.Factories
             var nextToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
 
             return nextToken != RegexTokenType.IntegerRange
-                ? new IntegerInterval(1, 1)
+                ? new IntegerInterval(1)
                 : tokenStream.Pop().GetValue<IntegerInterval>();
         }
 

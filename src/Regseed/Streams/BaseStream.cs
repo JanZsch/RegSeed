@@ -27,7 +27,7 @@ namespace Regseed.Streams
         public virtual TValue LookAhead(long pos)
         {
             if (_streamElements == null)
-                throw new ArgumentNullException(ParserMessages.StreamInitNotCalled);
+                throw new ArgumentNullException(RegSeedErrorMessages.StreamInitNotCalled);
 
             if (pos == 0)
                 return _streamElements.Peek();
@@ -44,7 +44,7 @@ namespace Regseed.Streams
         public virtual IStream<TValue> Append(TValue value)
         {
             if (_streamElements == null)
-                throw new ArgumentNullException(ParserMessages.StreamInitNotCalled);
+                throw new ArgumentNullException(RegSeedErrorMessages.StreamInitNotCalled);
 
             _streamElements.Enqueue(value);
 
@@ -54,7 +54,7 @@ namespace Regseed.Streams
         public virtual bool IsEmpty()
         {
             if (_streamElements == null)
-                throw new ArgumentNullException(ParserMessages.StreamInitNotCalled);
+                throw new ArgumentNullException(RegSeedErrorMessages.StreamInitNotCalled);
 
             return !_streamElements.Any();
         }
@@ -62,7 +62,7 @@ namespace Regseed.Streams
         public virtual void Flush()
         {
             if (_streamElements == null)
-                throw new ArgumentNullException(ParserMessages.StreamInitNotCalled);
+                throw new ArgumentNullException(RegSeedErrorMessages.StreamInitNotCalled);
 
             _streamElements.Clear();
         }

@@ -44,6 +44,7 @@ namespace Regseed.Factories
                     .Add("#", new CharacterParser(parser))
                     .Add("=", new CharacterParser(parser))
                     .Add("§", new CharacterParser(parser))
+                    .Add(" ", new CharacterParser(parser))
                     .Add("@", new CharacterParser(parser));
 
             return alphabet;

@@ -14,12 +14,14 @@ namespace Regseed.Test.Parser
         [TestCase("f", "e")]
         [TestCase(null, "e")]
         [TestCase("e", null)]
-        public void GetRange_ThrowsArgumentException_WhenOneOfTheArgumentsWasNotAdded(string start, string end)
+        public void TryGetRange_ReturnsFailureResult_WhenOneOfTheArgumentsWasNotAdded(string start, string end)
         {
             var parser = new ParserAlphabet();
             parser.Add("e", Substitute.For<ITokenParser>());
 
-            Assert.Throws<ArgumentException>(() => parser.GetRange(start, end));
+            var result = parser.TryGetRange(start, end, out _);
+
+            Assert.IsFalse(result.IsSuccess);
         }
 
         [TestCase("a")]
@@ -29,9 +31,9 @@ namespace Regseed.Test.Parser
         {
             var parser = GetParser("a", "b", "c");
 
-            var result = parser.GetRange(expectedLetter, expectedLetter);
+            var parseResult = parser.TryGetRange(expectedLetter, expectedLetter, out var result);
 
-            Assert.IsNotEmpty(result);
+            Assert.IsTrue(parseResult.IsSuccess);
             Assert.AreEqual(expectedLetter, result.FirstOrDefault());
         }
 
@@ -93,7 +95,7 @@ namespace Regseed.Test.Parser
         {
             var parser = GetParser("a", "b", "c", "d", "e");
 
-            var result = parser.GetRange("b", "d");
+            parser.TryGetRange("b", "d", out var result);
 
             Assert.AreEqual("b", result[0]);
             Assert.AreEqual("c", result[1]);
@@ -101,11 +103,13 @@ namespace Regseed.Test.Parser
         }
 
         [Test]
-        public void GetRange_ThrowsArgumentException_WhenStartPositionIsLargerThanEndPositionWithRespectToAddOrder()
+        public void GetRange_ReturnsFailureResult_WhenStartPositionIsLargerThanEndPositionWithRespectToAddOrder()
         {
             var parser = GetParser("a", "b", "c");
 
-            Assert.Throws<ArgumentException>(() => parser.GetRange("c", "a"));
+            var result = parser.TryGetRange("c", "a", out _);
+
+            Assert.IsFalse(result.IsSuccess);
         }
 
         [Test]

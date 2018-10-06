@@ -43,9 +43,11 @@ namespace Regseed.Parser.PrimitiveParsers
 
             CallPop(stream, endCharacterResult.Value.Item2);
 
-            var value = new CharacterRange(_alphabet.GetRange(startCharacterResult.Value.Item1,
-                endCharacterResult.Value.Item1));
-            return new SuccessParseResult<CharacterRange>(initialPosition, value);
+            var value = new CharacterRange();
+            
+            return value.TrySetRange(startCharacterResult.Value.Item1, endCharacterResult.Value.Item1, _alphabet).IsSuccess 
+                ? (IParseResult<CharacterRange>) new SuccessParseResult<CharacterRange>(initialPosition, value)
+                : new FailureParseResult<CharacterRange>(stream.CurrentPosition, RegSeedErrorType.InvalidRange);            
         }
 
         public IParseResult<int> TryParseInteger(IStringStream stream)
@@ -62,8 +64,7 @@ namespace Regseed.Parser.PrimitiveParsers
                 : new FailureParseResult<int>(initialPosition, result.ErrorType);
         }
 
-        public IParseResult<IntegerInterval> TryParseIntegerInterval(IStringStream stream,
-            ParseIntervalSettings settings = null)
+        public IParseResult<IntegerInterval> TryParseIntegerInterval(IStringStream stream, ParseIntervalSettings settings = null)
         {
             if (stream == null)
                 throw new ArgumentNullException();
@@ -110,8 +111,11 @@ namespace Regseed.Parser.PrimitiveParsers
             popCalls++;
             CallPop(stream, popCalls);
 
-            var value = new IntegerInterval(lowerBound.Value.Item1, upperBound.Value.Item1);
-            return new SuccessParseResult<IntegerInterval>(initialPosition, value);
+            var value = new IntegerInterval();
+
+            return value.TrySetValue(lowerBound.Value.Item1, upperBound.Value.Item1).IsSuccess
+                ? new SuccessParseResult<IntegerInterval>(initialPosition, value)
+                : (IParseResult<IntegerInterval>) new FailureParseResult<IntegerInterval>(initialPosition, RegSeedErrorType.InvalidInterval);
         }
 
         public IParseResult<string> TryParseCharacter(IStringStream stream)
@@ -220,7 +224,7 @@ namespace Regseed.Parser.PrimitiveParsers
         {
             popCalls++;
             CallPop(stream, popCalls);
-            return new SuccessParseResult<IntegerInterval>(stream.CurrentPosition, new IntegerInterval(value, value));
+            return new SuccessParseResult<IntegerInterval>(stream.CurrentPosition, new IntegerInterval(value));
         }
 
         private static bool IsNextCharacterSymbol(string symbol, IStringStream stream, int position)

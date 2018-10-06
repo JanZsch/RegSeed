@@ -1,6 +1,7 @@
 using System;
 using NSubstitute;
 using NUnit.Framework;
+using Regseed.Common.Results;
 using Regseed.Parser;
 using Regseed.Parser.PrimitiveParsers;
 using Regseed.Resources;
@@ -141,6 +142,7 @@ namespace Regseed.Test.Parser
             string expectedStart, string expectedEnd, int expectedPops)
         {
             _alphabet.IsValid(Arg.Any<string>()).Returns(true);
+            _alphabet.TryGetRange(Arg.Any<string>(), Arg.Any<string>(), out _).Returns(new SuccessResult());
             var stream = GetStringStreamFor(inputStream);
             var parser = new PrimitiveParser(_alphabet);
 
@@ -148,7 +150,7 @@ namespace Regseed.Test.Parser
 
             Assert.IsTrue(result.IsSuccess);
             _alphabet.Received(2).IsValid(Arg.Any<string>());
-            _alphabet.Received(1).GetRange(expectedStart, expectedEnd);
+            _alphabet.Received(1).TryGetRange(expectedStart, expectedEnd, out _);
             stream.Received(expectedPops).Pop();
         }
 

@@ -13,7 +13,9 @@ namespace Regseed.Resources
         SingleCharacterExpected,
         UnexpectedEndOfStream,
         IntegerExpected,
-        InvalidInput
+        InvalidInput,
+        InvalidRange,
+        InvalidInterval
         
     }
 }

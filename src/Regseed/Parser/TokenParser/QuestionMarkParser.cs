@@ -10,7 +10,9 @@ namespace Regseed.Parser.TokenParser
         protected override IParseResult TryGetTokenWithoutNullCheck(IStringStream inputStream, out IToken token)
         {
             inputStream.Pop();
-            token = new IntegerIntervalToken(new IntegerInterval(0, 1), _initialStreamPosition, 1);
+            var interval = new IntegerInterval();
+            interval.TrySetValue(0, 1);
+            token = new IntegerIntervalToken(interval, _initialStreamPosition, 1);
             return new SuccessParseResult();
         }
     }

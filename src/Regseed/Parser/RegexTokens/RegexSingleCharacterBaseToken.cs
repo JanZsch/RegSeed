@@ -18,7 +18,7 @@ namespace Regseed.Parser.RegexTokens
         public override TEnum GetType<TEnum>()
         {
             if (typeof(TEnum) != typeof(RegexTokenType))
-                throw new TypeAccessException(ParserMessages.RegexTypeExpected);
+                throw new TypeAccessException(RegSeedErrorMessages.RegexTypeExpected);
 
             return (TEnum) (object) _tokenType;
         }

@@ -3,54 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using Regseed.Common.Random;
 using Regseed.Parser;
-using Regseed.Resources;
 
 namespace Regseed.Expressions
 {
     internal class CharacterClassExpression : BaseExpression
     {
         private readonly IParserAlphabet _alphabet;
-        private readonly List<string> _literalList;
+        private List<string> _characterList = new List<string>();
         private readonly IDictionary<string, string> _literals = new Dictionary<string, string>();
 
         protected CharacterClassExpression() : base(null)
         {
         }
 
-        public CharacterClassExpression(IList<string> letters, IParserAlphabet alphabet, IRandomGenerator random) : base(random)
+        public CharacterClassExpression(IParserAlphabet alphabet, IRandomGenerator random) : base(random)
         {
-            if (letters == null || alphabet == null)
-                throw new ArgumentNullException();
+            _alphabet = alphabet ?? throw new ArgumentNullException();
+        }
 
-            var invalidLetter = letters.FirstOrDefault(x => !alphabet.IsValid(x));
+        public bool TryAddCharacters(IList<string> characters)
+        {
+            if (characters == null)
+                return false;
+            var invalidLetter = characters.FirstOrDefault(x => !_alphabet.IsValid(x));
 
             if (invalidLetter != null)
-                throw new ArgumentException(string.Format(InterpreterMessages.UnknownLetter, invalidLetter));
+                return false;
 
-            foreach (var letter in letters)
+            foreach (var letter in characters)
                 _literals[letter] = null;
 
-            _literalList = _literals.Keys.ToList();
-            _alphabet = alphabet;
+            _characterList = _literals.Keys.ToList();
+
+            return true;
         }
 
         public override IExpression GetComplement()
         {
-            var complementLetters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
-            return new CharacterClassExpression(complementLetters, _alphabet, _random)
+            var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
+            var complement = new CharacterClassExpression(_alphabet, _random)
             {
                 RepeatRange = RepeatRange
             };
+            complement.TryAddCharacters(complementCharacters);
+            return complement;
         }
 
         protected override string ToSingleRegexString()
         {
-            if (_literalList.Count == 0)
+            if (_characterList.Count == 0)
                 return string.Empty;
 
-            return _literalList.Count == 1
-                ? _literalList[0]
-                : _literalList[_random.GetNextInteger(0, _literalList.Count)];
+            return _characterList.Count == 1
+                ? _characterList[0]
+                : _characterList[_random.GetNextInteger(0, _characterList.Count)];
         }
     }
 }

@@ -19,5 +19,7 @@ namespace Regseed.Resources
         public const string ArbitraryMany = "*";
         public const string OpenPrecedence = "(";
         public const string ClosePrecedence = ")";
+        public const char StartsWith = '^';
+        public const char EndsWith = '$';
     }
 }

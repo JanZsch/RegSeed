@@ -30,7 +30,7 @@ namespace Regseed.Test.Expressions
         [Test]
         public void GetComplement_ResultHasSameRepeatIntervalAsOriginal()
         {
-            var repeatInterval = new IntegerInterval(null, null);
+            var repeatInterval = new IntegerInterval(null);
             var concatExpression = new ConcatenationExpression(_randomGenerator) {RepeatRange = repeatInterval};
 
             var result = concatExpression.GetComplement();
