@@ -1,5 +1,5 @@
 using System;
-using Regseed.Common.Resources;
+using Regseed.Resources;
 
 namespace Regseed.Common.Ranges
 {

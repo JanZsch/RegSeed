@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Regseed.Common.Parser;
+using Regseed.Parser;
 
 namespace Regseed.Common.Ranges
 {
