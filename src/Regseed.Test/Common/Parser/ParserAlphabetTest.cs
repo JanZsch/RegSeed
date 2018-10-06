@@ -96,6 +96,45 @@ namespace Regseed.Test.Common.Parser
             Assert.IsTrue(result);
         }
 
+        [Test]
+        public void RemoveCharacter_DoesNotThrow_WhenNonAlphabetCharacterIsRemoved()
+        {
+            var alphabet = new ParserAlphabet();
+            alphabet.Add("j", Substitute.For<ITokenParser>()).Add("a", Substitute.For<ITokenParser>());
+            
+            Assert.DoesNotThrow(() => alphabet.RemoveCharacter("n"));
+        }
+        
+        [Test]
+        public void RemoveCharacter_RemovedCharacterNotValid_WhenWasCharacterWasValidAndAddedBefore()
+        {
+            var alphabet = new ParserAlphabet();
+            alphabet.Add("F", Substitute.For<ITokenParser>()).Add("r", Substitute.For<ITokenParser>());
+
+            var isValidResult = alphabet.IsValid("F");
+            Assert.IsTrue(isValidResult);
+            
+            alphabet.RemoveCharacter("F");
+
+            var isInvalidResult = alphabet.IsValid("F");
+            Assert.IsFalse(isInvalidResult);
+        }
+        
+        [Test]
+        public void TryGetTokenParser_ReturnsFalse_WhenInitiallyValidCharacterIsRemoved()
+        {
+            var alphabet = new ParserAlphabet();
+            alphabet.Add("F", Substitute.For<ITokenParser>()).Add("r", Substitute.For<ITokenParser>());
+
+            var getParserResult = alphabet.TryGetTokenParser("F", out _);
+            Assert.IsTrue(getParserResult);
+            
+            alphabet.RemoveCharacter("F");
+
+            getParserResult = alphabet.TryGetTokenParser("F", out _);
+            Assert.IsFalse(getParserResult);
+        }
+
         [TestCase("e", "f")]
         [TestCase("f", "e")]
         [TestCase(null, "e")]
