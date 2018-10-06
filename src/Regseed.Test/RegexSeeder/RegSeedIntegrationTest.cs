@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NSubstitute;
@@ -110,6 +111,8 @@ namespace Regseed.Test.RegexSeeder
         [TestCase("[a-z]{0,5}")]
         [TestCase("(A|[a-m])+[a-z]{2,4}")]
         [TestCase("[^m-z0-9A-Z]+")]
+        [TestCase("[aaabbbaaa]+")]
+        [TestCase("[f-i]+")]
         [TestCase("(Fr([aA]n|A[nN])ziska){1,4}")]
         [TestCase(@"^([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12})$")]
         public void Generate_ReturnsStringMatchingProvidedPattern(string pattern)
@@ -125,6 +128,37 @@ namespace Regseed.Test.RegexSeeder
 
                 Assert.IsTrue(regex.IsMatch(result), $"pattern: {pattern}  result: {result}");
             }
+        }
+
+        [TestCase("{", 0)]
+        [TestCase("a{a}", 1)]
+        [TestCase("a-z", 0)]
+        [TestCase("[(x)]", 1)]
+        [TestCase("(0|1)]", 5)]
+        [TestCase("[0|1]", 2)]
+        [TestCase("a++", 2)]
+        [TestCase("a+*", 2)]
+        [TestCase("a{,1", 1)]
+        [TestCase("a{1x,1}", 3)]
+        public void TryLoadRegexPattern_ReturnsFailureResultWithExpectedErrorPosition_WhenRegexPatternFaulty(string faultyPattern, int expectedErrorPosition)
+        {
+            var result = TryLoadRegexPattern(faultyPattern);
+
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual(expectedErrorPosition, result.Position);
+        }
+
+        [Test]
+        public void Generate_ReturnedStringContainsOnlyCharactersFromHToL_WhenRegexIsRepeatedRangeForCharactersHToL()
+        {
+            var validCharacters = new List<char> {'H', 'I', 'J', 'K', 'L'};
+            const string pattern = "[H-L]{5}";
+            var reseed = new RegSeed(pattern);
+
+            var result = reseed.Generate();
+
+            foreach (var character in result)
+                Assert.IsTrue(validCharacters.Contains(character), $"'{character}' is no valid character");
         }
 
         [Test]
@@ -163,24 +197,6 @@ namespace Regseed.Test.RegexSeeder
             var result2 = Generate().Length;
 
             Assert.AreNotEqual(result1, result2);
-        }
-
-        [TestCase("{", 0)]
-        [TestCase("a{a}", 1)]
-        [TestCase("a-z", 0)]
-        [TestCase("[(x)]", 1)]
-        [TestCase("(0|1)]", 5)]
-        [TestCase("[0|1]", 2)]
-        [TestCase("a++", 2)]
-        [TestCase("a+*", 2)]
-        [TestCase("a{,1", 1)]
-        [TestCase("a{1x,1}", 3)]
-        public void TryLoadRegexPattern_ReturnsFailureResultWithExpectedErrorPosition_WhenRegexPatternFaulty(string faultyPattern, int expectedErrorPosition)
-        {
-            var result = TryLoadRegexPattern(faultyPattern);
-
-            Assert.IsFalse(result.IsSuccess);
-            Assert.AreEqual(expectedErrorPosition, result.Position);
         }
     }
 }
