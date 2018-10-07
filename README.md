@@ -32,23 +32,23 @@ public void Main(string[] argv)
 
     if (!parseResult.IsSuccess) 
     {
-        Console.WriteLine($"The provided regex pattern {malformedPattern} is malformed at position {parseresult.Position}. ErrorCode: {parseResult.ErrorCode}");
+        Console.WriteLine($"The provided regex pattern '{malformedPattern}' is malformed at position {parseresult.Position}. ErrorCode: {parseResult.ErrorCode}");
         return;
     }
     
     Console.WriteLine(regseed.Generate());
 }
 ```
-This method returns an object of type *IParseResult* containing the position of the parsing error as well as an string valued error code encoding the nature of the parsing error (for a list possible error codes an their meaning see [here]()).
+This method returns an object of type *IParseResult* containing the position of the parsing error as well as a string valued error code encoding the nature of the parsing error (for a list possible error codes an their meaning see [here]()).
 
 ## Advantages
 
 As already mentioned above, RegSeed was inspired by [*Fare/Xeger*](https://github.com/moodmosaic/Fare) which is a regex based, string generation engine employing finite automatons. It has, however, a major drawback concerning the distribution of characters within a generated string.   
-Consider, for instance, take the following regex string which might be used for password generation:
+Consider, for instance, the following regex string which might be used for password generation:
 ```c#
 var passwordPattern = @"[a-zA-Z0-9_]{10,15}";
 ```
-Feeding this pattern into *Fare/Xeger* will result in random strings containing significantly more underscores than letters or digits which might lead to security risks.
+Feeding this pattern into *Fare/Xeger* will result in random strings containing significantly more underscores than letters or digits which might for some purposes lead to security risks.
 
 
 ## Where can I get it?
@@ -58,6 +58,7 @@ To be released on nuget.org soon.
 + supported [Regex Backus-Naur-Form]()
 + define [custom alphabets]()
 + [error codes]() an their meaning
++ [use custom random generator]()
 
 ## Acknowledgment
 
