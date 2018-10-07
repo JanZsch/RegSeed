@@ -69,7 +69,7 @@ namespace Regseed.Factories
             if (!concatExpressionResult.IsSuccess)
                 return concatExpressionResult;
 
-            var simpleExpressions = new List<IExpression> {concatExpression};
+            var concatExpressions = new List<IExpression> {concatExpression};
 
             var nextToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
 
@@ -82,11 +82,11 @@ namespace Regseed.Factories
                 if (!nextConcatExpressionResult.IsSuccess)
                     return nextConcatExpressionResult;
 
-                simpleExpressions.Add(nextConcatExpression);
+                concatExpressions.Add(nextConcatExpression);
                 nextToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
             }
 
-            unionExpression = new UnionExpression(simpleExpressions, _random);
+            unionExpression = new UnionExpression(concatExpressions, _random);
             return new SuccessParseResult();
         }
 

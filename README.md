@@ -55,7 +55,8 @@ Feeding this pattern into *Fare/Xeger* will result in random strings containing 
 To be released on nuget.org soon.
 
 ## More Information
-+ supported [Regex Backus-Naur-Form]()
++ supported [Regular Expressions](https://github.com/JanZsch/RegSeed/wiki/Supported-Regular-Expressions-and-Limitations)
++ [Limitations](https://github.com/JanZsch/RegSeed/wiki/Supported-Regular-Expressions-and-Limitations)
 + define [custom alphabets]()
 + [error codes]() an their meaning
 + [use custom random generator]()
