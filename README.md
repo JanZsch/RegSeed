@@ -58,7 +58,7 @@ To be released on nuget.org soon.
 + supported [Regular Expressions](https://github.com/JanZsch/RegSeed/wiki/Supported-Regular-Expressions-and-Limitations)
 + [Limitations](https://github.com/JanZsch/RegSeed/wiki/Supported-Regular-Expressions-and-Limitations)
 + define [custom alphabets]()
-+ [error codes]() an their meaning
++ [error codes](https://github.com/JanZsch/RegSeed/wiki/Error-Codes-an-their-meaning) an their meaning
 + [use custom random generator]()
 
 ## Acknowledgment
