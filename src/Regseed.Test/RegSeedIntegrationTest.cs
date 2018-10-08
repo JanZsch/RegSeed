@@ -108,6 +108,9 @@ namespace Regseed.Test
         }
 
         [TestCase("[a-z]{0,5}")]
+        [TestCase("ul rike")]
+        [TestCase("ul\nrike")]
+        [TestCase("ul\trike")]
         [TestCase("(A|[a-m])+[a-z]{2,4}")]
         [TestCase("[^m-z0-9A-Z]+")]
         [TestCase("[aaabbbaaa]+")]

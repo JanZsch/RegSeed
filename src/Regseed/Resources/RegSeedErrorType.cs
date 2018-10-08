@@ -15,7 +15,6 @@ namespace Regseed.Resources
         IntegerExpected,
         InvalidInput,
         InvalidRange,
-        InvalidInterval
-        
+        InvalidInterval        
     }
 }

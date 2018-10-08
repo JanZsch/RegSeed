@@ -25,6 +25,7 @@ namespace Regseed.Factories
             defaultAlphabet.AddLetters(primitiveParser)
                            .AddCapitalLetters(primitiveParser)
                            .AddDigits(primitiveParser)
+                           .AddWhitespaces(primitiveParser)
                            .AddSpecialCharacters(primitiveParser);
 
             return defaultAlphabet;

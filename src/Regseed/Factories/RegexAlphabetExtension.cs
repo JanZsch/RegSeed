@@ -44,12 +44,24 @@ namespace Regseed.Factories
                     .Add("#", new CharacterParser(parser))
                     .Add("=", new CharacterParser(parser))
                     .Add("§", new CharacterParser(parser))
-                    .Add(" ", new CharacterParser(parser))
                     .Add("@", new CharacterParser(parser));
 
             return alphabet;
         }
+        
+        public static IParserAlphabet AddWhitespaces(this IParserAlphabet alphabet, IPrimitiveParser parser)
+        {
+            const char newLineCharacter = (char) 0xA;
+            const char tabStop = (char)0x9;
+            const char space = ' ';
+            
+            alphabet.Add(tabStop.ToString(), new CharacterParser(parser))
+                    .Add(newLineCharacter.ToString(), new CharacterParser(parser))
+                    .Add(space.ToString(), new CharacterParser(parser));
 
+            return alphabet;
+        }
+        
         public static IParserAlphabet AddLetters(this IParserAlphabet alphabet, IPrimitiveParser parser)
         {
             for (var letter = 'a'; letter <= 'z'; letter++)
