@@ -7,14 +7,14 @@
 # Build results
 */**[Dd]ebug/**
 */**[Dd]ebugPublic/**
-*/**[Rr]elease/**
+**[Rr]elease**
 */**[Rr]eleases/**
 */**x64/
-*/**x86/
+**x86**
 build/**
 bld/**
-*/**[Bb]in/**
-*/**[Oo]bj/**
+**[Bb]in**
+**[Oo]bj**
 */**[Oo]bject/***
 */**[Oo]ut/**
 */**msbuild.log
@@ -22,7 +22,7 @@ bld/**
 */**msbuild.wrn
 
 # Visual Studio
-.vs/**
+**/*.vs/**
 
 # rider
 */**.idea/*
@@ -31,3 +31,6 @@ bld/**
 
 #coverage
 **/*coverage.json
+
+# assembly signature keys
+**.pfx

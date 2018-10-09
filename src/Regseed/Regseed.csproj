@@ -2,6 +2,21 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <Company />
+        <Authors>Jan Zschoche</Authors>
+        <Copyright>Apache 2.0</Copyright>
+        <PackageProjectUrl>https://www.github.com/janzsch/regseed</PackageProjectUrl>
+        <RepositoryUrl>https://www.github.com/janzsch/regseed</RepositoryUrl>
+        <Description>Regseed is a small class library for generating random strings from a given regular expression</Description>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>RegSeed-AssemblySignature.pfx</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <DebugType>pdbonly</DebugType>
+      <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
 </Project>
