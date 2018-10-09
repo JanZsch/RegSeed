@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <Company />
@@ -10,8 +10,9 @@
         <PackageProjectUrl>https://www.github.com/janzsch/regseed</PackageProjectUrl>
         <RepositoryUrl>https://www.github.com/janzsch/regseed</RepositoryUrl>
         <Description>Regseed is a small class library for generating random strings from a given regular expression</Description>
-        <SignAssembly>true</SignAssembly>
+        <SignAssembly>false</SignAssembly>
         <AssemblyOriginatorKeyFile>RegSeed-AssemblySignature.pfx</AssemblyOriginatorKeyFile>
+        <PackageLicenseUrl>https://github.com/janzsch/regseed/blob/master/LICENSE.txt</PackageLicenseUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
