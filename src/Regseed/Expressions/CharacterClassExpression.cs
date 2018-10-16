@@ -53,8 +53,6 @@ namespace Regseed.Expressions
 
         public CharacterClassExpression GetIntersection(CharacterClassExpression charClass)
         {
-            var intersectList = new List<string>();
-            
             IDictionary<string, string> shortDict;
             IDictionary<string, string> longDict;
             
@@ -69,11 +67,11 @@ namespace Regseed.Expressions
                 longDict = _literals;
             }
 
-            //Todo: geschwindigkeitstest mit Linq-Expression
-            foreach (var charEntry in shortDict)
-                if(longDict.ContainsKey(charEntry.Key))
-                    intersectList.Add(charEntry.Key);
-            
+            var intersectList = (from charEntry 
+                                 in shortDict 
+                                 where longDict.ContainsKey(charEntry.Key) 
+                                 select charEntry.Key).ToList();
+
             var intersection = new CharacterClassExpression(_alphabet, _random)
             {
                 RepeatRange = RepeatRange
