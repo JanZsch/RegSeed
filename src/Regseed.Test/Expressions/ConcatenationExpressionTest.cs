@@ -1,23 +1,32 @@
+using System.Collections.Generic;
+using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Expressions;
+using Regseed.Factories;
+using Regseed.Parser;
 
 namespace Regseed.Test.Expressions
 {
     [TestFixture]
     internal class ConcatenationExpressionTest : ConcatenationExpression
     {
+        private IRandomGenerator _randomGenerator;
+        private IExpression _expression;
+
+        private IStringBuilder _stringBuilder;
+        private IStringBuilder _stringBuilder2;
+        
         [SetUp]
         public void SetUp()
         {
             _randomGenerator = Substitute.For<IRandomGenerator>();
             _expression = Substitute.For<IExpression>();
+            _stringBuilder = Substitute.For<IStringBuilder>();
+            _stringBuilder2 = Substitute.For<IStringBuilder>();
         }
-
-        private IRandomGenerator _randomGenerator;
-        private IExpression _expression;
 
         public ConcatenationExpressionTest() : base(null)
         {
@@ -56,7 +65,7 @@ namespace Regseed.Test.Expressions
         {
             var expression = new ConcatenationExpressionTest(_randomGenerator);
 
-            var result = expression.ToSingleRegexString();
+            var result = expression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -64,13 +73,15 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToSingleRegexString_ReturnsJaFran_WhenConcatExpressionContainsTwoElementReturningFranziskaAndJ()
         {
+            PrepareStringBuilderToReturn(_stringBuilder, "Fran");
+            PrepareStringBuilderToReturn(_stringBuilder2, "Ja");
             var secondExpression = Substitute.For<IExpression>();
-            secondExpression.ToRegexString().Returns("Fran");
-            _expression.ToRegexString().Returns("Ja");
+            secondExpression.ToStringBuilder().Returns(_stringBuilder);
+            _expression.ToStringBuilder().Returns(_stringBuilder2);
             var concatExpression = new ConcatenationExpressionTest(_randomGenerator);
             concatExpression.Append(_expression).Append(secondExpression);
 
-            var result = concatExpression.ToSingleRegexString();
+            var result = concatExpression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("JaFran", result);
         }
@@ -78,13 +89,31 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToSingleRegexString_ReturnsUlrike_WhenConcatExpressionContainsOneElementReturningFranziska()
         {
-            _expression.ToRegexString().Returns("Ulrike");
+            PrepareStringBuilderToReturn(_stringBuilder, "Ulrike");
+            _expression.ToStringBuilder().Returns(_stringBuilder);
             var concatExpression = new ConcatenationExpressionTest(_randomGenerator);
             concatExpression.Append(_expression);
 
-            var result = concatExpression.ToSingleRegexString();
+            var result = concatExpression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("Ulrike", result);
+        }
+
+        private void PrepareStringBuilderToReturn(IStringBuilder builder, string returnValue)
+        {
+            builder.GenerateString().Returns(returnValue);
+
+            var charClasses = returnValue.Select(x =>
+            {
+                var alphabet = Substitute.For<IParserAlphabet>();
+                alphabet.IsValid(Arg.Any<string>()).Returns(true);
+
+                var val = new CharacterClassExpression(alphabet, _randomGenerator);
+                val.TryAddCharacters(new List<string> {x.ToString()});
+                return val;
+            }).ToList();
+
+            builder.CharacterClasses.Returns(charClasses);
         }
     }
 }

@@ -4,18 +4,24 @@ using NUnit.Framework;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Expressions;
+using Regseed.Factories;
 
 namespace Regseed.Test.Expressions
 {
     [TestFixture]
     internal class UnionExpressionTest : UnionExpression
     {
+        private IStringBuilder _stringBuilder;
+        
         [SetUp]
         public void SetUp()
         {
+            _stringBuilder = Substitute.For<IStringBuilder>();
+            _stringBuilder.GenerateString().Returns("Till");
+            
             _randomGenerator = Substitute.For<IRandomGenerator>();
             _expression = Substitute.For<IExpression>();
-            _expression.ToRegexString().Returns("Till");
+            _expression.ToStringBuilder().Returns(_stringBuilder);
         }
 
         private IRandomGenerator _randomGenerator;
@@ -70,7 +76,7 @@ namespace Regseed.Test.Expressions
         {
             var union = new UnionExpressionTest(new List<IExpression>(), _randomGenerator);
 
-            var result = union.ToSingleRegexString();
+            var result = union.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -88,10 +94,10 @@ namespace Regseed.Test.Expressions
             };
             var union = new UnionExpressionTest(unionExpressions, _randomGenerator);
 
-            var result = union.ToSingleRegexString();
+            var result = union.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("Till", result);
-            _expression.Received(1).ToRegexString();
+            _expression.Received(1).ToStringBuilder();
             _randomGenerator.Received(1).GetNextInteger(Arg.Any<int>(), Arg.Any<int>());
         }
 
@@ -100,10 +106,10 @@ namespace Regseed.Test.Expressions
         {
             var union = new UnionExpressionTest(new List<IExpression> {_expression}, _randomGenerator);
 
-            var result = union.ToSingleRegexString();
+            var result = union.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("Till", result);
-            _expression.Received(1).ToRegexString();
+            _expression.Received(1).ToStringBuilder();
         }
     }
 }

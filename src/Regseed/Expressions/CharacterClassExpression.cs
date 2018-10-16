@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Regseed.Common.Random;
+using Regseed.Factories;
 using Regseed.Parser;
 
 namespace Regseed.Expressions
 {
-    internal class CharacterClassExpression : BaseExpression
+    public class CharacterClassExpression : BaseExpression
     {
         private readonly IParserAlphabet _alphabet;
         private List<string> _characterList = new List<string>();
@@ -38,7 +39,63 @@ namespace Regseed.Expressions
             return true;
         }
 
-        public override IExpression GetComplement()
+        public override IExpression GetComplement() => Inverse();
+       
+        public string GetCharacter()
+        {
+            if (_characterList.Count == 0)
+                return string.Empty;
+            
+            return  _characterList.Count == 1 
+            ? _characterList[0]
+            :_characterList[_random.GetNextInteger(0, _characterList.Count)];
+        }
+
+        public CharacterClassExpression GetIntersection(CharacterClassExpression charClass)
+        {
+            var intersectList = new List<string>();
+            
+            IDictionary<string, string> shortDict;
+            IDictionary<string, string> longDict;
+            
+            if (_literals.Count < charClass._literals.Count)
+            {
+                shortDict = _literals;
+                longDict = charClass._literals;
+            }
+            else
+            {
+                shortDict = charClass._literals;
+                longDict = _literals;
+            }
+
+            //Todo: geschwindigkeitstest mit Linq-Expression
+            foreach (var charEntry in shortDict)
+                if(longDict.ContainsKey(charEntry.Key))
+                    intersectList.Add(charEntry.Key);
+            
+            var intersection = new CharacterClassExpression(_alphabet, _random)
+            {
+                RepeatRange = RepeatRange
+            };
+            intersection.TryAddCharacters(intersectList);
+            
+            return intersection;            
+        }
+
+        public CharacterClassExpression GetUnion(CharacterClassExpression charClass)
+        {
+            var union = new CharacterClassExpression(_alphabet, _random)
+            {
+                RepeatRange = RepeatRange
+            };
+            union.TryAddCharacters(_characterList);
+            union.TryAddCharacters(charClass._characterList);
+            
+            return union;
+        }
+        
+        public CharacterClassExpression Inverse()
         {
             var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
             var complement = new CharacterClassExpression(_alphabet, _random)
@@ -49,14 +106,7 @@ namespace Regseed.Expressions
             return complement;
         }
 
-        protected override string ToSingleRegexString()
-        {
-            if (_characterList.Count == 0)
-                return string.Empty;
-
-            return _characterList.Count == 1
-                ? _characterList[0]
-                : _characterList[_random.GetNextInteger(0, _characterList.Count)];
-        }
+        protected override IStringBuilder ToSingleStringBuilder() =>
+            new StringBuilder(new List<CharacterClassExpression> {this});
     }
 }
