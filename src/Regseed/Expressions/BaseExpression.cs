@@ -1,5 +1,6 @@
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
+using Regseed.Factories;
 
 namespace Regseed.Expressions
 {
@@ -14,7 +15,7 @@ namespace Regseed.Expressions
             _random = random;
         }
 
-        public virtual string ToRegexString()
+        public virtual IStringBuilder ToStringBuilder()
         {
             var repeatRange = RepeatRange ?? new IntegerInterval(1);
             var lowerBound = repeatRange.Start == null || repeatRange.Start < 0 ? 0 : repeatRange.Start.Value;
@@ -23,15 +24,15 @@ namespace Regseed.Expressions
 
             var repetitions = _random.GetNextInteger(lowerBound, upperBound);
 
-            var result = string.Empty;
+            IStringBuilder result = StringBuilder.Empty;
             for (var i = 0; i < repetitions; i++)
-                result = $"{result}{ToSingleRegexString()}";
+                result = result.ConcatWith(ToSingleStringBuilder());
 
             return result;
         }
 
         public abstract IExpression GetComplement();
 
-        protected abstract string ToSingleRegexString();
+        protected abstract IStringBuilder ToSingleStringBuilder();
     }
 }

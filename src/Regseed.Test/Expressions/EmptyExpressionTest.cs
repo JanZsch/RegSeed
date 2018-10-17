@@ -7,7 +7,7 @@ namespace Regseed.Test.Expressions
     public class EmptyExpressionTest
     {
         [Test]
-        public void GetComplement_ReturnsOriginialEmptyExpression()
+        public void GetComplement_ReturnsOriginalEmptyExpression()
         {
             var expression = new EmptyExpression();
 
@@ -17,11 +17,11 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void ToRegexString_ReturnsEmptyString()
+        public void ToStringBuilder_ReturnsEmptyString()
         {
             var expression = new EmptyExpression();
 
-            var result = expression.ToRegexString();
+            var result = expression.ToStringBuilder().GenerateString();
 
             Assert.AreEqual(string.Empty, result);
         }

@@ -47,7 +47,7 @@ namespace Regseed.Test.Expressions
             expression.TryAddCharacters(new List<string> {"J", "r", "a", "n"});
 
             var complement = expression.GetComplement();
-            var result = complement.ToRegexString();
+            var result = complement.ToStringBuilder().GenerateString();
 
             Assert.AreEqual("F", result);
         }
@@ -57,7 +57,7 @@ namespace Regseed.Test.Expressions
         {
             var expression = new CharacterClassExpressionTest(_alphabet, _randomGenerator);
 
-            var result = expression.ToSingleRegexString();
+            var result = expression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -68,7 +68,7 @@ namespace Regseed.Test.Expressions
             var expression = new CharacterClassExpressionTest(_alphabet, _randomGenerator);
             expression.TryAddCharacters(new List<string> {"U"});
 
-            var result = expression.ToSingleRegexString();
+            var result = expression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("U", result);
             _randomGenerator.Received(0).GetNextInteger(Arg.Any<int>(), Arg.Any<int>());
@@ -81,7 +81,7 @@ namespace Regseed.Test.Expressions
             var expression = new CharacterClassExpressionTest(_alphabet, _randomGenerator);
             expression.TryAddCharacters(new List<string> {"U", "L"});
 
-            var result = expression.ToSingleRegexString();
+            var result = expression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("L", result);
             _randomGenerator.Received(1).GetNextInteger(Arg.Any<int>(), Arg.Any<int>());

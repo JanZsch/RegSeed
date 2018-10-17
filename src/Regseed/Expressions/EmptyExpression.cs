@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Regseed.Common.Ranges;
+using Regseed.Factories;
 
 namespace Regseed.Expressions
 {
@@ -6,9 +8,9 @@ namespace Regseed.Expressions
     {
         public IntegerInterval RepeatRange { get; set; }
 
-        public string ToRegexString()
+        public IStringBuilder ToStringBuilder()
         {
-            return string.Empty;
+            return StringBuilder.Empty;
         }
 
         public IExpression GetComplement()

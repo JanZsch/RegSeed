@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Text;
 using Regseed.Common.Random;
+using Regseed.Factories;
 
 namespace Regseed.Expressions
 {
@@ -19,16 +19,6 @@ namespace Regseed.Expressions
             return this;
         }
 
-        protected override string ToSingleRegexString()
-        {
-            var builder = new StringBuilder();
-
-            foreach (var expression in _expressions)
-                builder.Append(expression.ToRegexString());
-
-            return builder.ToString();
-        }
-
         public override IExpression GetComplement()
         {
             var complementExpression = new ConcatenationExpression(_random)
@@ -40,6 +30,16 @@ namespace Regseed.Expressions
                 complementExpression.Append(expression.GetComplement());
 
             return complementExpression;
+        }
+        
+        protected override IStringBuilder ToSingleStringBuilder()
+        {
+            IStringBuilder builder = StringBuilder.Empty;
+
+            foreach (var expression in _expressions)
+                builder = builder.ConcatWith(expression.ToStringBuilder());
+
+            return builder;
         }
     }
 }

@@ -1,4 +1,5 @@
 using Regseed.Common.Ranges;
+using Regseed.Factories;
 
 namespace Regseed.Expressions
 {
@@ -6,7 +7,7 @@ namespace Regseed.Expressions
     {
         IntegerInterval RepeatRange { get; set; }
         
-        string ToRegexString();
+        IStringBuilder ToStringBuilder();
         IExpression GetComplement();
     }
 }

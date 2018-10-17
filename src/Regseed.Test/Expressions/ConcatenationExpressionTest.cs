@@ -1,23 +1,27 @@
+using System.Collections.Generic;
+using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Expressions;
+using Regseed.Parser;
+using Regseed.Test.Mocks;
 
 namespace Regseed.Test.Expressions
 {
     [TestFixture]
     internal class ConcatenationExpressionTest : ConcatenationExpression
     {
+        private IRandomGenerator _randomGenerator;
+        private IExpression _expression;
+       
         [SetUp]
         public void SetUp()
         {
             _randomGenerator = Substitute.For<IRandomGenerator>();
             _expression = Substitute.For<IExpression>();
         }
-
-        private IRandomGenerator _randomGenerator;
-        private IExpression _expression;
 
         public ConcatenationExpressionTest() : base(null)
         {
@@ -39,7 +43,7 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void GetComplement_ReturnValueContainsTwoExpressions_WhenExpresionContainsTwoElements()
+        public void GetComplement_ReturnValueContainsTwoExpressions_WhenExpressionContainsTwoElements()
         {
             var secondExpression = Substitute.For<IExpression>();
             var concatExpression = new ConcatenationExpressionTest(_randomGenerator);
@@ -56,7 +60,7 @@ namespace Regseed.Test.Expressions
         {
             var expression = new ConcatenationExpressionTest(_randomGenerator);
 
-            var result = expression.ToSingleRegexString();
+            var result = expression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual(string.Empty, result);
         }
@@ -64,13 +68,15 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToSingleRegexString_ReturnsJaFran_WhenConcatExpressionContainsTwoElementReturningFranziskaAndJ()
         {
+            var mock1 = new StringBuilderMock(ToCharacterClassList("Fran"));
+            var mock2 = new StringBuilderMock(ToCharacterClassList("Ja"));
             var secondExpression = Substitute.For<IExpression>();
-            secondExpression.ToRegexString().Returns("Fran");
-            _expression.ToRegexString().Returns("Ja");
+            secondExpression.ToStringBuilder().Returns(mock1);
+            _expression.ToStringBuilder().Returns(mock2);
             var concatExpression = new ConcatenationExpressionTest(_randomGenerator);
             concatExpression.Append(_expression).Append(secondExpression);
 
-            var result = concatExpression.ToSingleRegexString();
+            var result = concatExpression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("JaFran", result);
         }
@@ -78,13 +84,27 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToSingleRegexString_ReturnsUlrike_WhenConcatExpressionContainsOneElementReturningFranziska()
         {
-            _expression.ToRegexString().Returns("Ulrike");
+            var mock = new StringBuilderMock(ToCharacterClassList("Ulrike"));
+            _expression.ToStringBuilder().Returns(mock);
             var concatExpression = new ConcatenationExpressionTest(_randomGenerator);
             concatExpression.Append(_expression);
 
-            var result = concatExpression.ToSingleRegexString();
+            var result = concatExpression.ToSingleStringBuilder().GenerateString();
 
             Assert.AreEqual("Ulrike", result);
+        }
+
+        private List<CharacterClassExpression> ToCharacterClassList(string returnValue)
+        {
+            return returnValue.Select(x =>
+            {
+                var alphabet = Substitute.For<IParserAlphabet>();
+                alphabet.IsValid(Arg.Any<string>()).Returns(true);
+
+                var val = new CharacterClassExpression(alphabet, _randomGenerator);
+                val.TryAddCharacters(new List<string> {x.ToString()});
+                return val;
+            }).ToList();
         }
     }
 }

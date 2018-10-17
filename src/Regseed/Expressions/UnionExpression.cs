@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Regseed.Common.Random;
+using Regseed.Factories;
 
 namespace Regseed.Expressions
 {
@@ -21,14 +22,14 @@ namespace Regseed.Expressions
             };
         }
 
-        protected override string ToSingleRegexString()
+        protected override IStringBuilder ToSingleStringBuilder()
         {
             if (_expressions.Count == 0)
-                return string.Empty;
+                return StringBuilder.Empty;
 
             return _expressions.Count == 1
-                ? _expressions[0].ToRegexString()
-                : _expressions[_random.GetNextInteger(0, _expressions.Count)].ToRegexString();
+                ? _expressions[0].ToStringBuilder()
+                : _expressions[_random.GetNextInteger(0, _expressions.Count)].ToStringBuilder();
         }
     }
 }

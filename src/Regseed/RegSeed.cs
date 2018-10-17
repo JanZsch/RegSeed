@@ -57,7 +57,7 @@ namespace Regseed
             if(!_wasInitialised)
                 throw new ArgumentException(RegSeedErrorMessages.InitialiseFirst);
             
-            return _regularExpression.ToRegexString();
+            return _regularExpression.ToStringBuilder().GenerateString();
         }
     }
 }

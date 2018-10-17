@@ -1,21 +1,24 @@
+using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Expressions;
+using Regseed.Factories;
+using Regseed.Parser;
 
 namespace Regseed.Test.Expressions
 {
     [TestFixture]
     internal class BaseExpressionTest : BaseExpression
     {
+        private IRandomGenerator _randomGenerator;
+        
         [SetUp]
         public void SetUp()
         {
             _randomGenerator = Substitute.For<IRandomGenerator>();
         }
-
-        private IRandomGenerator _randomGenerator;
 
         public BaseExpressionTest() : base(null)
         {
@@ -30,9 +33,14 @@ namespace Regseed.Test.Expressions
             return Substitute.For<IExpression>();
         }
 
-        protected override string ToSingleRegexString()
+        protected override IStringBuilder ToSingleStringBuilder()
         {
-            return "F";
+            var alphabet = Substitute.For<IParserAlphabet>();
+            alphabet.IsValid(Arg.Any<string>()).Returns(true);
+            var charClass = new CharacterClassExpression(alphabet, _randomGenerator);
+            charClass.TryAddCharacters(new List<string> {"F"});
+            
+            return new StringBuilder(new List<CharacterClassExpression>{charClass});
         }
 
         [TestCase(null, 0)]
@@ -48,7 +56,7 @@ namespace Regseed.Test.Expressions
                 RepeatRange = interval
             };
 
-            expression.ToRegexString();
+            expression.ToStringBuilder();
 
             _randomGenerator.Received(1).GetNextInteger(expectedValue, 13);
         }
@@ -66,7 +74,7 @@ namespace Regseed.Test.Expressions
                 RepeatRange = interval
             };
 
-            expression.ToRegexString();
+            expression.ToStringBuilder();
 
             _randomGenerator.Received(1).GetNextInteger(0, expectedValue);
         }
@@ -78,7 +86,7 @@ namespace Regseed.Test.Expressions
             expression.RepeatRange = new IntegerInterval(3);
             _randomGenerator.GetNextInteger(3, 4).Returns(3);
 
-            var result = expression.ToRegexString();
+            var result = expression.ToStringBuilder().GenerateString();
 
             Assert.AreEqual("FFF", result);
             _randomGenerator.Received(1).GetNextInteger(3, 4);
@@ -90,7 +98,7 @@ namespace Regseed.Test.Expressions
             _randomGenerator.GetNextInteger(1, 2).Returns(1);
             var expression = new BaseExpressionTest(_randomGenerator);
 
-            var result = expression.ToRegexString();
+            var result = expression.ToStringBuilder().GenerateString();
 
             Assert.AreEqual("F", result);
         }
