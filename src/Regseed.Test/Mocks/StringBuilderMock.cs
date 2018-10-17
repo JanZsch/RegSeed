@@ -33,10 +33,5 @@ namespace Regseed.Test.Mocks
         {
             return _stringBuilder;
         }
-
-        public override IStringBuilder Inverse()
-        {
-            return _stringBuilder;
-        }
     }
 }

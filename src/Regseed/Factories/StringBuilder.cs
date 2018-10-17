@@ -9,10 +9,6 @@ namespace Regseed.Factories
     {
         private readonly List<CharacterClassExpression> _characterClasses;
 
-        protected StringBuilder()
-        {
-        }
-
         public StringBuilder(List<CharacterClassExpression> characterClasses)
         {
             _characterClasses = characterClasses;
@@ -54,14 +50,6 @@ namespace Regseed.Factories
             }
 
             return ApplyMergeOrIntersectOperation(this, builder, CharacterClassMerge);
-        }
-
-        public virtual IStringBuilder Inverse()
-        {
-            var list = new List<CharacterClassExpression>();
-            list.AddRange(_characterClasses.Select(x => x.Inverse()).ToList());
-            
-            return new StringBuilder(list);
         }
 
         private static IStringBuilder ApplyMergeOrIntersectOperation(IStringBuilder builder1, IStringBuilder builder2, Func<IList<CharacterClassExpression>, IList<CharacterClassExpression>, List<CharacterClassExpression>> operation)

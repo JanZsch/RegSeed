@@ -33,7 +33,7 @@ namespace Regseed.Test.Factories
         private CharacterClassExpression _charClass2;
 
         [Test]
-        public void ConcatWith_ReturnsbuilderGeneratingLength2Strings_WhenEachbuilderGeneratesLength1Strings()
+        public void ConcatWith_ReturnsBuilderGeneratingLength2Strings_WhenEachbuilderGeneratesLength1Strings()
         {
             var builder1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
             var builder2 = new StringBuilderMock(new List<CharacterClassExpression> {_charClass2});
@@ -45,7 +45,7 @@ namespace Regseed.Test.Factories
         }
 
         [Test]
-        public void GenerateString_ReturnsTwoAA_WhenbuilderContainsTwoCharacterClassesWithSingleCharacterA()
+        public void GenerateString_ReturnsTwoAA_WhenBuilderContainsTwoCharacterClassesWithSingleCharacterA()
         {
             var charClass = new CharacterClassExpression(_alphabet, _random);
             charClass.TryAddCharacters(new List<string> {"a"});
@@ -58,7 +58,7 @@ namespace Regseed.Test.Factories
         }
 
         [Test]
-        public void GenerateString_ReturnsTwoLetterWord_WhenbuilderContainsTwoCharacterClasses()
+        public void GenerateString_ReturnsTwoLetterWord_WhenBuilderContainsTwoCharacterClasses()
         {
             var builder = new StringBuilder(new List<CharacterClassExpression> {_charClass1, _charClass2});
 
@@ -79,19 +79,6 @@ namespace Regseed.Test.Factories
 
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual("c", result);
-        }
-
-        [Test]
-        public void Inverse_ReturnsWordDD_WhenContains2CharacterClassWithLettersABCAndAlphabetLettersABCD()
-        {
-            _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(0);
-            _alphabet.GetAllCharacters().Returns(new List<string> {"a", "b", "c", "d"});
-            var builder1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1, _charClass1});
-
-            var result = builder1.Inverse().GenerateString();
-
-            Assert.AreEqual(2, result.Length);
-            Assert.AreEqual("dd", result);
         }
 
         [Test]
