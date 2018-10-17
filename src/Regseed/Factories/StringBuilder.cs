@@ -8,8 +8,11 @@ namespace Regseed.Factories
     internal class StringBuilder : IStringBuilder
     {
         private readonly List<CharacterClassExpression> _characterClasses;
-        public IList<CharacterClassExpression> CharacterClasses => _characterClasses.ToList();
-        
+
+        protected StringBuilder()
+        {
+        }
+
         public StringBuilder(List<CharacterClassExpression> characterClasses)
         {
             _characterClasses = characterClasses;
@@ -17,21 +20,23 @@ namespace Regseed.Factories
 
         public static StringBuilder Empty => new StringBuilder(new List<CharacterClassExpression>());
 
-        public string GenerateString()
+        public virtual string GenerateString()
         {
             return _characterClasses.Aggregate(string.Empty, (current, characterClass) => $"{current}{characterClass.GetCharacter()}");
         }
 
-        public IStringBuilder ConcatWith(IStringBuilder builder)
+        public virtual IStringBuilder ConcatWith(IStringBuilder stringBuilder)
         {
+            var builder = stringBuilder as StringBuilder ?? throw new ArgumentException();
+            
             var list = new List<CharacterClassExpression>();
-            list.AddRange(CharacterClasses);
-            list.AddRange(builder.CharacterClasses);
+            list.AddRange(_characterClasses);
+            list.AddRange(builder._characterClasses);
             
             return new StringBuilder(list);
         }
 
-        public IStringBuilder IntersectWith(IStringBuilder builder)
+        public virtual IStringBuilder IntersectWith(IStringBuilder builder)
         {
             List<CharacterClassExpression> CharacterClassIntersection(IList<CharacterClassExpression> longList, IList<CharacterClassExpression> shortList)
             {
@@ -41,7 +46,7 @@ namespace Regseed.Factories
             return ApplyMergeOrIntersectOperation(this, builder, CharacterClassIntersection);
         }
 
-        public IStringBuilder MergeWith(IStringBuilder builder)
+        public virtual IStringBuilder MergeWith(IStringBuilder builder)
         {           
             List<CharacterClassExpression> CharacterClassMerge(IList<CharacterClassExpression> longList, IList<CharacterClassExpression> shortList)
             {
@@ -51,7 +56,7 @@ namespace Regseed.Factories
             return ApplyMergeOrIntersectOperation(this, builder, CharacterClassMerge);
         }
 
-        public IStringBuilder Inverse()
+        public virtual IStringBuilder Inverse()
         {
             var list = new List<CharacterClassExpression>();
             list.AddRange(_characterClasses.Select(x => x.Inverse()).ToList());
@@ -59,10 +64,10 @@ namespace Regseed.Factories
             return new StringBuilder(list);
         }
 
-        private static IStringBuilder ApplyMergeOrIntersectOperation(IStringBuilder factory1, IStringBuilder factory2, Func<IList<CharacterClassExpression>, IList<CharacterClassExpression>, List<CharacterClassExpression>> operation)
+        private static IStringBuilder ApplyMergeOrIntersectOperation(IStringBuilder builder1, IStringBuilder builder2, Func<IList<CharacterClassExpression>, IList<CharacterClassExpression>, List<CharacterClassExpression>> operation)
         {
-            var characters1 = factory1.CharacterClasses;
-            var characters2 = factory2.CharacterClasses;
+            var characters1 = (builder1 as StringBuilder)?._characterClasses ?? throw new ArgumentException();
+            var characters2 = (builder2 as StringBuilder)?._characterClasses ?? throw new ArgumentException();
             
             IList<CharacterClassExpression> shortList ;
             IList<CharacterClassExpression> longList ;

@@ -5,11 +5,12 @@ using Regseed.Common.Random;
 using Regseed.Expressions;
 using Regseed.Factories;
 using Regseed.Parser;
+using Regseed.Test.Mocks;
 
 namespace Regseed.Test.Factories
 {
     [TestFixture]
-    public class StringFactoryTest
+    public class StringBuilderTest
     {
         [SetUp]
         public void SetUp()
@@ -32,36 +33,36 @@ namespace Regseed.Test.Factories
         private CharacterClassExpression _charClass2;
 
         [Test]
-        public void ConcatWith_ReturnsFactoryGeneratingLength2Strings_WhenEachFactoryGeneratesLength1Strings()
+        public void ConcatWith_ReturnsbuilderGeneratingLength2Strings_WhenEachbuilderGeneratesLength1Strings()
         {
-            var factory1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
-            var factory2 = new StringBuilder(new List<CharacterClassExpression> {_charClass2});
+            var builder1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
+            var builder2 = new StringBuilderMock(new List<CharacterClassExpression> {_charClass2});
 
-            var result = factory1.ConcatWith(factory2).GenerateString();
+            var result = builder1.ConcatWith(builder2).GenerateString();
 
             Assert.AreEqual(2, result.Length);
             Assert.AreEqual("ab", result);
         }
 
         [Test]
-        public void GenerateString_ReturnsTwoAA_WhenFactoryContainsTwoCharacterClassesWithSingleCharacterA()
+        public void GenerateString_ReturnsTwoAA_WhenbuilderContainsTwoCharacterClassesWithSingleCharacterA()
         {
             var charClass = new CharacterClassExpression(_alphabet, _random);
             charClass.TryAddCharacters(new List<string> {"a"});
 
-            var factory = new StringBuilder(new List<CharacterClassExpression> {charClass, charClass});
+            var builder = new StringBuilder(new List<CharacterClassExpression> {charClass, charClass});
 
-            var result = factory.GenerateString();
+            var result = builder.GenerateString();
 
             Assert.AreEqual("aa", result);
         }
 
         [Test]
-        public void GenerateString_ReturnsTwoLetterWord_WhenFactoryContainsTwoCharacterClasses()
+        public void GenerateString_ReturnsTwoLetterWord_WhenbuilderContainsTwoCharacterClasses()
         {
-            var factory = new StringBuilder(new List<CharacterClassExpression> {_charClass1, _charClass2});
+            var builder = new StringBuilder(new List<CharacterClassExpression> {_charClass1, _charClass2});
 
-            var result = factory.GenerateString();
+            var result = builder.GenerateString();
 
             Assert.AreEqual(2, result.Length);
         }
@@ -70,11 +71,11 @@ namespace Regseed.Test.Factories
         public void IntersectWith_ReturnsLetterC_WhenIntersectionIsBCAndRandomReturns1()
         {
             _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(1);
-            var factory1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
-            var factory2 = new StringBuilder(new List<CharacterClassExpression> {_charClass2});
+            var builder1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
+            var builder2 = new StringBuilderMock(new List<CharacterClassExpression> {_charClass2});
 
-            var resultFactory = factory1.IntersectWith(factory2);
-            var result = resultFactory.GenerateString();
+            var stringBuilder = builder1.IntersectWith(builder2);
+            var result = stringBuilder.GenerateString();
 
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual("c", result);
@@ -85,9 +86,9 @@ namespace Regseed.Test.Factories
         {
             _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(0);
             _alphabet.GetAllCharacters().Returns(new List<string> {"a", "b", "c", "d"});
-            var factory1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1, _charClass1});
+            var builder1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1, _charClass1});
 
-            var result = factory1.Inverse().GenerateString();
+            var result = builder1.Inverse().GenerateString();
 
             Assert.AreEqual(2, result.Length);
             Assert.AreEqual("dd", result);
@@ -97,10 +98,10 @@ namespace Regseed.Test.Factories
         public void MergeWith_ReturnsLetterD_WhenMergeIsABCDAndRandomReturns3()
         {
             _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(3);
-            var factory1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
-            var factory2 = new StringBuilder(new List<CharacterClassExpression> {_charClass2});
+            var builder1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
+            var builder2 = new StringBuilderMock(new List<CharacterClassExpression> {_charClass2});
 
-            var result = factory1.MergeWith(factory2).GenerateString();
+            var result = builder1.MergeWith(builder2).GenerateString();
 
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual("d", result);

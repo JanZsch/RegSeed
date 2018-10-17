@@ -7,7 +7,7 @@ using Regseed.Parser;
 
 namespace Regseed.Expressions
 {
-    public class CharacterClassExpression : BaseExpression
+    internal class CharacterClassExpression : BaseExpression
     {
         private readonly IParserAlphabet _alphabet;
         private List<string> _characterList = new List<string>();
