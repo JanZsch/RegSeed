@@ -56,22 +56,10 @@ namespace Regseed.Factories
         {
             var characters1 = (builder1 as StringBuilder)?._characterClasses ?? throw new ArgumentException();
             var characters2 = (builder2 as StringBuilder)?._characterClasses ?? throw new ArgumentException();
-            
-            IList<CharacterClassExpression> shortList ;
-            IList<CharacterClassExpression> longList ;
 
-            if (characters2.Count > characters1.Count)
-            {
-                shortList = characters1;
-                longList = characters2;
-            }
-            else
-            {
-                shortList = characters2;
-                longList = characters1;
-            }
-
-            return new StringBuilder(operation(longList, shortList));
+            return characters1.Count != characters2.Count 
+                ? Empty 
+                : new StringBuilder(operation(characters1, characters2));
         }
     }
 }

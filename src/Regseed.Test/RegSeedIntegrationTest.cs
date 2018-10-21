@@ -93,33 +93,54 @@ namespace Regseed.Test
         [TestCase("({0}|{1})")]
         public void Generate_ReturnsLetterFOrR_WhenRegexIsFOrR(string regexPattern)
         {
+            var countOfF = 0; 
+            var countOfR = 0; 
             _random = new RandomGenerator(new Random());
             var regex = string.Format(regexPattern, "F", "R");
 
             var loadResult = TryLoadRegexPattern(regex);
 
-            for (var i = 0; i < 20; i++)
+            Assert.IsTrue(loadResult.IsSuccess, regexPattern);
+            
+            for (var i = 0; i < 50; i++)
             {
                 var result = Generate();
 
-                Assert.IsTrue(loadResult.IsSuccess);
                 Assert.IsTrue(result.Contains("F") || result.Contains("R"), result);
-            }
-        }
 
-        [TestCase("[a-z]{0,5}")]
-        [TestCase("ul rike")]
-        [TestCase("ul\nrike")]
-        [TestCase("ul\trike")]
-        [TestCase("(A|[a-m])+[a-z]{2,4}")]
-        [TestCase("[^m-z0-9A-Z]+")]
-        [TestCase("[aaabbbaaa]+")]
-        [TestCase("[f-i]+")]
-        [TestCase("(Fr([aA]n|A[nN])ziska){1,4}")]
-        [TestCase(@"^([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12})$")]
-        public void Generate_ReturnsStringMatchingProvidedPattern(string pattern)
+                if (result.Equals("F"))
+                    countOfF++;
+                else if (result.Equals("R"))
+                    countOfR++;
+            }
+            
+            Assert.Greater(countOfF, 0, countOfF.ToString());
+            Assert.Greater(countOfR, 0, countOfR.ToString());
+            Assert.AreEqual(50, countOfF+countOfR);
+        }
+        
+        [TestCase("[a-z]{0,5}", false)]
+        [TestCase("ul rike", false)]
+        [TestCase("ul\nrike", false)]
+        [TestCase("ul\trike", false)]
+        [TestCase("(A|[a-m])+[a-z]{2,4}", true)]
+        [TestCase("[^m-z0-9A-Z]+", true)]
+        [TestCase("[aaabbbaaa]+", true)]
+        [TestCase("[f-i]+", true)]
+        [TestCase("([0-9]|[a-z]|Ulrike){1,2}", false)]
+        [TestCase("(F|R)", false)]
+        [TestCase("(Fr([aA]n|A[nN])ziska){1,4}", false)]
+        [TestCase(@"^([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12})$", false)]
+        public void Generate_ReturnsStringMatchingProvidedPattern(string pattern, bool restrictUppBound)
         {
-            var regex = new Regex(pattern);
+            var realRandomGenerator = new RandomGenerator(new Random());
+            _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x =>
+            {
+                var upperBound =  restrictUppBound && (int) x[1] > 5 ? 5 : (int)x[1];
+                return realRandomGenerator.GetNextInteger((int) x[0], upperBound);
+
+            });
+            var regex = new Regex($"^{pattern}$");
             var loadResult = TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess);
@@ -201,6 +222,41 @@ namespace Regseed.Test
             var result2 = Generate().Length;
 
             Assert.AreNotEqual(result1, result2);
+        }
+
+        [Test]
+        public void Interval_BindsStrongerThanUnion_WhenRegexContainsIntervalWithUnion()
+        {
+            _random = new RandomGenerator(new Random());
+            const string regex = "Ja|Fran{2}";
+            var regseed = new RegSeed(regex);
+
+            for (var i = 0; i < 25; i++)
+            {
+                var result = regseed.Generate();
+                
+                Assert.AreNotEqual("JaJa", result);
+            }
+        }
+
+        [TestCase("jan&[Jj][Aa][Nn]","jan")]
+        [TestCase("jan&Fra","")]
+        [TestCase("[Ulr][Ulr][Ulr]&Ul","")]
+        [TestCase("ulri\\-[0-9]\\-ke&ulri\\-9\\-ke","ulri-9-ke")]
+        [TestCase("~(f[0-8]])&(f[0-9])","f9")]
+        [TestCase("x|jan&~jan","x")]
+        [TestCase("Fr([Aa][Nn]&an)ziska","Franziska")]
+        [TestCase("Fr((AN|an)&an)ziska","Franziska")]
+        [TestCase("[Jj]irko[Jj]irko&Jirko{1,3}","JirkoJirko")]
+        public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersection(string pattern, string expectedResult)
+        {
+            _random = new RandomGenerator(new Random());
+            var loadResult = TryLoadRegexPattern(pattern);
+
+            Assert.IsTrue(loadResult.IsSuccess, pattern);
+            var result = Generate();
+
+            Assert.AreEqual(expectedResult, result, result);
         }
     }
 }

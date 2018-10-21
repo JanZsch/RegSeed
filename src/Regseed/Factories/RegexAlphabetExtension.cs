@@ -20,13 +20,13 @@ namespace Regseed.Factories
                     .Add(SpecialCharacters.Or, new PipeParser(), areRegexSyntaxCharactersValid)
                     .Add(SpecialCharacters.AnyCharacter, new DotParser(), areRegexSyntaxCharactersValid)
                     .Add(SpecialCharacters.Complement, new TildeParser(), areRegexSyntaxCharactersValid)
-                    .Add(SpecialCharacters.Escape, new CharacterParser(parser), areRegexSyntaxCharactersValid);
+                    .Add(SpecialCharacters.Escape, new CharacterParser(parser), areRegexSyntaxCharactersValid)
+                    .Add(SpecialCharacters.Intersection, new AmpersantParser(), areRegexSyntaxCharactersValid);
         }
 
         public static IParserAlphabet AddSpecialCharacters(this IParserAlphabet alphabet, IPrimitiveParser parser)
         {
             alphabet.Add("^", new CharacterParser(parser))
-                    .Add("&", new CharacterParser(parser))
                     .Add("}", new CharacterParser(parser))
                     .Add("\"", new CharacterParser(parser))
                     .Add("!", new CharacterParser(parser))

@@ -109,7 +109,7 @@ namespace Regseed.Test.Factories
             var result = minimal.GetAllCharacters();
 
             foreach (var letter in result)
-                Assert.AreEqual(isValid, minimal.IsValid(letter));
+                Assert.AreEqual(isValid, minimal.IsValid(letter), letter);
         }
 
         [TestCase(true)]

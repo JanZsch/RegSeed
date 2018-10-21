@@ -13,6 +13,7 @@ namespace Regseed.Resources
         public const string OpenInterval = "{";
         public const string CloseInterval = "}";
         public const string IntervalSeparator = ",";
+        public const string Intersection = "&";
         public const string AnyCharacter = ".";
         public const string AtLeastOne = "+";
         public const string AtMostOne = "?";

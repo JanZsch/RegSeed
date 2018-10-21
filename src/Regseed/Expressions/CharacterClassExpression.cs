@@ -39,7 +39,16 @@ namespace Regseed.Expressions
             return true;
         }
 
-        public override IExpression GetComplement() => Inverse();
+        public override IExpression GetComplement()
+        {
+            var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
+            var complement = new CharacterClassExpression(_alphabet, _random)
+            {
+                RepeatRange = RepeatRange
+            };
+            complement.TryAddCharacters(complementCharacters);
+            return complement;
+        }
        
         public string GetCharacter()
         {
@@ -53,6 +62,9 @@ namespace Regseed.Expressions
 
         public CharacterClassExpression GetIntersection(CharacterClassExpression charClass)
         {
+            if(charClass == null || !charClass._characterList.Any() || !_characterList.Any())
+                return new CharacterClassExpression(_alphabet, _random);
+            
             IDictionary<string, string> shortDict;
             IDictionary<string, string> longDict;
             
@@ -87,23 +99,15 @@ namespace Regseed.Expressions
             {
                 RepeatRange = RepeatRange
             };
+            
             union.TryAddCharacters(_characterList);
-            union.TryAddCharacters(charClass._characterList);
+    
+            if(charClass != null)
+                union.TryAddCharacters(charClass._characterList);
             
             return union;
         }
         
-        public CharacterClassExpression Inverse()
-        {
-            var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
-            var complement = new CharacterClassExpression(_alphabet, _random)
-            {
-                RepeatRange = RepeatRange
-            };
-            complement.TryAddCharacters(complementCharacters);
-            return complement;
-        }
-
         protected override IStringBuilder ToSingleStringBuilder() =>
             new StringBuilder(new List<CharacterClassExpression> {this});
     }

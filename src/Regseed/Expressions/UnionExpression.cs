@@ -7,16 +7,16 @@ namespace Regseed.Expressions
 {
     internal class UnionExpression : BaseExpression
     {
-        protected readonly List<IExpression> _expressions;
+        protected readonly List<IExpression> _intersectExpressions;
         
         public UnionExpression(List<IExpression> expressions, IRandomGenerator random) : base(random)
         {
-            _expressions = expressions;
+            _intersectExpressions = expressions;
         }
 
         public override IExpression GetComplement()
         {
-            return new UnionExpression(_expressions.Select(x => x.GetComplement()).ToList(), _random)
+            return new UnionExpression(_intersectExpressions.Select(x => x.GetComplement()).ToList(), _random)
             {
                 RepeatRange = RepeatRange
             };
@@ -24,12 +24,12 @@ namespace Regseed.Expressions
 
         protected override IStringBuilder ToSingleStringBuilder()
         {
-            if (_expressions.Count == 0)
+            if (_intersectExpressions.Count == 0)
                 return StringBuilder.Empty;
 
-            return _expressions.Count == 1
-                ? _expressions[0].ToStringBuilder()
-                : _expressions[_random.GetNextInteger(0, _expressions.Count)].ToStringBuilder();
+            return _intersectExpressions.Count == 1
+                ? _intersectExpressions[0].ToStringBuilder()
+                : _intersectExpressions[_random.GetNextInteger(0, _intersectExpressions.Count)].ToStringBuilder();
         }
     }
 }

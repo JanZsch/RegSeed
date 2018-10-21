@@ -56,8 +56,10 @@ namespace Regseed
         {
             if(!_wasInitialised)
                 throw new ArgumentException(RegSeedErrorMessages.InitialiseFirst);
+
+            var stringBuilder = _regularExpression.ToStringBuilder();
             
-            return _regularExpression.ToStringBuilder().GenerateString();
+            return stringBuilder.GenerateString();
         }
     }
 }

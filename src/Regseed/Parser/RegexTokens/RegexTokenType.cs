@@ -13,6 +13,7 @@ namespace Regseed.Parser.RegexTokens
         OpenPrecedence,
         ClosePrecedence,
         Union,
+        Intersection,
         EndOfStream
     }
 }
