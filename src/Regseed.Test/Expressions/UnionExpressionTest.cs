@@ -36,37 +36,37 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void GetComplement_CallsGetComplementOnEachUnionElement()
+        public void GetInverse_CallsGetComplementOnEachUnionElement()
         {
             var expression1 = Substitute.For<IExpression>();
             var expression2 = Substitute.For<IExpression>();
             var unionExpressions = new List<IExpression> {expression1, expression2};
             var union = new UnionExpressionTest(unionExpressions, _randomGenerator);
 
-            union.GetComplement();
+            union.GetInverse();
 
-            expression1.Received(1).GetComplement();
-            expression2.Received(1).GetComplement();
+            expression1.Received(1).GetInverse();
+            expression2.Received(1).GetInverse();
         }
 
         [Test]
-        public void GetComplement_ReturnValueHasSameRepeatIntegerIntervalAsOriginal()
+        public void GetInverse_ReturnValueHasSameRepeatIntegerIntervalAsOriginal()
         {
             var repeatRange = new IntegerInterval();
             repeatRange.TrySetValue(1, 2);
             var union = new UnionExpressionTest(new List<IExpression>(), _randomGenerator) {RepeatRange = repeatRange};
 
-            var result = union.GetComplement().RepeatRange;
+            var result = union.GetInverse().RepeatRange;
 
             Assert.AreEqual(repeatRange, result);
         }
 
         [Test]
-        public void GetComplement_ReturnValueHasTypeUnionExpression()
+        public void GetInverse_ReturnValueHasTypeUnionExpression()
         {
             var union = new UnionExpressionTest(new List<IExpression>(), _randomGenerator);
 
-            var result = union.GetComplement();
+            var result = union.GetInverse();
 
             Assert.IsInstanceOf<UnionExpression>(result);
         }

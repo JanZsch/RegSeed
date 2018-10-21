@@ -8,6 +8,6 @@ namespace Regseed.Expressions
         IntegerInterval RepeatRange { get; set; }
         
         IStringBuilder ToStringBuilder();
-        IExpression GetComplement();
+        IExpression GetInverse();
     }
 }

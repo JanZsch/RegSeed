@@ -165,7 +165,7 @@ namespace Regseed.Factories
             if (!elementaryResult.IsSuccess)
                 return elementaryResult;
 
-            expression = toInvertExpression.GetComplement();
+            expression = toInvertExpression.GetInverse();
 
             return new SuccessParseResult();
         }
@@ -240,7 +240,7 @@ namespace Regseed.Factories
             if (!characterClassExpression.TryAddCharacters(characters))
                 return new FailureParseResult(tokenStream.CurrentPosition, RegSeedErrorType.InvalidInput);
 
-            expression = getComplement ? characterClassExpression.GetComplement() : characterClassExpression;
+            expression = getComplement ? characterClassExpression.GetInverse() : characterClassExpression;
             return new SuccessParseResult();
         }
 

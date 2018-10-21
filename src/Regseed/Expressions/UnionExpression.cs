@@ -14,9 +14,9 @@ namespace Regseed.Expressions
             _intersectExpressions = expressions;
         }
 
-        public override IExpression GetComplement()
+        public override IExpression GetInverse()
         {
-            return new UnionExpression(_intersectExpressions.Select(x => x.GetComplement()).ToList(), _random)
+            return new UnionExpression(_intersectExpressions.Select(x => x.GetInverse()).ToList(), _random)
             {
                 RepeatRange = RepeatRange
             };

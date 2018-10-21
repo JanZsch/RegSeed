@@ -32,27 +32,27 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void GetComplement_ResultHasSameRepeatIntervalAsOriginal()
+        public void GetInverse_ResultHasSameRepeatIntervalAsOriginal()
         {
             var repeatInterval = new IntegerInterval(null);
             var concatExpression = new ConcatenationExpression(_randomGenerator) {RepeatRange = repeatInterval};
 
-            var result = concatExpression.GetComplement();
+            var result = concatExpression.GetInverse();
 
             Assert.AreEqual(repeatInterval, result.RepeatRange);
         }
 
         [Test]
-        public void GetComplement_ReturnValueContainsTwoExpressions_WhenExpressionContainsTwoElements()
+        public void GetInverse_ReturnValueContainsTwoExpressions_WhenExpressionContainsTwoElements()
         {
             var secondExpression = Substitute.For<IExpression>();
             var concatExpression = new ConcatenationExpressionTest(_randomGenerator);
             concatExpression.Append(_expression).Append(secondExpression);
 
-            concatExpression.GetComplement();
+            concatExpression.GetInverse();
 
-            secondExpression.Received(1).GetComplement();
-            _expression.Received(1).GetComplement();
+            secondExpression.Received(1).GetInverse();
+            _expression.Received(1).GetInverse();
         }
 
         [Test]

@@ -19,7 +19,7 @@ namespace Regseed.Expressions
             return this;
         }
 
-        public override IExpression GetComplement()
+        public override IExpression GetInverse()
         {
             var complementExpression = new ConcatenationExpression(_random)
             {
@@ -27,7 +27,7 @@ namespace Regseed.Expressions
             };
 
             foreach (var expression in _expressions)
-                complementExpression.Append(expression.GetComplement());
+                complementExpression.Append(expression.GetInverse());
 
             return complementExpression;
         }

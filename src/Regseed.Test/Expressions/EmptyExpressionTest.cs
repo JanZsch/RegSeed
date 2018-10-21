@@ -7,11 +7,11 @@ namespace Regseed.Test.Expressions
     public class EmptyExpressionTest
     {
         [Test]
-        public void GetComplement_ReturnsOriginalEmptyExpression()
+        public void GetInverse_ReturnsOriginalEmptyExpression()
         {
             var expression = new EmptyExpression();
 
-            var result = expression.GetComplement();
+            var result = expression.GetInverse();
 
             Assert.AreEqual(expression, result);
         }

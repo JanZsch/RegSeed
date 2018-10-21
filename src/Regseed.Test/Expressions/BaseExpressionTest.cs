@@ -28,7 +28,7 @@ namespace Regseed.Test.Expressions
         {
         }
 
-        public override IExpression GetComplement()
+        public override IExpression GetInverse()
         {
             return Substitute.For<IExpression>();
         }

@@ -14,9 +14,9 @@ namespace Regseed.Expressions
             _concatExpressions = concatExpressions;
         }
 
-        public override IExpression GetComplement()
+        public override IExpression GetInverse()
         {
-            var inverseConcatExpression = _concatExpressions.Select(x => x.GetComplement()).ToList();
+            var inverseConcatExpression = _concatExpressions.Select(x => x.GetInverse()).ToList();
             
             return new IntersectionExpression(inverseConcatExpression, _random)
             {

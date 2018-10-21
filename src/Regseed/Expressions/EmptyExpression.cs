@@ -13,7 +13,7 @@ namespace Regseed.Expressions
             return StringBuilder.Empty;
         }
 
-        public IExpression GetComplement()
+        public IExpression GetInverse()
         {
             return this;
         }

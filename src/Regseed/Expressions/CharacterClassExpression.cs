@@ -39,7 +39,7 @@ namespace Regseed.Expressions
             return true;
         }
 
-        public override IExpression GetComplement()
+        public override IExpression GetInverse()
         {
             var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
             var complement = new CharacterClassExpression(_alphabet, _random)

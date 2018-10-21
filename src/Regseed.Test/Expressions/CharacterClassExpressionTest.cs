@@ -39,14 +39,14 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void GetComplement_ReturnsF_WhenCharacterClassContainsAllLettersButF()
+        public void GetInverse_ReturnsF_WhenCharacterClassContainsAllLettersButF()
         {
             _randomGenerator = new RandomGenerator(new Random());
             _alphabet.GetAllCharacters().Returns(new List<string> {"J", "F", "r", "a", "n"});
             var expression = new CharacterClassExpression(_alphabet, _randomGenerator);
             expression.TryAddCharacters(new List<string> {"J", "r", "a", "n"});
 
-            var complement = expression.GetComplement();
+            var complement = expression.GetInverse();
             var result = complement.ToStringBuilder().GenerateString();
 
             Assert.AreEqual("F", result);

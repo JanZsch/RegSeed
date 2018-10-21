@@ -31,7 +31,7 @@ namespace Regseed.Expressions
             return result;
         }
 
-        public abstract IExpression GetComplement();
+        public abstract IExpression GetInverse();
 
         protected abstract IStringBuilder ToSingleStringBuilder();
     }

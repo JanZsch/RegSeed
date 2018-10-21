@@ -109,20 +109,20 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void GetComplement_ReturnsStringBuilderReturningComplementOfSingleCharacterClass_WhenIntersectionExpressionContainsSingleElementWithCharactersRA()
+        public void GetInverse_ReturnsStringBuilderReturningComplementOfSingleCharacterClass_WhenIntersectionExpressionContainsSingleElementWithCharactersRA()
         {
             var concat1 = new ConcatenationExpression(_randomGenerator);
             concat1.Append(ToCharacterClass("r", "a"));
             var expression = new IntersectionExpressionTest(new List<IExpression>{concat1}, _randomGenerator);
 
-            var result = expression.GetComplement().ToStringBuilder().GenerateString();
+            var result = expression.GetInverse().ToStringBuilder().GenerateString();
 
             Assert.IsNotNull(result);
             Assert.AreEqual("F", result);            
         }
       
         [Test]
-        public void GetComplement_ReturnsOriginalIntersectResult_WhenCalledTwice()
+        public void GetInverse_ReturnsOriginalIntersectResult_WhenCalledTwice()
         {
             var concat1 = new ConcatenationExpression(_randomGenerator);
             concat1.Append(ToCharacterClass("F", "a", "r"));
@@ -130,7 +130,7 @@ namespace Regseed.Test.Expressions
             concat2.Append(ToCharacterClass("F"));
             var expression = new IntersectionExpressionTest(new List<IExpression>{concat1, concat2}, _randomGenerator);
 
-            var result = expression.GetComplement().GetComplement().ToStringBuilder().GenerateString();
+            var result = expression.GetInverse().GetInverse().ToStringBuilder().GenerateString();
 
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual("F", result);            
