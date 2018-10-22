@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
+using Regseed.Common.Results;
 using Regseed.Factories;
 
 namespace Regseed.Test
@@ -248,6 +249,7 @@ namespace Regseed.Test
         [TestCase("Fr([Aa][Nn]&an)ziska","Franziska")]
         [TestCase("Fr((AN|an)&an)ziska","Franziska")]
         [TestCase("[Jj]irko[Jj]irko&Jirko{1,3}","JirkoJirko")]
+        [TestCase("a|[a-c]&a","a")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersection(string pattern, string expectedResult)
         {
             _random = new RandomGenerator(new Random());
