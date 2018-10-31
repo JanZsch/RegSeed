@@ -68,7 +68,7 @@ namespace Regseed.Test.Expressions
 
             var result = union.GetInverse();
 
-            Assert.IsInstanceOf<UnionExpression>(result);
+            Assert.IsInstanceOf<IntersectionExpression>(result);
         }
 
         [Test]
@@ -110,6 +110,22 @@ namespace Regseed.Test.Expressions
 
             Assert.AreEqual("Till", result);
             _expression.Received(1).ToStringBuilder();
+        }
+
+        [Test]
+        public void Expand_ReturnsListContainingForStringBuilder_WhenUnionContainsTwoInitialIntersecExpressionsReturningTwoStringBuildersEachOnExpand()
+        {
+            var intersect1 = Substitute.For<IExpression>();
+            intersect1.Expand()
+                      .Returns(new List<IStringBuilder> {Substitute.For<IStringBuilder>(), Substitute.For<IStringBuilder>()});
+            var intersect2 = Substitute.For<IExpression>();
+            intersect2.Expand()
+                      .Returns(new List<IStringBuilder> {Substitute.For<IStringBuilder>(), Substitute.For<IStringBuilder>()});
+            var expression = new UnionExpression(new List<IExpression>{intersect1, intersect2}, _random);
+
+            var result = expression.Expand();
+            
+            Assert.AreEqual(4, result.Count);
         }
     }
 }

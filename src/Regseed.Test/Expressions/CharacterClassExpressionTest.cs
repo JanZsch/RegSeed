@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
@@ -242,6 +243,36 @@ namespace Regseed.Test.Expressions
             var result = charClassJA.GetUnion(new CharacterClassExpression(_alphabet, _randomGenerator));
 
             Assert.AreEqual("J", result.GetCharacter());
+        }
+
+        [TestCaseSource(nameof(GetCharacterCountTestData))]
+        public void GetCharacterCount_ReturnsNumberOfPossibleGetCharacterOutComes(IList<string> characters, int expectedValue)
+        {
+            var charClass = new CharacterClassExpression(_alphabet, _random);
+            charClass.TryAddCharacters(characters);
+
+            var result = charClass.GetCharacterCount();
+            
+            Assert.AreEqual(expectedValue, result);
+        }
+
+        private static IEnumerable<object[]> GetCharacterCountTestData()
+        {
+            yield return new object[] {new List<string>(), 0};
+            yield return new object[] {new List<string>{"a"}, 1};
+            yield return new object[] {new List<string>{"a", "b"}, 2};
+        }
+
+        [Test]
+        public void Expand_ReturnsSingleElementListContainingStringBuilderRepresentingCharacterClass()
+        {
+            var charClass = new CharacterClassExpression(_alphabet, _random);
+            charClass.TryAddCharacters(new List<string> {"a"});
+
+            var result = charClass.Expand();
+            
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("a", result.FirstOrDefault()?.GenerateString());
         }
     }
 }

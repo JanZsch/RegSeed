@@ -7,16 +7,26 @@ namespace Regseed.Expressions
 {
     internal class UnionExpression : BaseExpression
     {
-        protected readonly List<IExpression> _intersectExpressions;
+        private readonly List<IExpression> _intersectExpressions;
         
         public UnionExpression(List<IExpression> expressions, IRandomGenerator random) : base(random)
         {
             _intersectExpressions = expressions;
         }
 
+        public override IList<IStringBuilder> Expand()
+        {
+            var expandedList = new List<IStringBuilder>();
+
+            foreach (var intersectExpression in _intersectExpressions)
+                expandedList.AddRange(intersectExpression.Expand());
+
+            return expandedList;
+        }
+
         public override IExpression GetInverse()
         {
-            return new UnionExpression(_intersectExpressions.Select(x => x.GetInverse()).ToList(), _random)
+            return new IntersectionExpression(_intersectExpressions.Select(x => x.GetInverse()).ToList(), _random)
             {
                 RepeatRange = RepeatRange
             };
@@ -31,5 +41,7 @@ namespace Regseed.Expressions
                 ? _intersectExpressions[0].ToStringBuilder()
                 : _intersectExpressions[_random.GetNextInteger(0, _intersectExpressions.Count)].ToStringBuilder();
         }
+
+        internal IList<IExpression> ToIntersectionExpressionList() => _intersectExpressions.ToList();
     }
 }

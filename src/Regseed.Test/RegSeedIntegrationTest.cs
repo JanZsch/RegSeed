@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
-using Regseed.Common.Results;
 using Regseed.Factories;
 
 namespace Regseed.Test
@@ -72,8 +71,6 @@ namespace Regseed.Test
         [TestCase("~[{0}]", "F")]
         [TestCase("~[{0}]ra", "Fra")]
         [TestCase("~[{0}]{{2}}", "FF")]
-        [TestCase("~([{0}][{0}])", "FF")]
-        [TestCase("~([{0}]{{2}}[{1}]{{3}})", "FFRRR")]
         public void Generate_ReturnsExpectedResult_WhenRegexIsComplementOfCharacterClassContainingCharactersButA(string regexPattern, string expectedResult)
         {
             _random = new RandomGenerator(new Random());
@@ -244,12 +241,18 @@ namespace Regseed.Test
         [TestCase("jan&Fra","")]
         [TestCase("[Ulr][Ulr][Ulr]&Ul","")]
         [TestCase("ulri\\-[0-9]\\-ke&ulri\\-9\\-ke","ulri-9-ke")]
-        [TestCase("~(f[0-8]])&(f[0-9])","f9")]
         [TestCase("x|jan&~jan","x")]
+        [TestCase("franziska&franziska","franziska")]
         [TestCase("Fr([Aa][Nn]&an)ziska","Franziska")]
         [TestCase("Fr((AN|an)&an)ziska","Franziska")]
-        [TestCase("[Jj]irko[Jj]irko&Jirko{1,3}","JirkoJirko")]
+        [TestCase("[Jj]irko[Jj]irko&Jirko{1,3}","")]
+        [TestCase("[Jj]irko[Jj]irko&(Jirko){1,3}","JirkoJirko")]
+        [TestCase("aa&a{1,3}","aa")]
+        [TestCase("jan&ja&j","")]
+        [TestCase("[Jja]an&j(ja|[aA]|jan)n","jan")]
         [TestCase("a|[a-c]&a","a")]
+        [TestCase("a(~(b|c))c&a([a-c])c", "aac")]
+        [TestCase("[fr][fr]&[fr]r&f[fr]","fr")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersection(string pattern, string expectedResult)
         {
             _random = new RandomGenerator(new Random());
@@ -258,7 +261,82 @@ namespace Regseed.Test
             Assert.IsTrue(loadResult.IsSuccess, pattern);
             var result = Generate();
 
-            Assert.AreEqual(expectedResult, result, result);
+            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
+        }
+
+        [TestCase("~(f[0-8])&(f[0-9])","f9")]
+        [TestCase("~(c[0-9])&~(f[0-8])&[cf][0-9]","f9")]
+        [TestCase("~(f{1,2})&f{1,3}","fff")]
+        [TestCase("~f&f{1,2}","ff")]
+        [TestCase("F(R|r)a&~(FRa)","Fra")]
+        public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersectionInCombinationWithInverse(string pattern, string expectedResult)
+        {
+            _random = new RandomGenerator(new Random());
+            var loadResult = TryLoadRegexPattern(pattern);
+
+            Assert.IsTrue(loadResult.IsSuccess, "Faulty pattern: {0}", pattern);
+            var result = Generate();
+
+            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
+        }
+        
+        [Test]
+        public void Generate_DoesNotThrow_WhenRegexContainsJustComplement()
+        {
+            _random = new RandomGenerator(new Random());
+            TryLoadRegexPattern("~(trump)");
+
+            Assert.DoesNotThrow(() => Generate());
+        }
+
+        
+        [TestCase("a[a-zA-Z]c&a[Bb]c","abc", "aBc")]
+        [TestCase("[Jja]an&(Jan|jan)","jan", "Jan")]
+        [TestCase("a|b|AB&ab","a", "b")]
+        public void Generate_ReturnsEquallyDistributedResults_WhenCalledFiveHundredTimes(string pattern, string resultA, string resultB)
+        {
+            const int totalRuns = 500;
+            _random = new RandomGenerator(new Random());
+            var loadResult = TryLoadRegexPattern(pattern);
+
+            Assert.IsTrue(loadResult.IsSuccess, pattern);
+            var countA = 0;
+            var countB = 0;
+
+            for (var i = 0; i < totalRuns; i++)
+            {
+                var result = Generate();
+
+                if (result.Equals(resultA))
+                    countA++;
+                else if (result.Equals(resultB))
+                    countB++;
+            }
+
+            var relativeFrequencyA = countA / (double) totalRuns;
+            var relativeFrequencyB = countB / (double) totalRuns;
+
+            Assert.AreEqual(totalRuns, countA + countB);
+            Assert.IsTrue(Math.Abs(relativeFrequencyA - 0.5) <= 0.05, $"frequency {resultA}: {relativeFrequencyA}   frequency {resultB}: {relativeFrequencyB}");
+        }
+        
+        [TestCase("A|~b&b", "A")]
+        [TestCase("A|a(~[bc])c&a(c|b)c", "A")]
+        [TestCase("(~c)ab&ab(~c)", "")]
+        public void Generate_AlwaysReturnsExpectedResult_WhenExpressionIsUnionAndOneExpressionReturnsEmptyString(string pattern, string expectedResult)
+        {
+            const int totalRuns = 50;
+            _random = new RandomGenerator(new Random());
+            var loadResult = TryLoadRegexPattern(pattern);
+
+            Assert.IsTrue(loadResult.IsSuccess);
+
+            for (var i = 0; i < totalRuns; i++)
+            {
+                var result = Generate();
+
+                Assert.AreEqual(expectedResult, result);
+            }
         }
     }
 }

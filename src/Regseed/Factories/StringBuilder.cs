@@ -16,9 +16,18 @@ namespace Regseed.Factories
 
         public static StringBuilder Empty => new StringBuilder(new List<CharacterClassExpression>());
 
+        public int GeneratedStringLength()
+        {
+            return _characterClasses.All(x => x.GetCharacterCount() > 0) 
+                ? _characterClasses.Count 
+                : 0;
+        }
+
         public virtual string GenerateString()
         {
-            return _characterClasses.Aggregate(string.Empty, (current, characterClass) => $"{current}{characterClass.GetCharacter()}");
+            return GeneratedStringLength() == 0
+                ? string.Empty
+                : _characterClasses.Aggregate(string.Empty,(current, characterClass) => $"{current}{characterClass.GetCharacter()}");
         }
 
         public virtual IStringBuilder ConcatWith(IStringBuilder stringBuilder)

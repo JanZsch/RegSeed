@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Regseed.Common.Helper;
 using Regseed.Common.Random;
 using Regseed.Factories;
 
@@ -14,11 +15,56 @@ namespace Regseed.Expressions
             _concatExpressions = concatExpressions;
         }
 
+        public override IList<IStringBuilder> Expand()
+        {
+            var seedContent = _concatExpressions.Select(concatExpression => concatExpression.Expand()).ToList();
+
+            var seed = new List<List<IList<IStringBuilder>>>{seedContent};
+            
+            var expandedStringBuilderList = ExpandHelper.ExpandListRepresentation(seed, ExpandHelper.WasExpandedStringBuilderListAddedToList);
+            
+            return MergeStringBuildersForEachUnion(expandedStringBuilderList);
+        }
+
+        internal IList<IExpression> ToConcatExpressionList() => _concatExpressions.ToList();
+        
+        private static IList<IStringBuilder> MergeStringBuildersForEachUnion(List<List<IList<IStringBuilder>>> intersectedStringBuilderUnion)
+        {
+            var result = new List<IStringBuilder>();
+
+            foreach (var intersectStringBuilders in intersectedStringBuilderUnion)
+            {
+                var intersection = intersectStringBuilders.FirstOrDefault()?.FirstOrDefault();
+
+                if (intersection == null)
+                    continue;
+
+                var resultStringLength = intersection.GeneratedStringLength();
+                var doAllStringBuildersCreateStringsOfSameLength = true;
+                
+                foreach (var stringBuilder in intersectStringBuilders)
+                {
+
+                    var currentStringBuilder = stringBuilder.FirstOrDefault();
+                    if (currentStringBuilder?.GeneratedStringLength() != resultStringLength)
+                    {
+                        doAllStringBuildersCreateStringsOfSameLength = false;
+                        break;
+                    }
+
+                    intersection = intersection.IntersectWith(currentStringBuilder);
+                }
+                
+                if(doAllStringBuildersCreateStringsOfSameLength && intersection.GeneratedStringLength() != 0)
+                    result.Add(intersection);                
+            }
+
+            return result;
+        }
+
         public override IExpression GetInverse()
         {
-            var inverseConcatExpression = _concatExpressions.Select(x => x.GetInverse()).ToList();
-            
-            return new MergeExpression(inverseConcatExpression, _random)
+            return new UnionExpression(_concatExpressions.Select(x => x.GetInverse()).ToList(), _random)
             {
                 RepeatRange = RepeatRange
             };

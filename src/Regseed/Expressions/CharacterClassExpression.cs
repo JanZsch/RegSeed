@@ -22,6 +22,9 @@ namespace Regseed.Expressions
             _alphabet = alphabet ?? throw new ArgumentNullException();
         }
 
+        public int GetCharacterCount() =>
+            _characterList.Count;
+        
         public bool TryAddCharacters(IList<string> characters)
         {
             if (characters == null)
@@ -37,6 +40,11 @@ namespace Regseed.Expressions
             _characterList = _literals.Keys.ToList();
 
             return true;
+        }
+
+        public override IList<IStringBuilder> Expand()
+        {
+            return new List<IStringBuilder> {ToSingleStringBuilder()};
         }
 
         public override IExpression GetInverse()

@@ -36,7 +36,7 @@ namespace Regseed.Test.Expressions
             
             oldValue.UpdateWith(newValue);
             
-            Assert.IsTrue(oldValue.HasIntersection);
+            Assert.IsTrue(oldValue.HasComplement);
         }
         
         [Test]
@@ -47,7 +47,7 @@ namespace Regseed.Test.Expressions
             
             oldValue.UpdateWith(newValue);
             
-            Assert.IsTrue(oldValue.HasIntersection);
+            Assert.IsTrue(oldValue.HasComplement);
         }
     }
 }

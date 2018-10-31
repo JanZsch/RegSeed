@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Factories;
@@ -31,6 +32,8 @@ namespace Regseed.Expressions
             return result;
         }
 
+        public abstract IList<IStringBuilder> Expand();
+        
         public abstract IExpression GetInverse();
 
         protected abstract IStringBuilder ToSingleStringBuilder();

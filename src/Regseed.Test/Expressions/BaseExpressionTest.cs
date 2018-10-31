@@ -15,23 +15,20 @@ namespace Regseed.Test.Expressions
         private IRandomGenerator _randomGenerator;
         
         [SetUp]
-        public void SetUp()
-        {
+        public void SetUp() =>
             _randomGenerator = Substitute.For<IRandomGenerator>();
-        }
 
         public BaseExpressionTest() : base(null)
-        {
-        }
+        { }
 
         public BaseExpressionTest(IRandomGenerator random) : base(random)
-        {
-        }
+        { }
 
-        public override IExpression GetInverse()
-        {
-            return Substitute.For<IExpression>();
-        }
+        public override IList<IStringBuilder> Expand() =>
+            new List<IStringBuilder>();
+
+        public override IExpression GetInverse() =>
+            Substitute.For<IExpression>();
 
         protected override IStringBuilder ToSingleStringBuilder()
         {
