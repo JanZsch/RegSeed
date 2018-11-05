@@ -10,18 +10,19 @@ using Regseed.Streams;
 
 namespace Regseed.Factories
 {
-    internal class RegularExpressionFactory : IRegularExpressionFactory
+    internal class RegularExpressionFactory
     {
         private readonly IParserAlphabet _alphabet;
         private readonly IRandomGenerator _random;
         private readonly IDictionary<RegexTokenType, TryGetExpression> _regexTokenToExpressionMapper;
+        private readonly int _maxCharClassInverseLength;
 
-
-        public RegularExpressionFactory(IParserAlphabet alphabet, IRandomGenerator random)
+        public RegularExpressionFactory(IParserAlphabet alphabet, IRandomGenerator random, int maxCharClassInverseLength)
         {
             _random = random;
             _alphabet = alphabet;
-
+            _maxCharClassInverseLength = maxCharClassInverseLength;
+            
             _regexTokenToExpressionMapper = new Dictionary<RegexTokenType, TryGetExpression>
             {
                 {RegexTokenType.Complement, TryGetComplementElementaryExpression},
@@ -182,8 +183,8 @@ namespace Regseed.Factories
         public IParseResult<ExpressionMetaData> TryGetAnyCharacterExpression(ITokenStream tokenStream, out IExpression expression)
         {
             tokenStream.Pop();
-            var characterExpression = new CharacterClassExpression(_alphabet, _random);
-            characterExpression.TryAddCharacters(_alphabet.GetAllCharacters());
+            var characterExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
+            characterExpression.AddCharacters(_alphabet.GetAllCharacters());
             expression = characterExpression;
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
         }
@@ -244,10 +245,9 @@ namespace Regseed.Factories
 
             tokenStream.Pop();
 
-            var characterClassExpression = new CharacterClassExpression(_alphabet, _random);
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
 
-            if (!characterClassExpression.TryAddCharacters(characters))
-                return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.InvalidInput);
+            characterClassExpression.AddCharacters(characters);
 
             expression = getComplement ? characterClassExpression.GetInverse() : characterClassExpression;
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
@@ -258,11 +258,10 @@ namespace Regseed.Factories
             expression = null;
             var token = tokenStream.Pop();
             var value = token.GetValue<string>();
-            var characterClassExpression = new CharacterClassExpression(_alphabet, _random);
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
 
-            if (!characterClassExpression.TryAddCharacters(new List<string> {value}))
-                return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.InvalidInput);
-
+            characterClassExpression.AddCharacters(new List<string> {value});
+                
             expression = characterClassExpression;
 
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());

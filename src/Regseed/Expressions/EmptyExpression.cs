@@ -8,19 +8,13 @@ namespace Regseed.Expressions
     {
         public IntegerInterval RepeatRange { get; set; }
 
-        public IList<IStringBuilder> Expand()
-        {
-            return new List<IStringBuilder>{StringBuilder.Empty};
-        }
+        public IList<IStringBuilder> Expand() =>
+            new List<IStringBuilder>{StringBuilder.Empty};
 
-        public IStringBuilder ToStringBuilder()
-        {
-            return StringBuilder.Empty;
-        }
+        public IStringBuilder ToStringBuilder() => 
+            StringBuilder.Empty;
 
-        public IExpression GetInverse()
-        {
-            return this;
-        }
+        public IExpression GetInverse() =>
+            this;
     }
 }

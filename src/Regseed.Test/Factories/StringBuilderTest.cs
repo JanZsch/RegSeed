@@ -20,10 +20,10 @@ namespace Regseed.Test.Factories
             _alphabet = Substitute.For<IParserAlphabet>();
             _alphabet.IsValid(Arg.Any<string>()).Returns(true);
 
-            _charClass1 = new CharacterClassExpression(_alphabet, _random);
-            _charClass1.TryAddCharacters(new List<string> {"a", "b", "c"});
-            _charClass2 = new CharacterClassExpression(_alphabet, _random);
-            _charClass2.TryAddCharacters(new List<string> {"b", "c", "d"});
+            _charClass1 = new CharacterClassExpression(_alphabet, _random, 1);
+            _charClass1.AddCharacters(new List<string> {"a", "b", "c"});
+            _charClass2 = new CharacterClassExpression(_alphabet, _random, 1);
+            _charClass2.AddCharacters(new List<string> {"b", "c", "d"});
         }
 
         private IRandomGenerator _random;
@@ -47,8 +47,8 @@ namespace Regseed.Test.Factories
         [Test]
         public void GenerateString_ReturnsTwoAA_WhenBuilderContainsTwoCharacterClassesWithSingleCharacterA()
         {
-            var charClass = new CharacterClassExpression(_alphabet, _random);
-            charClass.TryAddCharacters(new List<string> {"a"});
+            var charClass = new CharacterClassExpression(_alphabet, _random, 1);
+            charClass.AddCharacters(new List<string> {"a"});
 
             var builder = new StringBuilder(new List<CharacterClassExpression> {charClass, charClass});
 
@@ -79,19 +79,6 @@ namespace Regseed.Test.Factories
 
             Assert.AreEqual(1, result.Length);
             Assert.AreEqual("c", result);
-        }
-
-        [Test]
-        public void MergeWith_ReturnsLetterD_WhenMergeIsABCDAndRandomReturns3()
-        {
-            _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(3);
-            var builder1 = new StringBuilder(new List<CharacterClassExpression> {_charClass1});
-            var builder2 = new StringBuilderMock(new List<CharacterClassExpression> {_charClass2});
-
-            var result = builder1.MergeWith(builder2).GenerateString();
-
-            Assert.AreEqual(1, result.Length);
-            Assert.AreEqual("d", result);
         }
     }
 }

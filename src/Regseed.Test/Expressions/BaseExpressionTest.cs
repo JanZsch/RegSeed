@@ -13,10 +13,14 @@ namespace Regseed.Test.Expressions
     internal class BaseExpressionTest : BaseExpression
     {
         private IRandomGenerator _randomGenerator;
-        
+        private int _maxInverseLength;
+
         [SetUp]
-        public void SetUp() =>
+        public void SetUp()
+        {
             _randomGenerator = Substitute.For<IRandomGenerator>();
+            _maxInverseLength = 5;
+        }
 
         public BaseExpressionTest() : base(null)
         { }
@@ -34,8 +38,8 @@ namespace Regseed.Test.Expressions
         {
             var alphabet = Substitute.For<IParserAlphabet>();
             alphabet.IsValid(Arg.Any<string>()).Returns(true);
-            var charClass = new CharacterClassExpression(alphabet, _randomGenerator);
-            charClass.TryAddCharacters(new List<string> {"F"});
+            var charClass = new CharacterClassExpression(alphabet, _randomGenerator, _maxInverseLength);
+            charClass.AddCharacters(new List<string> {"F"});
             
             return new StringBuilder(new List<CharacterClassExpression>{charClass});
         }

@@ -71,17 +71,19 @@ namespace Regseed.Test
         [TestCase("~[{0}]", "F")]
         [TestCase("~[{0}]ra", "Fra")]
         [TestCase("~[{0}]{{2}}", "FF")]
-        public void Generate_ReturnsExpectedResult_WhenRegexIsComplementOfCharacterClassContainingCharactersButA(string regexPattern, string expectedResult)
+        public void Generate_ReturnsExpectedResult_WhenRegexIsComplementOfCharacterClassWithInverseLength1AndContainingCharactersButA(string regexPattern, string expectedResult)
         {
             _random = new RandomGenerator(new Random());
-            var alphabet = RegexAlphabetFactory.Default().GetAllCharacters();
-            var alphabetAsString = alphabet.Aggregate(string.Empty, (current, character) => $"{current}\\{character}");
+            var alphabet = RegexAlphabetFactory.Default();
+            var alphabetCharacters = alphabet.GetAllCharacters();
+            var alphabetAsString = alphabetCharacters.Aggregate(string.Empty, (current, character) => $"{current}\\{character}");
             var alphabetWithoutF = alphabetAsString.Replace("\\F", string.Empty);
             var alphabetWithoutR = alphabetAsString.Replace("\\R", string.Empty);
             var regex = string.Format(regexPattern, alphabetWithoutF, alphabetWithoutR);
+            var regseed = new RegSeed(_random, alphabet, 1);
 
-            var loadResult = TryLoadRegexPattern(regex);
-            var result = Generate();
+            var loadResult = regseed.TryLoadRegexPattern(regex);
+            var result = regseed.Generate();
 
             Assert.IsTrue(loadResult.IsSuccess);
             Assert.AreEqual(expectedResult, result, regex);
@@ -320,9 +322,9 @@ namespace Regseed.Test
             Assert.IsTrue(Math.Abs(relativeFrequencyA - 0.5) <= 0.05, $"frequency {resultA}: {relativeFrequencyA}   frequency {resultB}: {relativeFrequencyB}");
         }
         
+        [TestCase("~b&b", "")]
         [TestCase("A|~b&b", "A")]
         [TestCase("A|a(~[bc])c&a(c|b)c", "A")]
-        [TestCase("(~c)ab&ab(~c)", "")]
         public void Generate_AlwaysReturnsExpectedResult_WhenExpressionIsUnionAndOneExpressionReturnsEmptyString(string pattern, string expectedResult)
         {
             const int totalRuns = 50;

@@ -19,17 +19,12 @@ namespace Regseed.Test.Mocks
             return _stringBuilder.GenerateString();
         }
 
-        public override IStringBuilder ConcatWith(IStringBuilder stringBuilder)
+        public override IStringBuilder ConcatWith(IStringBuilder stringBuilder, int times = 1)
         {
             return _stringBuilder;
         }
 
         public override IStringBuilder IntersectWith(IStringBuilder builder)
-        {
-            return _stringBuilder;
-        }
-
-        public override IStringBuilder MergeWith(IStringBuilder builder)
         {
             return _stringBuilder;
         }

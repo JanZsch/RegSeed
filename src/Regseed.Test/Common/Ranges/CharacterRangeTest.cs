@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Ranges;
@@ -51,18 +49,6 @@ namespace Regseed.Test.Common.Ranges
             
             Assert.IsFalse(result.IsSuccess);
             _alphabet.Received(1).TryGetRange(Arg.Any<string>(), Arg.Any<string>(), out _);
-        }
-
-        [Test]
-        public void Constructor_DoesNotThrows_WhenCharacterListIsNotNull()
-        {
-            Assert.DoesNotThrow(() => _ = new CharacterRange(new List<string>()));
-        }
-
-        [Test]
-        public void Constructor_ThrowsArgumentNullException_WhenCharacterListIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => _ = new CharacterRange(null));
         }
     }
 }

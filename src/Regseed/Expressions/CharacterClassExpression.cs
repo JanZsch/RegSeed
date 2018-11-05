@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Regseed.Common.Random;
+using Regseed.Common.Ranges;
 using Regseed.Factories;
 using Regseed.Parser;
 
@@ -9,6 +10,7 @@ namespace Regseed.Expressions
 {
     internal class CharacterClassExpression : BaseExpression
     {
+        private readonly int _maxInverseLength;
         private readonly IParserAlphabet _alphabet;
         private List<string> _characterList = new List<string>();
         private readonly IDictionary<string, string> _literals = new Dictionary<string, string>();
@@ -17,48 +19,41 @@ namespace Regseed.Expressions
         {
         }
 
-        public CharacterClassExpression(IParserAlphabet alphabet, IRandomGenerator random) : base(random)
+        public CharacterClassExpression(IParserAlphabet alphabet, IRandomGenerator random, int maxInverseLength) : base(random)
         {
             _alphabet = alphabet ?? throw new ArgumentNullException();
+            _maxInverseLength = maxInverseLength;
         }
 
         public int GetCharacterCount() =>
             _characterList.Count;
         
-        public bool TryAddCharacters(IList<string> characters)
-        {
-            if (characters == null)
-                return false;
-            var invalidLetter = characters.FirstOrDefault(x => !_alphabet.IsValid(x));
-
-            if (invalidLetter != null)
-                return false;
-
-            foreach (var letter in characters)
-                _literals[letter] = null;
-
-            _characterList = _literals.Keys.ToList();
-
-            return true;
-        }
-
         public override IList<IStringBuilder> Expand()
         {
-            return new List<IStringBuilder> {ToSingleStringBuilder()};
+            var returnList = new List<IStringBuilder>();
+            
+            RepeatRange.ToBounds(out var lowerBound, out var upperBound);
+            var singleStringBuilder = ToSingleStringBuilder();
+
+            for (var stringBuilderLength = lowerBound; stringBuilderLength < upperBound; stringBuilderLength++)
+            {
+                IStringBuilder finalStringBuilder = StringBuilder.Empty;
+                finalStringBuilder = finalStringBuilder.ConcatWith(singleStringBuilder, stringBuilderLength);
+                
+                returnList.Add(finalStringBuilder);
+            }
+
+            return returnList;
         }
 
         public override IExpression GetInverse()
         {
-            var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
-            var complement = new CharacterClassExpression(_alphabet, _random)
-            {
-                RepeatRange = RepeatRange
-            };
-            complement.TryAddCharacters(complementCharacters);
-            return complement;
+            return _maxInverseLength <= 1 
+                ? GetSingleCharacterClassInverseOfLengthOne(this) 
+                : GetAllCharacterClassInversesUpToMaxInverseLength(this);
         }
-       
-        public string GetCharacter()
+
+        public string GetRandomCharacter()
         {
             if (_characterList.Count == 0)
                 return string.Empty;
@@ -71,52 +66,94 @@ namespace Regseed.Expressions
         public CharacterClassExpression GetIntersection(CharacterClassExpression charClass)
         {
             if(charClass == null || !charClass._characterList.Any() || !_characterList.Any())
-                return new CharacterClassExpression(_alphabet, _random);
+                return new CharacterClassExpression(_alphabet, _random, _maxInverseLength);
             
-            IDictionary<string, string> shortDict;
-            IDictionary<string, string> longDict;
+            ClassifyListsByLength(this, charClass, out var shortDict, out var longDict);
+
+            var intersectList = shortDict.Where(x => longDict.ContainsKey(x.Key))
+                                         .Select(y => y.Key)
+                                         .ToList();
             
-            if (_literals.Count < charClass._literals.Count)
-            {
-                shortDict = _literals;
-                longDict = charClass._literals;
-            }
-            else
-            {
-                shortDict = charClass._literals;
-                longDict = _literals;
-            }
-
-            var intersectList = (from charEntry 
-                                 in shortDict 
-                                 where longDict.ContainsKey(charEntry.Key) 
-                                 select charEntry.Key).ToList();
-
-            var intersection = new CharacterClassExpression(_alphabet, _random)
+            var intersection = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
             {
                 RepeatRange = RepeatRange
             };
-            intersection.TryAddCharacters(intersectList);
+            intersection.AddCharacters(intersectList);
             
             return intersection;            
         }
 
         public CharacterClassExpression GetUnion(CharacterClassExpression charClass)
         {
-            var union = new CharacterClassExpression(_alphabet, _random)
+            var union = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
             {
                 RepeatRange = RepeatRange
             };
             
-            union.TryAddCharacters(_characterList);
+            union.AddCharacters(_characterList);
     
             if(charClass != null)
-                union.TryAddCharacters(charClass._characterList);
+                union.AddCharacters(charClass._characterList);
             
             return union;
         }
         
+        public void AddCharacters(IEnumerable<string> characters)
+        {
+            foreach (var letter in characters)
+                _literals[letter] = null;
+
+            _characterList = _literals.Keys.ToList();
+        }
+        
         protected override IStringBuilder ToSingleStringBuilder() =>
             new StringBuilder(new List<CharacterClassExpression> {this});
+        
+        protected UnionExpression GetAllCharacterClassInversesUpToMaxInverseLength(CharacterClassExpression expression)
+        {
+            var minimalLengthTwoRange = new IntegerInterval();
+            minimalLengthTwoRange.TrySetValue(2, _maxInverseLength);
+            
+            var atLeastLengthTwoWords = new CharacterClassExpression(_alphabet, _random, _maxInverseLength){RepeatRange = minimalLengthTwoRange};
+            atLeastLengthTwoWords.AddCharacters(_alphabet.GetAllCharacters());
+
+            var inverseExpressions = new List<IExpression>
+            {
+                GetCharacterClassComplement(expression), 
+                atLeastLengthTwoWords
+            };
+            
+            return new UnionExpression(inverseExpressions, _random);            
+        }
+
+        protected CharacterClassExpression GetCharacterClassComplement(CharacterClassExpression charClassExpression)
+        {
+            var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
+            var complement = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
+            {
+                RepeatRange = RepeatRange
+            };
+            
+            complement.AddCharacters(complementCharacters);
+
+            return complement;
+        }
+
+        private static void ClassifyListsByLength(CharacterClassExpression charClass1, CharacterClassExpression charClass2, out IDictionary<string, string> shortDict, out IDictionary<string, string> longDict)
+        {
+            if (charClass1._literals.Count < charClass2._literals.Count)
+            {
+                shortDict = charClass1._literals;
+                longDict = charClass2._literals;
+            }
+            else
+            {
+                shortDict = charClass2._literals;
+                longDict = charClass1._literals;
+            }
+        }
+        
+        private UnionExpression GetSingleCharacterClassInverseOfLengthOne(CharacterClassExpression expression) =>
+            new UnionExpression(new List<IExpression> {GetCharacterClassComplement(expression)}, _random);
     }
 }

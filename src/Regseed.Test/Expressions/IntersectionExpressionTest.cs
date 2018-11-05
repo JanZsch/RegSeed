@@ -120,26 +120,11 @@ namespace Regseed.Test.Expressions
             Assert.IsNotNull(result);
             Assert.AreEqual("F", result);            
         }
-      
-        [Test]
-        public void GetInverse_ReturnsOriginalIntersectResult_WhenCalledTwice()
-        {
-            var concat1 = new ConcatenationExpression(_randomGenerator);
-            concat1.Append(ToCharacterClass("F", "a", "r"));
-            var concat2 = new ConcatenationExpression(_randomGenerator);
-            concat2.Append(ToCharacterClass("F"));
-            var expression = new IntersectionExpressionTest(new List<IExpression>{concat1, concat2}, _randomGenerator);
-
-            var result = expression.GetInverse().GetInverse().ToStringBuilder().GenerateString();
-
-            Assert.AreEqual(1, result.Length);
-            Assert.AreEqual("F", result);            
-        }
-        
+             
         private CharacterClassExpression ToCharacterClass(params string[] characters)
         {
-            var charClass = new CharacterClassExpression(_alphabet, _randomGenerator);
-            charClass.TryAddCharacters(characters.ToList());
+            var charClass = new CharacterClassExpression(_alphabet, _randomGenerator, 1);
+            charClass.AddCharacters(characters.ToList());
             return charClass;
         }
     }

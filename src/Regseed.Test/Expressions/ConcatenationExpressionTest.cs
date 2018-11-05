@@ -177,8 +177,8 @@ namespace Regseed.Test.Expressions
                 var alphabet = Substitute.For<IParserAlphabet>();
                 alphabet.IsValid(Arg.Any<string>()).Returns(true);
 
-                var val = new CharacterClassExpression(alphabet, _randomGenerator);
-                val.TryAddCharacters(new List<string> {x.ToString()});
+                var val = new CharacterClassExpression(alphabet, _randomGenerator, 0);
+                val.AddCharacters(new List<string> {x.ToString()});
                 return val;
             }).ToList();
         }

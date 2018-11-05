@@ -9,54 +9,44 @@ namespace Regseed.Expressions
 {
     internal class ConcatenationExpression : BaseExpression
     {
-        private readonly List<IExpression> _expressions;
+        private readonly List<IExpression> _elementaryExpressions;
 
         public ConcatenationExpression(IRandomGenerator random) : base(random)
         {
-            _expressions = new List<IExpression>();
+            _elementaryExpressions = new List<IExpression>();
         }
 
         public ConcatenationExpression Append(IExpression expression)
         {
-            _expressions.Add(expression);
+            _elementaryExpressions.Add(expression);
             return this;
         }
      
         public override IExpression GetInverse()
         {
-            var seed = new List<List<IExpression>> {_expressions};
+            var seed = new List<List<IExpression>> {_elementaryExpressions};
             
             var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, WasExpandedRepeatExpressionAddedToList);
 
-            var intersectInverseList = expandedRepeatRepresentation.Select(GetInverseOfExpandedConcatExpression).ToList();
+            var intersectInverseList = expandedRepeatRepresentation.Select(GetInverseOfExpandedConcatRepresentation).ToList();
             
             return new IntersectionExpression(intersectInverseList, _random);
         }
 
-        private IExpression GetInverseOfExpandedConcatExpression(List<IExpression> concatExpressionRepresentation)
+        private IExpression GetInverseOfExpandedConcatRepresentation(List<IExpression> expandedConcatRepresentation)
         {
-            var inverseList = new List<IExpression>();
-
-            for (var i = 0; i <  concatExpressionRepresentation.Count; i++)
-            {
-                var predecessorRange = concatExpressionRepresentation.GetRange(0, i);
-                var inverse = concatExpressionRepresentation[i].GetInverse();
-                var successorRange = concatExpressionRepresentation.GetRange(i + 1, concatExpressionRepresentation.Count - i - 1);
-
-                var concatExpression = new ConcatenationExpression(_random);
-                concatExpression.AppendRange(predecessorRange)
-                                .Append(inverse)
-                                .AppendRange(successorRange);
-                
-                inverseList.Add(concatExpression);
-            }
+            var inverseList 
+                = expandedConcatRepresentation
+                    .Select((t, position) => GetInverseOfExpandedConcatForPosition(expandedConcatRepresentation, position))
+                    .Cast<IExpression>()
+                    .ToList();
 
             return new UnionExpression(inverseList, _random);
         }
 
         public override IList<IStringBuilder> Expand()
         {
-            var seed = new List<List<IExpression>> {_expressions};
+            var seed = new List<List<IExpression>> {_elementaryExpressions};
             
             var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, WasExpandedRepeatExpressionAddedToList);
 
@@ -77,13 +67,13 @@ namespace Regseed.Expressions
         {
             IStringBuilder builder = StringBuilder.Empty;
 
-            foreach (var expression in _expressions)
+            foreach (var expression in _elementaryExpressions)
                 builder = builder.ConcatWith(expression.ToStringBuilder());
 
             return builder;
         }
 
-        internal IList<IExpression> ToConcatExpressionList() => _expressions.ToList();
+        internal IList<IExpression> ToConcatExpressionList() => _elementaryExpressions.ToList();
         
         private static IList<IStringBuilder> CreateConcatenatedStringBuilderForEachExpansion(List<List<IList<IStringBuilder>>> expandedUnionList)
         {
@@ -105,24 +95,20 @@ namespace Regseed.Expressions
         private ConcatenationExpression AppendRange(IEnumerable<IExpression> expressions)
         {
             foreach (var expression in expressions)
-                _expressions.Add(expression);
+                _elementaryExpressions.Add(expression);
     
             return this;
         }
         
-        private static bool WasExpandedRepeatExpressionAddedToList(List<IExpression> repeatExpressions,
-            List<List<IExpression>> newExpandList, int concatElementPosition)
+        private static bool WasExpandedRepeatExpressionAddedToList(List<IExpression> repeatExpressions, List<List<IExpression>> newExpandList, int concatElementPosition)
         {
             var repeatExpression = repeatExpressions[concatElementPosition];
-            var repeatRange = repeatExpression.RepeatRange ?? new IntegerInterval(1);
-            var start = repeatRange.Start ?? 0;
-            var end = repeatRange.End ?? int.MaxValue - 1;
-            end = end == int.MaxValue ? int.MaxValue - 1 : end;
+            repeatExpression.RepeatRange.ToBounds(out var start, out var end);
 
-            if (start == 1 && end == 1)
+            if (start == 1 && end == start +1)
                 return false;
 
-            for (var i = start; i < end + 1; i++)
+            for (var i = start; i < end; i++)
             {
                 var distanceConcatPositionToListEnd = repeatExpressions.Count - concatElementPosition - 1;
                 var expandedExpressions = new List<IExpression>();
@@ -135,16 +121,29 @@ namespace Regseed.Expressions
             return true;
         }
 
-       private static IEnumerable<IExpression> ConcatElementaryExpression(IExpression expression, int concatenations)
+        private static IEnumerable<IExpression> ConcatElementaryExpression(IExpression expression, int concatTimes)
         {
             var expandedExpression = new List<IExpression>();
 
             expression.RepeatRange = new IntegerInterval(1);
             
-            for (var i = 0; i < concatenations; i++)
+            for (var i = 0; i < concatTimes; i++)
                 expandedExpression.Add(expression);
-
+            
             return expandedExpression;
+        }
+        
+        private ConcatenationExpression GetInverseOfExpandedConcatForPosition(List<IExpression> expandedConcatRepresentation, int i)
+        {
+            var predecessorRange = expandedConcatRepresentation.GetRange(0, i);
+            var inverse = expandedConcatRepresentation[i].GetInverse();
+            var successorRange = expandedConcatRepresentation.GetRange(i + 1, expandedConcatRepresentation.Count - i - 1);
+
+            var concatExpression = new ConcatenationExpression(_random);
+            concatExpression.AppendRange(predecessorRange)
+                            .Append(inverse)
+                            .AppendRange(successorRange);
+            return concatExpression;
         }
     }
 }

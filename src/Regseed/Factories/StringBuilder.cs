@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Regseed.Expressions;
+using Regseed.Resources;
 
 namespace Regseed.Factories
 {
@@ -14,7 +15,8 @@ namespace Regseed.Factories
             _characterClasses = characterClasses;
         }
 
-        public static StringBuilder Empty => new StringBuilder(new List<CharacterClassExpression>());
+        public static StringBuilder Empty => 
+            new StringBuilder(new List<CharacterClassExpression>());
 
         public int GeneratedStringLength()
         {
@@ -27,48 +29,32 @@ namespace Regseed.Factories
         {
             return GeneratedStringLength() == 0
                 ? string.Empty
-                : _characterClasses.Aggregate(string.Empty,(current, characterClass) => $"{current}{characterClass.GetCharacter()}");
+                : _characterClasses.Aggregate(string.Empty,(current, characterClass) => $"{current}{characterClass.GetRandomCharacter()}");
         }
 
-        public virtual IStringBuilder ConcatWith(IStringBuilder stringBuilder)
+        public virtual IStringBuilder ConcatWith(IStringBuilder stringBuilder, int times = 1)
         {
+            if(times < 0)
+                throw new ArgumentOutOfRangeException(RegSeedErrorMessages.InvalidNumberOfConcatenations);
+            
             var builder = stringBuilder as StringBuilder ?? throw new ArgumentException();
             
             var list = new List<CharacterClassExpression>();
             list.AddRange(_characterClasses);
-            list.AddRange(builder._characterClasses);
+            
+            for (var i = 0; i < times; i++)
+                list.AddRange(builder._characterClasses);
             
             return new StringBuilder(list);
         }
 
         public virtual IStringBuilder IntersectWith(IStringBuilder builder)
         {
-            List<CharacterClassExpression> CharacterClassIntersection(IList<CharacterClassExpression> longList, IList<CharacterClassExpression> shortList)
-            {
-                return shortList.Select((t, i) => t.GetIntersection(longList[i])).ToList();
-            }
-            
-            return ApplyMergeOrIntersectOperation(this, builder, CharacterClassIntersection);
-        }
+            var newCharacters = (builder as StringBuilder)?._characterClasses ?? throw new ArgumentException();
 
-        public virtual IStringBuilder MergeWith(IStringBuilder builder)
-        {           
-            List<CharacterClassExpression> CharacterClassMerge(IList<CharacterClassExpression> longList, IList<CharacterClassExpression> shortList)
-            {
-                return shortList.Select((t, i) => longList[i].GetUnion(t)).ToList();
-            }
-
-            return ApplyMergeOrIntersectOperation(this, builder, CharacterClassMerge);
-        }
-
-        private static IStringBuilder ApplyMergeOrIntersectOperation(IStringBuilder builder1, IStringBuilder builder2, Func<IList<CharacterClassExpression>, IList<CharacterClassExpression>, List<CharacterClassExpression>> operation)
-        {
-            var characters1 = (builder1 as StringBuilder)?._characterClasses ?? throw new ArgumentException();
-            var characters2 = (builder2 as StringBuilder)?._characterClasses ?? throw new ArgumentException();
-
-            return characters1.Count != characters2.Count 
-                ? Empty 
-                : new StringBuilder(operation(characters1, characters2));
+            return _characterClasses.Count != newCharacters.Count 
+                ? Empty
+                : new StringBuilder(newCharacters.Select((t, i) => t.GetIntersection(_characterClasses[i])).ToList());
         }
     }
 }

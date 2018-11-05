@@ -19,47 +19,11 @@ namespace Regseed.Expressions
         {
             var seedContent = _concatExpressions.Select(concatExpression => concatExpression.Expand()).ToList();
 
-            var seed = new List<List<IList<IStringBuilder>>>{seedContent};
+            var seed = new List<List<IList<IStringBuilder>>> { seedContent };
             
             var expandedStringBuilderList = ExpandHelper.ExpandListRepresentation(seed, ExpandHelper.WasExpandedStringBuilderListAddedToList);
             
             return MergeStringBuildersForEachUnion(expandedStringBuilderList);
-        }
-
-        internal IList<IExpression> ToConcatExpressionList() => _concatExpressions.ToList();
-        
-        private static IList<IStringBuilder> MergeStringBuildersForEachUnion(List<List<IList<IStringBuilder>>> intersectedStringBuilderUnion)
-        {
-            var result = new List<IStringBuilder>();
-
-            foreach (var intersectStringBuilders in intersectedStringBuilderUnion)
-            {
-                var intersection = intersectStringBuilders.FirstOrDefault()?.FirstOrDefault();
-
-                if (intersection == null)
-                    continue;
-
-                var resultStringLength = intersection.GeneratedStringLength();
-                var doAllStringBuildersCreateStringsOfSameLength = true;
-                
-                foreach (var stringBuilder in intersectStringBuilders)
-                {
-
-                    var currentStringBuilder = stringBuilder.FirstOrDefault();
-                    if (currentStringBuilder?.GeneratedStringLength() != resultStringLength)
-                    {
-                        doAllStringBuildersCreateStringsOfSameLength = false;
-                        break;
-                    }
-
-                    intersection = intersection.IntersectWith(currentStringBuilder);
-                }
-                
-                if(doAllStringBuildersCreateStringsOfSameLength && intersection.GeneratedStringLength() != 0)
-                    result.Add(intersection);                
-            }
-
-            return result;
         }
 
         public override IExpression GetInverse()
@@ -75,20 +39,57 @@ namespace Regseed.Expressions
             if (_concatExpressions == null || !_concatExpressions.Any())
                 return StringBuilder.Empty;
 
-            IStringBuilder builder = null;
+            return _concatExpressions.Aggregate<IExpression, IStringBuilder>(null, (intersectionResult, concatExpression) => IntersectStringBuilderWith(concatExpression.ToStringBuilder(), intersectionResult));
+        }
 
-            foreach (var concatExpression in _concatExpressions)
+        internal IList<IExpression> ToConcatExpressionList() => _concatExpressions.ToList();
+        
+        private static IList<IStringBuilder> MergeStringBuildersForEachUnion(IEnumerable<List<IList<IStringBuilder>>> intersectedStringBuilderUnion)
+        {
+            var result = new List<IStringBuilder>();
+
+            foreach (var intersectStringBuilders in intersectedStringBuilderUnion)
+                MergeAndAddStringBuilderForSingleUnionRepresentation(intersectStringBuilders, result);
+
+            return result;
+        }
+        
+        private static void MergeAndAddStringBuilderForSingleUnionRepresentation(List<IList<IStringBuilder>> intersectStringBuilders, List<IStringBuilder> result)
+        {
+            var intersection = intersectStringBuilders.FirstOrDefault()?.FirstOrDefault();
+
+            if (intersection == null)
+                return;
+
+            var resultStringLength = intersection.GeneratedStringLength();
+            var doAllStringBuildersCreateStringsOfSameLength = true;
+
+            foreach (var stringBuilder in intersectStringBuilders)
             {
-                if (builder == null)
+                var currentStringBuilder = stringBuilder.FirstOrDefault();
+                if (currentStringBuilder?.GeneratedStringLength() != resultStringLength)
                 {
-                    builder = concatExpression.ToStringBuilder();
-                    continue;
+                    doAllStringBuildersCreateStringsOfSameLength = false;
+                    break;
                 }
 
-                builder = builder.IntersectWith(concatExpression.ToStringBuilder());
+                intersection = intersection.IntersectWith(currentStringBuilder);
             }
 
-            return builder;
+            if (doAllStringBuildersCreateStringsOfSameLength && intersection.GeneratedStringLength() != 0)
+                result.Add(intersection);
+        }
+        
+        private static IStringBuilder IntersectStringBuilderWith(IStringBuilder toIntersectStringBuilder, IStringBuilder intersectionResult)
+        {
+            if (intersectionResult == null)
+            {
+                intersectionResult = toIntersectStringBuilder;
+                return intersectionResult;
+            }
+
+            intersectionResult = intersectionResult.IntersectWith(toIntersectStringBuilder);
+            return intersectionResult;
         }
     }
 }

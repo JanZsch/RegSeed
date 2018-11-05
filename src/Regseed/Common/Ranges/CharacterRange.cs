@@ -12,13 +12,6 @@ namespace Regseed.Common.Ranges
         {
         }
 
-        public CharacterRange(IList<string> rangeLetters) : base(null, null)
-        {
-            Characters = rangeLetters ?? throw new ArgumentNullException();
-            Start = rangeLetters.FirstOrDefault();
-            End = rangeLetters.LastOrDefault();
-        }
-
         public IList<string> Characters { get; private set; }
 
         public IResult TrySetRange(string start, string end, IParserAlphabet alphabet)

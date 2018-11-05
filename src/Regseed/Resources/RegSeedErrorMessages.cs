@@ -25,9 +25,10 @@ namespace Regseed.Resources
         public const string StreamInitNotCalled = "InitStreamElements not called.";
         public const string AddCharacterTokenParserError = "The input key has to be of length 1.";
         public const string CharacterTokenParserDuplicate = "The provided letter was already added.";
-        public const string InvalidRegex = "The provided Regex was invalid. You might instead consider calling TryLoadPattern on the parameterless constructor.";
         public const string InitialiseFirst = "RegSeed requires initialisation with regex pattern first.";
+        public const string InvalidNumberOfConcatenations = "The number of subsequent concatenations must be positive...";
 
+        
         public static string ToExceptionMessage(this RegSeedErrorType errorType)
         {
             return _errorTypeMapper.TryGetValue(errorType, out var exceptionMessage) 

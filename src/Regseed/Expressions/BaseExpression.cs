@@ -18,18 +18,11 @@ namespace Regseed.Expressions
 
         public virtual IStringBuilder ToStringBuilder()
         {
-            var repeatRange = RepeatRange ?? new IntegerInterval(1);
-            var lowerBound = repeatRange.Start == null || repeatRange.Start < 0 ? 0 : repeatRange.Start.Value;
-            var upperBound = repeatRange.End ?? int.MaxValue - 1;
-            upperBound = upperBound + 1 < 0 ? 0 : upperBound + 1;
-
-            var repetitions = _random.GetNextInteger(lowerBound, upperBound);
-
-            IStringBuilder result = StringBuilder.Empty;
-            for (var i = 0; i < repetitions; i++)
-                result = result.ConcatWith(ToSingleStringBuilder());
-
-            return result;
+            RepeatRange.ToBounds(out var lowerBound, out var upperBound);
+            var repeatedTimes = _random.GetNextInteger(lowerBound, upperBound);
+            var singleStringBuilder = ToSingleStringBuilder();
+            
+            return StringBuilder.Empty.ConcatWith(singleStringBuilder, repeatedTimes);
         }
 
         public abstract IList<IStringBuilder> Expand();

@@ -42,6 +42,7 @@ namespace Regseed.Expressions
                 : _intersectExpressions[_random.GetNextInteger(0, _intersectExpressions.Count)].ToStringBuilder();
         }
 
-        internal IList<IExpression> ToIntersectionExpressionList() => _intersectExpressions.ToList();
+        internal IList<IExpression> ToIntersectionExpressionList() => 
+            _intersectExpressions.ToList();
     }
 }
