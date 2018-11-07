@@ -32,8 +32,7 @@ namespace Regseed.Parser.PrimitiveParsers
             var popCalls = startCharacterResult.Value.Item2;
 
             if (popCalls >= stream.Count || !stream.LookAhead(popCalls).Equals(rangeSeparator))
-                return new FailureParseResult<CharacterRange>(initialPosition + popCalls,
-                    RegSeedErrorType.CharacterRangeExpected);
+                return new FailureParseResult<CharacterRange>(initialPosition + popCalls, RegSeedErrorType.CharacterRangeExpected);
 
             popCalls++;
 
