@@ -26,7 +26,9 @@ namespace Regseed.Resources
         public const string AddCharacterTokenParserError = "The input key has to be of length 1.";
         public const string CharacterTokenParserDuplicate = "The provided letter was already added.";
         public const string InitialiseFirst = "RegSeed requires initialisation with regex pattern first.";
-        public const string InvalidNumberOfConcatenations = "The number of subsequent concatenations must be positive...";
+        public const string CallBeforeInitialisation = "RegSeed requires the method to be called before initialisation with regex pattern.";
+        public const string InvalidNumberOfConcatenations = "The number of subsequent concatenations must be positive.";
+        public const string GetValueCalledWithWrongGenericType = "GetValue called with wrong generic type.";
 
         
         public static string ToExceptionMessage(this RegSeedErrorType errorType)

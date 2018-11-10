@@ -66,152 +66,12 @@ namespace Regseed.Factories
             return unionResult;
         }
 
-        public IParseResult<ExpressionMetaData> TryGetUnionExpression(ITokenStream tokenStream, out IExpression unionExpression) =>
+        private IParseResult<ExpressionMetaData> TryGetUnionExpression(ITokenStream tokenStream, out IExpression unionExpression) =>
             TryGetExpressionListSeparatedByToken(RegexTokenType.Union, tokenStream, out unionExpression);
 
-        
-        public IParseResult<ExpressionMetaData> TryGetIntersectionExpression(ITokenStream tokenStream, out IExpression intersectionExpression) =>
+
+        private IParseResult<ExpressionMetaData> TryGetIntersectionExpression(ITokenStream tokenStream, out IExpression intersectionExpression) =>
             TryGetExpressionListSeparatedByToken(RegexTokenType.Intersection, tokenStream, out intersectionExpression);
-
-        public IParseResult<ExpressionMetaData> TryGetConcatenationExpression(ITokenStream tokenStream, out IExpression expression)
-        {
-            expression = null;
-            var concatExpression = new ConcatenationExpression(_random);
-
-            var elementaryExpressionResult = TryGetElementaryExpression(tokenStream, out var elementaryExpression);
-
-            if (!elementaryExpressionResult.IsSuccess)
-                return elementaryExpressionResult;
-
-            var metaData = elementaryExpressionResult.Value;
-            elementaryExpression.RepeatRange = GetRepeatConcatenationInterval(tokenStream);
-            concatExpression.Append(elementaryExpression);
-
-            var result = TryGetElementaryExpression(tokenStream, out elementaryExpression);
-            while (result.IsSuccess)
-            {
-                metaData.UpdateWith(result.Value);
-                elementaryExpression.RepeatRange = GetRepeatConcatenationInterval(tokenStream);
-                concatExpression.Append(elementaryExpression);
-                result = TryGetElementaryExpression(tokenStream, out elementaryExpression);
-            }
-
-            expression = concatExpression;
-            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, metaData);
-        }
-
-        public IParseResult<ExpressionMetaData> TryGetElementaryExpression(ITokenStream tokenStream, out IExpression expression)
-        {
-            expression = null;
-            var nextToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
-           
-            return _regexTokenToExpressionMapper.TryGetValue(nextToken, out var tryGetElementaryExpression)
-                ? tryGetElementaryExpression(tokenStream, out expression)
-                : new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.CharacterTypeExpressionExpected);
-        }
-
-        public IParseResult<ExpressionMetaData> TryGetComplementElementaryExpression(ITokenStream tokenStream, out IExpression expression)
-        {
-            expression = null;
-            tokenStream.Pop();
-            var elementaryResult = TryGetElementaryExpression(tokenStream, out var toInvertExpression);
-
-            if (!elementaryResult.IsSuccess)
-                return elementaryResult;
-
-            expression = toInvertExpression.GetInverse();
-
-            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, elementaryResult.Value);
-        }
-
-        public IParseResult<ExpressionMetaData> TryGetAnyCharacterExpression(ITokenStream tokenStream, out IExpression expression)
-        {
-            tokenStream.Pop();
-            
-            var characterExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
-            characterExpression.AddCharacters(_alphabet.GetAllCharacters());
-            
-            expression = characterExpression;
-        
-            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
-        }
-
-        public IParseResult<ExpressionMetaData> TryGetGroupExpression(ITokenStream tokenStream, out IExpression expression)
-        {
-            tokenStream.Pop();
-
-            var closePrecedenceToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
-
-            if (closePrecedenceToken == RegexTokenType.ClosePrecedence)
-            {
-                tokenStream.Pop();
-                expression = new EmptyExpression();
-                return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
-            }
-
-            var unionExpressionResult = TryGetUnionExpression(tokenStream, out expression);
-
-            if (!unionExpressionResult.IsSuccess)
-                return unionExpressionResult;
-
-            closePrecedenceToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
-
-            if (closePrecedenceToken != RegexTokenType.ClosePrecedence)
-                return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.ClosePrecedenceExpected);
-
-            tokenStream.Pop();
-            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, unionExpressionResult.Value);
-        }
-
-        public IParseResult<ExpressionMetaData> TryGetCharacterClassExpression(ITokenStream tokenStream, out IExpression expression)
-        {
-            expression = null;
-
-            var nextTokenType = tokenStream.Pop().GetType<RegexTokenType>();
-
-            var getComplement = nextTokenType == RegexTokenType.OpenNegateCharacterClass;
-
-            nextTokenType = tokenStream.LookAhead(0).GetType<RegexTokenType>();
-
-            var characters = new List<string>();
-
-            while (nextTokenType == RegexTokenType.Character || nextTokenType == RegexTokenType.CharacterRange)
-            {
-                var nextToken = tokenStream.Pop();
-
-                if (nextToken.GetType<RegexTokenType>() == RegexTokenType.Character)
-                    characters.Add(nextToken.GetValue<string>());
-                else
-                    characters.AddRange(nextToken.GetValue<CharacterRange>().Characters);
-
-                nextTokenType = tokenStream.LookAhead(0).GetType<RegexTokenType>();
-            }
-
-            if (nextTokenType != RegexTokenType.CloseCharacterClass)
-                return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.CloseCharacterClassExpected);
-
-            tokenStream.Pop();
-
-            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
-
-            characterClassExpression.AddCharacters(characters);
-
-            expression = getComplement ? characterClassExpression.GetInverse() : characterClassExpression;
-            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
-        }
-
-        public IParseResult<ExpressionMetaData> TryGetSingleCharacterExpression(ITokenStream tokenStream, out IExpression expression)
-        {
-            expression = null;
-            var tokenValue = tokenStream.Pop().GetValue<string>();
-            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
-
-            characterClassExpression.AddCharacters(new List<string> {tokenValue});
-                
-            expression = characterClassExpression;
-
-            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
-        }
 
         private IParseResult<ExpressionMetaData> TryGetExpressionListSeparatedByToken(RegexTokenType token, ITokenStream tokenStream, out IExpression expression)
         {
@@ -265,12 +125,155 @@ namespace Regseed.Factories
 
         private IExpression CreateExpression(RegexTokenType token, List<IExpression> expressions)
         {
-            if(token == RegexTokenType.Union)
-                return new UnionExpression(expressions, _random);
-            if(token == RegexTokenType.Intersection)
-                return new IntersectionExpression(expressions, _random);
+            switch (token)
+            {
+                case RegexTokenType.Union:
+                    return new UnionExpression(expressions, _random);
+                case RegexTokenType.Intersection:
+                    return new IntersectionExpression(expressions, _random);
+                default:
+                    return new EmptyExpression();
+            }
+        }
+        
+        private IParseResult<ExpressionMetaData> TryGetConcatenationExpression(ITokenStream tokenStream, out IExpression expression)
+        {
+            expression = null;
+            var concatExpression = new ConcatenationExpression(_random);
+
+            var elementaryExpressionResult = TryGetElementaryExpression(tokenStream, out var elementaryExpression);
+
+            if (!elementaryExpressionResult.IsSuccess)
+                return elementaryExpressionResult;
+
+            var metaData = elementaryExpressionResult.Value;
+            elementaryExpression.RepeatRange = GetRepeatConcatenationInterval(tokenStream);
+            concatExpression.Append(elementaryExpression);
+
+            var result = TryGetElementaryExpression(tokenStream, out elementaryExpression);
+            while (result.IsSuccess)
+            {
+                metaData.UpdateWith(result.Value);
+                elementaryExpression.RepeatRange = GetRepeatConcatenationInterval(tokenStream);
+                concatExpression.Append(elementaryExpression);
+                result = TryGetElementaryExpression(tokenStream, out elementaryExpression);
+            }
+
+            expression = concatExpression;
+            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, metaData);
+        }
+
+        private IParseResult<ExpressionMetaData> TryGetElementaryExpression(ITokenStream tokenStream, out IExpression expression)
+        {
+            expression = null;
+            var nextToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
+           
+            return _regexTokenToExpressionMapper.TryGetValue(nextToken, out var tryGetElementaryExpression)
+                ? tryGetElementaryExpression(tokenStream, out expression)
+                : new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.CharacterTypeExpressionExpected);
+        }
+
+        private IParseResult<ExpressionMetaData> TryGetComplementElementaryExpression(ITokenStream tokenStream, out IExpression expression)
+        {
+            expression = null;
+            tokenStream.Pop();
+            var elementaryResult = TryGetElementaryExpression(tokenStream, out var toInvertExpression);
+
+            if (!elementaryResult.IsSuccess)
+                return elementaryResult;
+
+            expression = toInvertExpression.GetInverse();
+
+            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, elementaryResult.Value);
+        }
+
+        private IParseResult<ExpressionMetaData> TryGetAnyCharacterExpression(ITokenStream tokenStream, out IExpression expression)
+        {
+            tokenStream.Pop();
             
-            return new EmptyExpression();
+            var characterExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
+            characterExpression.AddCharacters(_alphabet.GetAllCharacters());
+            
+            expression = characterExpression;
+        
+            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
+        }
+
+        private IParseResult<ExpressionMetaData> TryGetGroupExpression(ITokenStream tokenStream, out IExpression expression)
+        {
+            tokenStream.Pop();
+
+            var closePrecedenceToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
+
+            if (closePrecedenceToken == RegexTokenType.ClosePrecedence)
+            {
+                tokenStream.Pop();
+                expression = new EmptyExpression();
+                return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
+            }
+
+            var unionExpressionResult = TryGetUnionExpression(tokenStream, out expression);
+
+            if (!unionExpressionResult.IsSuccess)
+                return unionExpressionResult;
+
+            closePrecedenceToken = tokenStream.LookAhead(0).GetType<RegexTokenType>();
+
+            if (closePrecedenceToken != RegexTokenType.ClosePrecedence)
+                return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.ClosePrecedenceExpected);
+
+            tokenStream.Pop();
+            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, unionExpressionResult.Value);
+        }
+
+        private IParseResult<ExpressionMetaData> TryGetCharacterClassExpression(ITokenStream tokenStream, out IExpression expression)
+        {
+            expression = null;
+
+            var nextTokenType = tokenStream.Pop().GetType<RegexTokenType>();
+
+            var getComplement = nextTokenType == RegexTokenType.OpenNegateCharacterClass;
+
+            nextTokenType = tokenStream.LookAhead(0).GetType<RegexTokenType>();
+
+            var characters = new List<string>();
+
+            while (nextTokenType == RegexTokenType.Character || nextTokenType == RegexTokenType.CharacterRange)
+            {
+                var nextToken = tokenStream.Pop();
+
+                if (nextToken.GetType<RegexTokenType>() == RegexTokenType.Character)
+                    characters.Add(nextToken.GetValue<string>());
+                else
+                    characters.AddRange(nextToken.GetValue<CharacterRange>().Characters);
+
+                nextTokenType = tokenStream.LookAhead(0).GetType<RegexTokenType>();
+            }
+
+            if (nextTokenType != RegexTokenType.CloseCharacterClass)
+                return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.CloseCharacterClassExpected);
+
+            tokenStream.Pop();
+
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
+
+            characterClassExpression.AddCharacters(characters);
+
+            expression = getComplement ? characterClassExpression.GetInverse() : characterClassExpression;
+            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
+        }
+
+        private IParseResult<ExpressionMetaData> TryGetSingleCharacterExpression(ITokenStream tokenStream, out IExpression expression)
+        {
+            expression = null;
+            var tokenValue = tokenStream.Pop().GetValue<string>();
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
+
+            characterClassExpression.AddCharacters(new List<string> {tokenValue});
+                
+            expression = characterClassExpression;
+
+            return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
         }
         
         private static IntegerInterval GetRepeatConcatenationInterval(ITokenStream tokenStream)

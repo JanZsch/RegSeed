@@ -48,16 +48,8 @@ namespace Regseed.Parser
                 _characterTokenParserMapper.Remove(character);
         }
 
-        public bool TryGetTokenParser(string letter, out ITokenParser tokenParser)
-        {
-            tokenParser = null;
-
-            if (!_characterTokenParserMapper.TryGetValue(letter, out var value))
-                return false;
-
-            tokenParser = value;
-            return true;
-        }
+        public bool TryGetTokenParser(string letter, out ITokenParser tokenParser) =>
+            _characterTokenParserMapper.TryGetValue(letter, out tokenParser);
 
         public IResult TryGetRange(string startLetter, string endLetter, out IList<string> range)
         {
@@ -77,8 +69,10 @@ namespace Regseed.Parser
             return new SuccessResult();
         }
 
-        public IList<string> GetAllCharacters() => _validCharacterRangeList.ToList();
+        public IList<string> GetAllCharacters() => 
+            _validCharacterRangeList.ToList();
 
-        public bool IsValid(string letter) => _validCharacterHashSet.Contains(letter);
+        public bool IsValid(string letter) => 
+            _validCharacterHashSet.Contains(letter);
     }
 }

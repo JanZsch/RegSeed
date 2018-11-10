@@ -15,29 +15,35 @@ namespace Regseed
         private const int _defaultCharClassInverseLength = 5;
         
         private bool _wasInitialised;
-        private readonly int _maxCharClassInverseLength;
+        private bool _replaceWildCards;
         private readonly IParserAlphabet _alphabet;
         private ExpressionMetaData _expressionMetaData;
         private IExpression _regularExpression;
         private IList<IStringBuilder> _expandedStringBuilderListCache;
         protected IRandomGenerator _random;
 
-        public RegSeed(Random random = null, IParserAlphabet parserAlphabet = null, int maxCharClassInverseLength = _defaultCharClassInverseLength)
+        public int MaxCharClassInverseLength { get; private set; }
+        
+        public RegSeed(Random random = null, IParserAlphabet parserAlphabet = null)
         {
             _alphabet = parserAlphabet ?? RegexAlphabetFactory.Default();
             _random = new RandomGenerator(random ?? new Random());
-            _maxCharClassInverseLength = maxCharClassInverseLength;
+            MaxCharClassInverseLength = _defaultCharClassInverseLength;
+            _replaceWildCards = false;
         }
 
-        public RegSeed(IRandomGenerator random, IParserAlphabet parserAlphabet = null, int maxCharClassInverseLength = _defaultCharClassInverseLength)
+        public RegSeed(IRandomGenerator random, IParserAlphabet parserAlphabet = null)
         {
             _alphabet = parserAlphabet ?? RegexAlphabetFactory.Default();
             _random = random ?? new RandomGenerator(new Random());
-            _maxCharClassInverseLength = maxCharClassInverseLength;
+            MaxCharClassInverseLength = _defaultCharClassInverseLength;
+            _replaceWildCards = false;
         }
 
         public RegSeed(string regex, Random random = null, IParserAlphabet parserAlphabet = null)
         {
+            _replaceWildCards = false;
+            MaxCharClassInverseLength = _defaultCharClassInverseLength;
             _alphabet = parserAlphabet ?? RegexAlphabetFactory.Default();
             _random = new RandomGenerator(random ?? new Random());
 
@@ -54,8 +60,11 @@ namespace Regseed
             _regularExpression = null;
             _expandedStringBuilderListCache = null;
 
+            if (_replaceWildCards)
+                regex = regex.ReplaceRegexWildCards();
+            
             regex = regex.TrimStart(SpecialCharacters.StartsWith).TrimEnd(SpecialCharacters.EndsWith);
-            var result = new RegularExpressionFactory(_alphabet, _random, _maxCharClassInverseLength)
+            var result = new RegularExpressionFactory(_alphabet, _random, MaxCharClassInverseLength)
                                 .TryGetRegularExpression(regex, out var expression);
 
             if (!result.IsSuccess)
@@ -66,6 +75,23 @@ namespace Regseed
             _wasInitialised = true;
 
             return new SuccessParseResult();
+        }
+
+        public RegSeed EnableStandardWildCards()
+        {
+            if (_wasInitialised)
+                throw new ArgumentException(RegSeedErrorMessages.CallBeforeInitialisation);
+
+            _replaceWildCards = true;
+
+            return this;
+        }
+
+        public RegSeed SetMaxCharClassInverseLength(int maxCharClassInverseLength)
+        {
+            MaxCharClassInverseLength = maxCharClassInverseLength;
+
+            return this;
         }
 
         public string Generate()

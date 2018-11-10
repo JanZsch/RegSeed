@@ -1,4 +1,5 @@
 using System;
+using Regseed.Resources;
 
 namespace Regseed.Parser.RegexTokens
 {
@@ -43,7 +44,7 @@ namespace Regseed.Parser.RegexTokens
         public override TValue GetValue<TValue>()
         {
             if (typeof(TValue) != typeof(TValueImpl))
-                throw new TypeAccessException("GetValue called with wrong generic type...");
+                throw new TypeAccessException(RegSeedErrorMessages.GetValueCalledWithWrongGenericType);
 
             return (TValue) (object) _value;
         }
