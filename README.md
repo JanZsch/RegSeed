@@ -48,11 +48,11 @@ Consider, for instance, the following regex string which might be used for passw
 ```c#
 var passwordPattern = @"[a-zA-Z0-9_]{10,15}";
 ```
-Feeding this pattern into *Fare/Xeger* will result in random strings containing significantly more underscores than letters or digits which might for some purposes lead to security risks.
+Feeding this pattern into *Fare/Xeger* will result in random strings containing significantly more underscores than letters or digits which might for some purposes to an unexpected or unwanted behaviour.
 
 
 ## Where can I get it?
-To be released on nuget.org soon.
+*Regseed* can be obtained as nuget package from [nuget.org](https://www.nuget.org/packages/Regseed/).
 
 ## More Information
 + supported [Regular Expressions](https://github.com/JanZsch/RegSeed/wiki/Supported-Regular-Expressions-and-Limitations)
