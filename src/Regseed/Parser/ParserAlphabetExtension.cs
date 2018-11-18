@@ -1,11 +1,10 @@
-using Regseed.Parser;
 using Regseed.Parser.PrimitiveParsers;
 using Regseed.Parser.TokenParser;
 using Regseed.Resources;
 
-namespace Regseed.Factories
+namespace Regseed.Parser
 {
-    public static class RegexAlphabetExtension
+    internal static class ParserAlphabetExtension
     {
         public static void AddRegexControlCharacters(this IParserAlphabet alphabet, IPrimitiveParser parser, bool areRegexSyntaxCharactersValid = true)
         {

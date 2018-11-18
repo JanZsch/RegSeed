@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Regseed.Streams
 {
-    public sealed class StringStream : BaseStream<string>, IStringStream
+    internal sealed class StringStream : BaseStream<string>, IStringStream
     {
         private readonly string _input;
 

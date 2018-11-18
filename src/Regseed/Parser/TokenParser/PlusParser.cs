@@ -5,7 +5,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser.TokenParser
 {
-    public class PlusParser : BaseTokenParser
+    internal class PlusParser : BaseTokenParser
     {
         protected override IParseResult TryGetTokenWithoutNullCheck(IStringStream inputStream, out IToken token)
         {

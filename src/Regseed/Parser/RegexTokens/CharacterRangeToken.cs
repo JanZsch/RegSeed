@@ -4,7 +4,7 @@ using Regseed.Resources;
 
 namespace Regseed.Parser.RegexTokens
 {
-    public class CharacterRangeToken : BaseToken<CharacterRange>
+    internal class CharacterRangeToken : BaseToken<CharacterRange>
     {
         public CharacterRangeToken(CharacterRange value, long position, int length) : base(value, position, length)
         {

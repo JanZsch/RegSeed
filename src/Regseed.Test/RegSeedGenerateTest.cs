@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
-using Regseed.Factories;
 
 namespace Regseed.Test
 {
@@ -172,7 +171,7 @@ namespace Regseed.Test
         [TestCase("[{2}-{1}]&{0}|{0}|{2}", 0.6666, 0, 0.3333)]
         public void Generate_ResultsAreEssentiallyEquallyDistributed_WhenRegexContainsUnion(string regexPattern, double frequencyF, double frequencyR, double frequencyA)
         {
-            const int runs = 600;
+            const int runs = 800;
             var countOfF = 0; 
             var countOfR = 0; 
             var countOfA = 0; 
@@ -205,6 +204,38 @@ namespace Regseed.Test
             Assert.IsTrue(derivationFromExpectedResultR < 0.05, $"Actual derivation R: {derivationFromExpectedResultR}");
             Assert.IsTrue(derivationFromExpectedResultA < 0.05, $"Actual derivation A: {derivationFromExpectedResultA}");
             Assert.AreEqual(runs, countOfF+countOfR+countOfA);
+        }
+        
+        [Test]
+        public void Generate_ReturnsAnythingButLettersABC_WhenPatternIsCharacterClassInverseOfABC()
+        {
+            const string pattern = "[^ABC]";
+            var regseed = new RegSeed();
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 200; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
+                Assert.IsFalse(result[0] == 'A' || result[0] == 'B' || result[0] == 'C', $"Faulty result: {new string(result)}");
+            }
+        }
+        
+        [Test]
+        public void Generate_ReturnsAnythingButDigit_WhenPatternIsCharacterClassInverseOfDigitRange0to9()
+        {
+            const string pattern = "[^0-9]";
+            var regseed = new RegSeed();
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 200; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
+                Assert.IsFalse(char.IsDigit(result[0]), $"Faulty result: {new string(result)}");
+            }
         }
         
         [TestCase("a[a-zA-Z]c&a[Bb]c","abc", "aBc")]
@@ -349,6 +380,102 @@ namespace Regseed.Test
                 var result = Generate();
 
                 Assert.AreEqual(expectedResult, result);
+            }
+        }
+
+        [Test]
+        public void Generate_ReturnsDigit_WhenEnableWildCardsIsTrueAndPatternIsDigitWildCard()
+        {
+            const string pattern = "\\d";
+            var regseed = new RegSeed().EnableStandardWildCards();
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 20; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length);
+                Assert.IsTrue(char.IsDigit(result[0]));
+            }
+        }
+        
+        [Test]
+        public void Generate_ReturnsCharacter_WhenEnableWildCardsIsTrueAndPatternIsCharacterWildCard()
+        {
+            const string pattern = "\\w";
+            var regseed = new RegSeed().EnableStandardWildCards();
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 50; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
+                Assert.IsTrue(char.IsLetter(result[0]) || char.IsDigit(result[0]) || result[0] == '_', $"Faulty result: {new string(result)}");
+            }
+        }
+        
+        [Test]
+        public void Generate_ReturnsAnythingButCharacter_WhenEnableWildCardsIsTrueAndPatternIsNotCharacterWildCardAndMaxInverseLengthIsOne()
+        {
+            const string pattern = "\\W";
+            var regseed = new RegSeed().SetMaxCharClassInverseLength(1).EnableStandardWildCards();
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 50; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
+                Assert.IsFalse(char.IsLetter(result[0]) || char.IsDigit(result[0]) || result[0] == '_', $"Faulty result: {new string(result)}");
+            }
+        }
+        
+        [Test]
+        public void Generate_ReturnsAnythingButDigit_WhenEnableWildCardsIsTrueAndPatternIsNotDigitWildCardAndMaxInverseLengthIsOne()
+        {
+            const string pattern = "\\D";
+            var regseed = new RegSeed().EnableStandardWildCards().SetMaxCharClassInverseLength(1);
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 50; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
+                Assert.IsFalse(char.IsDigit(result[0]));
+            }
+        }
+        
+        [Test]
+        public void Generate_ReturnsAnythingButWhiteSpace_WhenEnableWildCardsIsTrueAndPatternIsNotWhiteSpaceWildCardAndMaxInverseLengthIsOne()
+        {
+            const string pattern = "\\S";
+            var regseed = new RegSeed().EnableStandardWildCards().SetMaxCharClassInverseLength(1);
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 50; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
+                Assert.IsFalse(char.IsWhiteSpace(result[0]));
+            }
+        }
+        
+        [Test]
+        public void Generate_ReturnsWhiteSpace_WhenEnableWildCardsIsTrueAndPatternIsWhiteSpaceWildCard()
+        {
+            const string pattern = "\\s";
+            var regseed = new RegSeed().EnableStandardWildCards();
+            regseed.TryLoadRegexPattern(pattern);
+
+            for (var i = 0; i < 50; i++)
+            {
+                var result = regseed.Generate().ToCharArray();
+                
+                Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
+                Assert.IsTrue(char.IsWhiteSpace(result[0]), $"Faulty result: {new string(result)}");
             }
         }
     }

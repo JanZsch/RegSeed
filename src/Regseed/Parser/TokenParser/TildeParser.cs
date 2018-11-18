@@ -4,7 +4,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser.TokenParser
 {
-    public class TildeParser : BaseTokenParser
+    internal class TildeParser : BaseTokenParser
     {
         protected override IParseResult TryGetTokenWithoutNullCheck(IStringStream inputStream, out IToken token)
         {

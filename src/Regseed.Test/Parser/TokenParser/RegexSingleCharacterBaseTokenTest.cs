@@ -4,7 +4,7 @@ using Regseed.Parser.RegexTokens;
 namespace Regseed.Test.Parser.TokenParser
 {
     [TestFixture]
-    public class RegexSingleCharacterBaseTokenTest : RegexSingleCharacterBaseToken
+    internal class RegexSingleCharacterBaseTokenTest : RegexSingleCharacterBaseToken
     {
         public RegexSingleCharacterBaseTokenTest() : base(0)
         {

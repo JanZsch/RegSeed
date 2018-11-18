@@ -5,7 +5,7 @@ using Regseed.Parser.RegexTokens;
 namespace Regseed.Test.Parser.RegexTokens
 {
     [TestFixture]
-    public class BaseTokenTest : BaseToken<string>
+    internal class BaseTokenTest : BaseToken<string>
     {
         public BaseTokenTest() : base("thunder", 0, 0)
         {

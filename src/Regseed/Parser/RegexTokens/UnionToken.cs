@@ -1,6 +1,6 @@
 namespace Regseed.Parser.RegexTokens
 {
-    public class UnionToken : RegexSingleCharacterBaseToken
+    internal class UnionToken : RegexSingleCharacterBaseToken
     {
         public UnionToken(long position) : base(position)
         {

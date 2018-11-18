@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Regseed.Factories;
 
-namespace Regseed.Test.Factories
+namespace Regseed.Test
 {
     [TestFixture]
     public class RegexAlphabetFactoryTest

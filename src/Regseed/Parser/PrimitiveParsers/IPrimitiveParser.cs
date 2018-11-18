@@ -5,7 +5,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser.PrimitiveParsers
 {
-    public interface IPrimitiveParser
+    internal interface IPrimitiveParser
     {
         IParseResult<string> TryParseCharacter(IStringStream stream);
         IParseResult<CharacterRange> TryParseCharacterRange(IStringStream stream, string rangeSeparator = null);

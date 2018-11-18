@@ -1,6 +1,6 @@
 namespace Regseed.Common.Ranges
 {
-    public static class IntegerIntervalExtension
+    internal static class IntegerIntervalExtension
     {
         public static void ToBounds(this IntegerInterval interval, out int lowerBound, out int upperBound)
         {

@@ -5,7 +5,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser.TokenParser
 {
-    public class CharacterParser : BaseTokenParser
+    internal class CharacterParser : BaseTokenParser
     {
         private readonly IPrimitiveParser _primitiveParser;
 

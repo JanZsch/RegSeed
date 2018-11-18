@@ -1,6 +1,6 @@
 namespace Regseed.Parser.RegexTokens
 {
-    public enum RegexTokenType
+    internal enum RegexTokenType
     {
         Character,
         CharacterRange,

@@ -8,9 +8,9 @@ namespace Regseed.Parser
     {
         IParserAlphabet Add(string character, ITokenParser tokenParser, bool isValidLetter = true);
         void RemoveCharacter(string character);
-        bool TryGetTokenParser(string letter, out ITokenParser tokenParser);
-        IResult TryGetRange(string startLetter, string endLetter, out IList<string> characterRange);
+        bool TryGetTokenParser(string character, out ITokenParser tokenParser);
+        IResult TryGetRange(string startCharacter, string endCharacter, out IList<string> characterRange);
         IList<string> GetAllCharacters();
-        bool IsValid(string letter);
+        bool IsValid(string character);
     }
 }

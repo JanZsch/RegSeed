@@ -5,7 +5,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser.TokenParser
 {
-    public class OpenCurlyBracketParser : BaseTokenParser
+    internal class OpenCurlyBracketParser : BaseTokenParser
     {
         private readonly IPrimitiveParser _primitiveParser;
 

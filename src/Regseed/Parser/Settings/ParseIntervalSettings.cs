@@ -2,7 +2,7 @@ using Regseed.Resources;
 
 namespace Regseed.Parser.Settings
 {
-    public class ParseIntervalSettings
+    internal class ParseIntervalSettings
     {
         public string OpenSymbol { get; set; }
         public string CloseSymbol { get; set; }

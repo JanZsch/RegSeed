@@ -1,6 +1,6 @@
 namespace Regseed.Parser.RegexTokens
 {
-    public class IntersectionToken : RegexSingleCharacterBaseToken
+    internal class IntersectionToken : RegexSingleCharacterBaseToken
     {
         public IntersectionToken(long position) : base(position)
         {

@@ -1,6 +1,6 @@
 namespace Regseed.Parser.RegexTokens
 {
-    public class AnyCharacterToken : RegexSingleCharacterBaseToken
+    internal class AnyCharacterToken : RegexSingleCharacterBaseToken
     {
         public AnyCharacterToken(long position) : base(position)
         {

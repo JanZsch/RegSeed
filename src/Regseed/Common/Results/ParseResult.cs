@@ -2,7 +2,7 @@ using Regseed.Resources;
 
 namespace Regseed.Common.Results
 {
-    public class ParseResult : BaseResult, IParseResult
+    internal class ParseResult : BaseResult, IParseResult
     {
         public ParseResult(bool isSuccess, RegSeedErrorType errorType) : base(isSuccess)
         {
@@ -13,7 +13,7 @@ namespace Regseed.Common.Results
         public RegSeedErrorType ErrorType { get; set; }
     }
     
-    public class SuccessParseResult : ParseResult
+    internal class SuccessParseResult : ParseResult
     {
         public SuccessParseResult(long position = 0, RegSeedErrorType errorType = RegSeedErrorType.Unknown) : base(true, errorType)
         {
@@ -21,7 +21,7 @@ namespace Regseed.Common.Results
         }
     }
     
-    public class FailureParseResult : ParseResult
+    internal class FailureParseResult : ParseResult
     {
         public FailureParseResult(long position, RegSeedErrorType errorType = RegSeedErrorType.Unknown) : base(false, errorType)
         {
@@ -29,7 +29,7 @@ namespace Regseed.Common.Results
         }
     }
     
-    public class ParseResult<TValue> : BaseResult<TValue>, IParseResult<TValue>
+    internal class ParseResult<TValue> : BaseResult<TValue>, IParseResult<TValue>
     {
         public ParseResult(bool isSuccess, TValue value, RegSeedErrorType errorType = RegSeedErrorType.Unknown) : base(isSuccess, value)
         {
@@ -40,7 +40,7 @@ namespace Regseed.Common.Results
         public RegSeedErrorType ErrorType { get; set; }
     }
     
-    public class SuccessParseResult<TValue> : ParseResult<TValue>
+    internal class SuccessParseResult<TValue> : ParseResult<TValue>
     {
         public SuccessParseResult(long position, TValue value, RegSeedErrorType errorType = RegSeedErrorType.Unknown) : base(true, value, errorType)
         {
@@ -48,7 +48,7 @@ namespace Regseed.Common.Results
         }
     }
     
-    public class FailureParseResult<TValue> : ParseResult<TValue>
+    internal class FailureParseResult<TValue> : ParseResult<TValue>
     {
         public FailureParseResult(long position, RegSeedErrorType errorType = RegSeedErrorType.Unknown) : base(false, default (TValue), errorType)
         {

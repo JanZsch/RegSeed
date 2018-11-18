@@ -7,7 +7,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser.PrimitiveParsers
 {
-    public class PrimitiveParser : IPrimitiveParser
+    internal class PrimitiveParser : IPrimitiveParser
     {
         private readonly IParserAlphabet _alphabet;
 

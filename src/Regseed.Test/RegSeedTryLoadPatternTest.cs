@@ -26,6 +26,15 @@ namespace Regseed.Test
             Assert.IsFalse(result.IsSuccess);
             Assert.AreEqual(expectedErrorPosition, result.Position);
         }
+        
+        [Test]
+        public void TryLoadRegexPattern_ReturnsSuccessResult_WhenRegexPatternIsValid()
+        {
+            var regseed = new RegSeed();
+            
+            var result = regseed.TryLoadRegexPattern("[a-a]");
 
+            Assert.IsTrue(result.IsSuccess);
+        }
     }
 }

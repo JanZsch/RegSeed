@@ -3,7 +3,7 @@ using Regseed.Resources;
 
 namespace Regseed.Parser.RegexTokens
 {
-    public class CharacterToken : BaseToken<string>
+    internal class CharacterToken : BaseToken<string>
     {
         public CharacterToken(string value, long position, int length) : base(value, position, length)
         {

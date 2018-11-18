@@ -4,7 +4,7 @@ using Regseed.Resources;
 
 namespace Regseed.Parser.RegexTokens
 {
-    public class IntegerIntervalToken : BaseToken<IntegerInterval>
+    internal class IntegerIntervalToken : BaseToken<IntegerInterval>
     {
         public IntegerIntervalToken(IntegerInterval value, long position, int length) : base(value, position, length)
         {

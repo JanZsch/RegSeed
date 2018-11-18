@@ -7,7 +7,7 @@ using Regseed.Resources;
 
 namespace Regseed.Parser
 {
-    public class ParserAlphabet : IParserAlphabet
+    internal class ParserAlphabet : IParserAlphabet
     {
         private readonly HashSet<string> _validCharacterHashSet = new HashSet<string>();
         private readonly List<string> _validCharacterRangeList = new List<string>();
@@ -48,14 +48,14 @@ namespace Regseed.Parser
                 _characterTokenParserMapper.Remove(character);
         }
 
-        public bool TryGetTokenParser(string letter, out ITokenParser tokenParser) =>
-            _characterTokenParserMapper.TryGetValue(letter, out tokenParser);
+        public bool TryGetTokenParser(string character, out ITokenParser tokenParser) =>
+            _characterTokenParserMapper.TryGetValue(character, out tokenParser);
 
-        public IResult TryGetRange(string startLetter, string endLetter, out IList<string> range)
+        public IResult TryGetRange(string startCharacter, string endCharacter, out IList<string> range)
         {
             range = null;
-            var startIndex = _validCharacterRangeList.IndexOf(startLetter);
-            var endIndex = _validCharacterRangeList.IndexOf(endLetter);
+            var startIndex = _validCharacterRangeList.IndexOf(startCharacter);
+            var endIndex = _validCharacterRangeList.IndexOf(endCharacter);
 
             if (startIndex < 0 || endIndex < 0 || startIndex > endIndex)
                 return new FailureResult();
@@ -72,7 +72,7 @@ namespace Regseed.Parser
         public IList<string> GetAllCharacters() => 
             _validCharacterRangeList.ToList();
 
-        public bool IsValid(string letter) => 
-            _validCharacterHashSet.Contains(letter);
+        public bool IsValid(string character) => 
+            _validCharacterHashSet.Contains(character);
     }
 }

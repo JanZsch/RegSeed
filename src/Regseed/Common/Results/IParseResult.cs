@@ -4,11 +4,11 @@ namespace Regseed.Common.Results
 {
     public interface IParseResult : IResult
     {
-        long Position { get; set; }
-        RegSeedErrorType ErrorType { get; set; }
+        long Position { get; }
+        RegSeedErrorType ErrorType { get; }
     }
     
-    public interface IParseResult<TValue> : IParseResult
+    internal interface IParseResult<TValue> : IParseResult
     {
         TValue Value { get; }
     }

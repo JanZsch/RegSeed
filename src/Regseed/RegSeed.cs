@@ -89,6 +89,9 @@ namespace Regseed
 
         public RegSeed SetMaxCharClassInverseLength(int maxCharClassInverseLength)
         {
+            if(maxCharClassInverseLength < 1)
+                throw new ArgumentException(RegSeedErrorMessages.MaxCharClassInverseLengthOutOfRange);
+            
             MaxCharClassInverseLength = maxCharClassInverseLength;
 
             return this;

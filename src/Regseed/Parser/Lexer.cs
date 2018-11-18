@@ -5,7 +5,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser
 {
-    public class Lexer : ILexer
+    internal class Lexer : ILexer
     {
         public IParserAlphabet ParserAlphabet { get; }
         
@@ -14,7 +14,7 @@ namespace Regseed.Parser
             ParserAlphabet = alphabet ?? throw new ArgumentNullException();
         }
 
-        public IParseResult TryCreateTokenStream(IStringStream inputStream, out ITokenStream tokenStream)
+        public IParseResult TryConvertToTokenStream(IStringStream inputStream, out ITokenStream tokenStream)
         {
             if(inputStream == null)
                 throw new ArgumentNullException();

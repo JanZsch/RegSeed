@@ -47,7 +47,7 @@ namespace Regseed.Factories
             var lexer = new Lexer(_alphabet);
             var inputStream = new StringStream(pattern);
 
-            var parseResult = lexer.TryCreateTokenStream(inputStream, out var tokenStream);
+            var parseResult = lexer.TryConvertToTokenStream(inputStream, out var tokenStream);
 
             if (!parseResult.IsSuccess)
                 return new FailureParseResult<ExpressionMetaData>(parseResult.Position, parseResult.ErrorType);
@@ -259,7 +259,7 @@ namespace Regseed.Factories
 
             characterClassExpression.AddCharacters(characters);
 
-            expression = getComplement ? characterClassExpression.GetInverse() : characterClassExpression;
+            expression = getComplement ? characterClassExpression.GetComplement() : characterClassExpression;
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
         }
 

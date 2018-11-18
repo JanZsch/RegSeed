@@ -8,7 +8,7 @@ using Regseed.Streams;
 namespace Regseed.Test.Parser.TokenParser
 {
     [TestFixture]
-    public class BaseTokenParserTest : BaseTokenParser
+    internal class BaseTokenParserTest : BaseTokenParser
     {
         [SetUp]
         public void Setup()

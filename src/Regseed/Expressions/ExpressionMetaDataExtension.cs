@@ -1,6 +1,6 @@
 namespace Regseed.Expressions
 {
-    public static class ExpressionMetaDataExtension
+    internal static class ExpressionMetaDataExtension
     {
         public static void UpdateWith(this ExpressionMetaData oldValue, ExpressionMetaData newValue)
         {

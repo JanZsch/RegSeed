@@ -5,7 +5,7 @@ using Regseed.Resources;
 
 namespace Regseed.Streams
 {
-    public abstract class BaseStream<TValue> : IStream<TValue>
+    internal abstract class BaseStream<TValue> : IStream<TValue>
     {
         public long Count => _streamElements.Count;
         public long CurrentPosition { get; protected set; }

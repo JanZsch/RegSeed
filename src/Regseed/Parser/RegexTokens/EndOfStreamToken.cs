@@ -3,7 +3,7 @@ using Regseed.Resources;
 
 namespace Regseed.Parser.RegexTokens
 {
-    public class EndOfStreamToken : IToken
+    internal class EndOfStreamToken : IToken
     {
         public EndOfStreamToken(long pos)
         {

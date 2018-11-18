@@ -4,7 +4,7 @@ using Regseed.Streams;
 
 namespace Regseed.Parser.TokenParser
 {
-    public class OpenRoundBracketParser : BaseTokenParser
+    internal class OpenRoundBracketParser : BaseTokenParser
     {
         protected override IParseResult TryGetTokenWithoutNullCheck(IStringStream inputStream, out IToken token)
         {

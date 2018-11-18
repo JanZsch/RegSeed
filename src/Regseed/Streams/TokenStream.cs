@@ -3,7 +3,7 @@ using Regseed.Parser.RegexTokens;
 
 namespace Regseed.Streams
 {
-    public sealed class TokenStream : BaseStream<IToken>, ITokenStream
+    internal sealed class TokenStream : BaseStream<IToken>, ITokenStream
     {
         public TokenStream()
         {

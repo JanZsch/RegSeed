@@ -3,7 +3,7 @@ using Regseed.Resources;
 
 namespace Regseed.Parser.RegexTokens
 {
-    public abstract class BaseToken : IToken
+    internal abstract class BaseToken : IToken
     {
         protected BaseToken(long position)
         {
@@ -27,7 +27,7 @@ namespace Regseed.Parser.RegexTokens
         public virtual int Length { get; }
     }
 
-    public abstract class BaseToken<TValueImpl> : BaseToken
+    internal abstract class BaseToken<TValueImpl> : BaseToken
     {
         private readonly TValueImpl _value;
 

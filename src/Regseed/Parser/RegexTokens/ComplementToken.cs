@@ -1,6 +1,6 @@
 namespace Regseed.Parser.RegexTokens
 {
-    public class ComplementToken : RegexSingleCharacterBaseToken
+    internal class ComplementToken : RegexSingleCharacterBaseToken
     {
         public ComplementToken(long position) : base(position)
         {

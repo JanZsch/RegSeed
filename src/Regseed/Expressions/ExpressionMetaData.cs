@@ -1,6 +1,6 @@
 namespace Regseed.Expressions
 {
-    public class ExpressionMetaData
+    internal class ExpressionMetaData
     {
         public bool HasIntersection { get; set; }
         public bool HasComplement { get; set; }

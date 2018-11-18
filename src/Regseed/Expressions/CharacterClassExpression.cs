@@ -49,10 +49,20 @@ namespace Regseed.Expressions
         public override IExpression GetInverse()
         {
             return _maxInverseLength <= 1 
-                ? GetSingleCharacterClassInverseOfLengthOne(this) 
-                : GetAllCharacterClassInversesUpToMaxInverseLength(this);
+                ? (IExpression) GetComplement() 
+                : GetAllCharacterClassInversesUpToMaxInverseLength();
         }
 
+        public CharacterClassExpression GetComplement()
+        {
+            var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
+            var complement = new CharacterClassExpression(_alphabet, _random, _maxInverseLength);
+            
+            complement.AddCharacters(complementCharacters);
+
+            return complement;
+        }
+        
         public string GetRandomCharacter()
         {
             if (_characterList.Count == 0)
@@ -109,34 +119,21 @@ namespace Regseed.Expressions
         protected override IStringBuilder ToSingleStringBuilder() =>
             new StringBuilder(new List<CharacterClassExpression> {this});
         
-        protected UnionExpression GetAllCharacterClassInversesUpToMaxInverseLength(CharacterClassExpression expression)
+        private UnionExpression GetAllCharacterClassInversesUpToMaxInverseLength()
         {
             var minimalLengthTwoRange = new IntegerInterval();
             minimalLengthTwoRange.TrySetValue(2, _maxInverseLength);
             
-            var atLeastLengthTwoWords = new CharacterClassExpression(_alphabet, _random, _maxInverseLength){RepeatRange = minimalLengthTwoRange};
+            var atLeastLengthTwoWords = new CharacterClassExpression(_alphabet, _random, _maxInverseLength){ RepeatRange = minimalLengthTwoRange };
             atLeastLengthTwoWords.AddCharacters(_alphabet.GetAllCharacters());
 
             var inverseExpressions = new List<IExpression>
             {
-                GetCharacterClassComplement(expression), 
+                GetComplement(), 
                 atLeastLengthTwoWords
             };
             
             return new UnionExpression(inverseExpressions, _random);            
-        }
-
-        protected CharacterClassExpression GetCharacterClassComplement(CharacterClassExpression charClassExpression)
-        {
-            var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
-            var complement = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
-            {
-                RepeatRange = RepeatRange
-            };
-            
-            complement.AddCharacters(complementCharacters);
-
-            return complement;
         }
 
         private static void ClassifyListsByLength(CharacterClassExpression charClass1, CharacterClassExpression charClass2, out IDictionary<string, string> shortDict, out IDictionary<string, string> longDict)
@@ -152,8 +149,5 @@ namespace Regseed.Expressions
                 longDict = charClass1._literals;
             }
         }
-        
-        private UnionExpression GetSingleCharacterClassInverseOfLengthOne(CharacterClassExpression expression) =>
-            new UnionExpression(new List<IExpression> {GetCharacterClassComplement(expression)}, _random);
     }
 }

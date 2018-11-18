@@ -6,7 +6,7 @@ using Regseed.Parser;
 
 namespace Regseed.Common.Ranges
 {
-    public class CharacterRange : BaseRange<string>
+    internal class CharacterRange : BaseRange<string>
     {
         public CharacterRange() : base(null, null)
         {

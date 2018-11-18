@@ -6,7 +6,7 @@ using Regseed.Streams;
 namespace Regseed.Test.Streams
 {
     [TestFixture]
-    public class BaseStreamTest : BaseStream<string>
+    internal class BaseStreamTest : BaseStream<string>
     {
         [SetUp]
         public void SetUp()

@@ -3,9 +3,9 @@ using Regseed.Streams;
 
 namespace Regseed.Parser
 {
-    public interface ILexer
+    internal interface ILexer
     {
         IParserAlphabet ParserAlphabet { get; }
-        IParseResult TryCreateTokenStream(IStringStream inputStream, out ITokenStream tokenStream);
+        IParseResult TryConvertToTokenStream(IStringStream inputStream, out ITokenStream tokenStream);
     }
 }

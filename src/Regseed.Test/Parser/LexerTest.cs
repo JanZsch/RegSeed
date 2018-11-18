@@ -33,14 +33,14 @@ namespace Regseed.Test.Parser
         }
 
         [Test]
-        public void CreateParseTree_ReturnsFailureResult_WhenInputStreamContainsKnownButInvalidLetter()
+        public void TryConvertToTokenStream_ReturnsFailureResult_WhenInputStreamContainsKnownButInvalidLetter()
         {
             _alphabet.TryGetTokenParser(Arg.Any<string>(), out _).Returns(true);
             _alphabet.IsValid(Arg.Any<string>()).Returns(false);
             _input.IsEmpty().Returns(false);
             var lexer = new Lexer(_alphabet);
 
-            var result = lexer.TryCreateTokenStream(_input, out _);
+            var result = lexer.TryConvertToTokenStream(_input, out _);
 
             Assert.IsFalse(result.IsSuccess);
             _input.Received(1).IsEmpty();
@@ -49,13 +49,13 @@ namespace Regseed.Test.Parser
         }
 
         [Test]
-        public void CreateParseTree_ReturnsFailureResult_WhenInputStreamContainsUnknownLetter()
+        public void TryConvertToTokenStream_ReturnsFailureResult_WhenInputStreamContainsUnknownLetter()
         {
             _alphabet.TryGetTokenParser(Arg.Any<string>(), out _).Returns(false);
             _input.IsEmpty().Returns(false);
             var lexer = new Lexer(_alphabet);
 
-            var result = lexer.TryCreateTokenStream(_input, out _);
+            var result = lexer.TryConvertToTokenStream(_input, out _);
 
             Assert.IsFalse(result.IsSuccess);
             _input.Received(1).IsEmpty();
@@ -63,7 +63,7 @@ namespace Regseed.Test.Parser
         }
 
         [Test]
-        public void CreateParseTree_ReturnsParseTreeWithOneElement_WhenInputContainsOneValidLetter()
+        public void TryConvertToTokenStream_ReturnsParseTreeWithOneElement_WhenInputContainsOneValidLetter()
         {
             _input.IsEmpty().Returns(x => _isEmptyCalls++ != 0);
             _alphabet.IsValid(Arg.Any<string>()).Returns(true);
@@ -79,7 +79,7 @@ namespace Regseed.Test.Parser
             });
             var lexer = new Lexer(_alphabet);
 
-            var parseResult = lexer.TryCreateTokenStream(_input, out var result);
+            var parseResult = lexer.TryConvertToTokenStream(_input, out var result);
 
             Assert.IsTrue(parseResult.IsSuccess);
             Assert.IsFalse(result.IsEmpty());
@@ -91,7 +91,7 @@ namespace Regseed.Test.Parser
 
 
         [Test]
-        public void CreateParseTree_ThrowsArgumentException_WhenTokenParserFailsToParseToken()
+        public void TryConvertToTokenStream_ThrowsArgumentException_WhenTokenParserFailsToParseToken()
         {
             _input.IsEmpty().Returns(false);
             _input.LookAhead(Arg.Any<long>()).Returns(string.Empty);
@@ -105,18 +105,18 @@ namespace Regseed.Test.Parser
 
             var lexer = new Lexer(_alphabet);
 
-            var result = lexer.TryCreateTokenStream(_input, out _);
+            var result = lexer.TryConvertToTokenStream(_input, out _);
 
             Assert.IsFalse(result.IsSuccess);
             _tokenParser.Received(1).TryGetToken(Arg.Any<IStringStream>(), out _);
         }
 
         [Test]
-        public void CreateParseTree_ThrowsArgumentNullException_WhenInputIsNull()
+        public void TryConvertToTokenStream_ThrowsArgumentNullException_WhenInputIsNull()
         {
             var lexer = new Lexer(_alphabet);
 
-            Assert.Throws<ArgumentNullException>(() => lexer.TryCreateTokenStream(null, out _));
+            Assert.Throws<ArgumentNullException>(() => lexer.TryConvertToTokenStream(null, out _));
         }
     }
 }

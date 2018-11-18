@@ -1,6 +1,6 @@
 namespace Regseed.Common.Ranges
 {
-    public abstract class BaseRange<TType>
+    internal abstract class BaseRange<TType>
     {
         public TType Start { get; protected set; }
         public TType End { get; protected set; }

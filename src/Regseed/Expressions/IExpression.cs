@@ -4,7 +4,7 @@ using Regseed.Factories;
 
 namespace Regseed.Expressions
 {
-    public interface IExpression
+    internal interface IExpression
     {
         IntegerInterval RepeatRange { get; set; }
 

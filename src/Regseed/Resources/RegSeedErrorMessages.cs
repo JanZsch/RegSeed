@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Regseed.Resources
 {
-    public static class RegSeedErrorMessages
+    internal static class RegSeedErrorMessages
     {
         private static IDictionary<RegSeedErrorType, string> _errorTypeMapper = new Dictionary<RegSeedErrorType, string>
         {
@@ -29,6 +29,7 @@ namespace Regseed.Resources
         public const string CallBeforeInitialisation = "RegSeed requires the method to be called before initialisation with regex pattern.";
         public const string InvalidNumberOfConcatenations = "The number of subsequent concatenations must be positive.";
         public const string GetValueCalledWithWrongGenericType = "GetValue called with wrong generic type.";
+        public const string MaxCharClassInverseLengthOutOfRange = "The parameter MaxCharClassInverseLength has to be at least 1.";
 
         
         public static string ToExceptionMessage(this RegSeedErrorType errorType)

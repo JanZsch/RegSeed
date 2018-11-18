@@ -1,6 +1,6 @@
 namespace Regseed.Common.Random
 {
-    public class RandomGenerator : IRandomGenerator
+    internal class RandomGenerator : IRandomGenerator
     {
         private readonly System.Random _random;
         

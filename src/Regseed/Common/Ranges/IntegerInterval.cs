@@ -2,7 +2,7 @@ using Regseed.Common.Results;
 
 namespace Regseed.Common.Ranges
 {
-    public class IntegerInterval : BaseRange<int?>
+    internal class IntegerInterval : BaseRange<int?>
     {
         public IntegerInterval() : base(null, null)
         {}

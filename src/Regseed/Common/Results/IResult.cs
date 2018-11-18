@@ -5,7 +5,7 @@ namespace Regseed.Common.Results
         bool IsSuccess { get; }
     }
     
-    public interface IResult<TValue>
+    internal interface IResult<TValue>
     {
         bool IsSuccess { get; }
         TValue Value { get; }
