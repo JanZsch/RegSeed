@@ -4,8 +4,8 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Company />
-        <Authors>Jan Zschoche</Authors>
+        <Company>JanZsch</Company>
+        <Authors>JanZsch</Authors>
         <Copyright>Apache 2.0</Copyright>
         <PackageProjectUrl>https://www.github.com/janzsch/regseed</PackageProjectUrl>
         <RepositoryUrl>https://www.github.com/janzsch/regseed</RepositoryUrl>
@@ -13,6 +13,9 @@
         <SignAssembly>false</SignAssembly>
         <AssemblyOriginatorKeyFile>RegSeed-AssemblySignature.pfx</AssemblyOriginatorKeyFile>
         <PackageLicenseUrl>https://github.com/janzsch/regseed/blob/master/LICENSE.txt</PackageLicenseUrl>
+        <Version>1.0.1</Version>
+        <PackageReleaseNotes>- Correct calculation of a character classes complement
+- only the required interfaces and classes are now not internal</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
