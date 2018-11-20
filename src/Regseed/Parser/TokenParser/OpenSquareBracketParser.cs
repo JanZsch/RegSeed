@@ -11,7 +11,7 @@ namespace Regseed.Parser.TokenParser
         {
             inputStream.Pop();
 
-            if (!inputStream.LookAhead(0).Equals(SpecialCharacters.NegateCharacterClass))
+            if (inputStream.CurrentPosition > inputStream.Count || !inputStream.LookAhead(0).Equals(SpecialCharacters.NegateCharacterClass))
             {
                 token = new OpenCharacterClassToken(_initialStreamPosition);
                 return new SuccessParseResult();   

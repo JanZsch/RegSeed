@@ -159,6 +159,9 @@ namespace Regseed.Factories
                 result = TryGetElementaryExpression(tokenStream, out elementaryExpression);
             }
 
+            if (result.ErrorType != RegSeedErrorType.None)
+                return result;
+            
             expression = concatExpression;
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, metaData);
         }
@@ -170,7 +173,7 @@ namespace Regseed.Factories
            
             return _regexTokenToExpressionMapper.TryGetValue(nextToken, out var tryGetElementaryExpression)
                 ? tryGetElementaryExpression(tokenStream, out expression)
-                : new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.CharacterTypeExpressionExpected);
+                : new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition);
         }
 
         private IParseResult<ExpressionMetaData> TryGetComplementElementaryExpression(ITokenStream tokenStream, out IExpression expression)

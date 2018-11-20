@@ -2,7 +2,7 @@ namespace Regseed.Resources
 {
     public enum RegSeedErrorType
     {
-        Unknown,
+        None,
         UnionExpressionExpected,
         CharacterTypeExpressionExpected,
         ClosePrecedenceExpected,

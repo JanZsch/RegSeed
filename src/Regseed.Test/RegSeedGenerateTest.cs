@@ -241,7 +241,8 @@ namespace Regseed.Test
         [TestCase("a[a-zA-Z]c&a[Bb]c","abc", "aBc")]
         [TestCase("[Jja]an&(Jan|jan)","jan", "Jan")]
         [TestCase("a|b|AB&ab","a", "b")]
-        public void Generate_ReturnsEquallyDistributedResults_WhenRegexContainsCharacterClassesAndIntersection(string pattern, string resultA, string resultB)
+        [TestCase("[abaaaa]","a", "b")]
+        public void Generate_ReturnsEquallyDistributedResults_WhenRegexContainsCharacterClassesAndOrIntersection(string pattern, string resultA, string resultB)
         {
             const int totalRuns = 500;
             _random = new RandomGenerator(new Random());

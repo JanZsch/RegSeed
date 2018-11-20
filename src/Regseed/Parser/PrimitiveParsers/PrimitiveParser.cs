@@ -83,7 +83,7 @@ namespace Regseed.Parser.PrimitiveParsers
                 : TryParseIntegerInternal(stream, popCalls, false);
 
             if (!lowerBound.IsSuccess)
-                return new FailureParseResult<IntegerInterval>(initialPosition, RegSeedErrorType.IntegerIntervalExpected);
+                return new FailureParseResult<IntegerInterval>(initialPosition + popCalls, RegSeedErrorType.IntegerIntervalExpected);
 
             popCalls = lowerBound.Value.Item2;
 
@@ -171,8 +171,7 @@ namespace Regseed.Parser.PrimitiveParsers
                 stream.Pop();
         }
 
-        private static IParseResult<Tuple<int?, int>> TryParseIntegerInternal(IStringStream stream, int initialPops,
-            bool executePop)
+        private static IParseResult<Tuple<int?, int>> TryParseIntegerInternal(IStringStream stream, int initialPops, bool executePop)
         {
             var popCalls = initialPops;
 
@@ -182,9 +181,9 @@ namespace Regseed.Parser.PrimitiveParsers
                 return new FailureParseResult<Tuple<int?, int>>(stream.CurrentPosition, RegSeedErrorType.UnexpectedEndOfStream);
 
             var numberString = string.Empty;
-            var letterCandidate = stream.LookAhead(popCalls);
+            var charCandidate = stream.LookAhead(popCalls);
 
-            if (letterCandidate.Equals(SpecialCharacters.Minus))
+            if (charCandidate.Equals(SpecialCharacters.Minus))
             {
                 popCalls++;
                 numberString = "-";
@@ -196,18 +195,7 @@ namespace Regseed.Parser.PrimitiveParsers
             if (popCalls >= stream.Count)
                 return new FailureParseResult<Tuple<int?, int>>(stream.CurrentPosition, RegSeedErrorType.UnexpectedEndOfStream);
 
-            letterCandidate = stream.LookAhead(popCalls);
-
-            while (letterCandidate.Length == 1 && char.IsDigit(letterCandidate[0]))
-            {
-                numberString = $"{numberString}{letterCandidate}";
-                popCalls++;
-
-                if (popCalls >= stream.Count)
-                    break;
-
-                letterCandidate = stream.LookAhead(popCalls);
-            }
+            PopAndAppendWhileIsDigit(stream, ref popCalls, ref numberString);
 
             if (executePop)
                 CallPop(stream, popCalls);
@@ -219,6 +207,22 @@ namespace Regseed.Parser.PrimitiveParsers
             return new SuccessParseResult<Tuple<int?, int>>(initialPosition, value);
         }
 
+        private static void PopAndAppendWhileIsDigit(IStringStream stream, ref int initialPopCalls, ref string numberString)
+        {
+            var charCandidate = stream.LookAhead(initialPopCalls);
+
+            while (charCandidate.Length == 1 && char.IsDigit(charCandidate[0]))
+            {
+                numberString = $"{numberString}{charCandidate}";
+                initialPopCalls++;
+
+                if (initialPopCalls >= stream.Count)
+                    return;
+
+                charCandidate = stream.LookAhead(initialPopCalls);
+            }
+        }
+
         private static IParseResult<IntegerInterval> SingleIntegerInterval(int value, IStringStream stream, int popCalls)
         {
             popCalls++;
@@ -226,9 +230,7 @@ namespace Regseed.Parser.PrimitiveParsers
             return new SuccessParseResult<IntegerInterval>(stream.CurrentPosition, new IntegerInterval(value));
         }
 
-        private static bool IsNextCharacterSymbol(string symbol, IStringStream stream, int position)
-        {
-            return position < stream.Count && symbol.Equals(stream.LookAhead(position));
-        }
+        private static bool IsNextCharacterSymbol(string symbol, IStringStream stream, int position) =>
+            position < stream.Count && symbol.Equals(stream.LookAhead(position));
     }
 }
