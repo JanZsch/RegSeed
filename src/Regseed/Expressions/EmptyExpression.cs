@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Regseed.Common.Builder;
 using Regseed.Common.Ranges;
-using Regseed.Factories;
 
 namespace Regseed.Expressions
 {

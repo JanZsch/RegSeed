@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using NSubstitute;
+using Regseed.Common.Builder;
 using Regseed.Expressions;
-using Regseed.Factories;
 
 namespace Regseed.Test.Mocks
 {

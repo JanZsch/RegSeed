@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Regseed.Common.Builder;
 using Regseed.Common.Random;
-using Regseed.Factories;
 
 namespace Regseed.Expressions
 {

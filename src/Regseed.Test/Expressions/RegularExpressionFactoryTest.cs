@@ -1,9 +1,9 @@
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
-using Regseed.Factories;
+using Regseed.Expressions;
 
-namespace Regseed.Test.Factories
+namespace Regseed.Test.Expressions
 {
     [TestFixture]
     public class RegularExpressionFactoryTest

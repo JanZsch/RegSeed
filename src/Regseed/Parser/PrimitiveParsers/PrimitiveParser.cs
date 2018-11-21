@@ -18,7 +18,7 @@ namespace Regseed.Parser.PrimitiveParsers
 
         public IParseResult<CharacterRange> TryParseCharacterRange(IStringStream stream, string rangeSeparator = null)
         {
-            rangeSeparator = rangeSeparator ?? SpecialCharacters.RangeSeparator;
+            rangeSeparator = rangeSeparator ?? SpecialCharacters.CharacterRangeSeparator;
 
             if (stream == null)
                 throw new ArgumentNullException();
@@ -27,12 +27,12 @@ namespace Regseed.Parser.PrimitiveParsers
 
             var startCharacterResult = TryParseCharacterInternal(stream, 0, false);
             if (!startCharacterResult.IsSuccess)
-                return new FailureParseResult<CharacterRange>(initialPosition, RegSeedErrorType.CharacterRangeExpected);
+                return new FailureParseResult<CharacterRange>(initialPosition);
 
             var popCalls = startCharacterResult.Value.Item2;
 
             if (popCalls >= stream.Count || !stream.LookAhead(popCalls).Equals(rangeSeparator))
-                return new FailureParseResult<CharacterRange>(initialPosition + popCalls, RegSeedErrorType.CharacterRangeExpected);
+                return new FailureParseResult<CharacterRange>(initialPosition + popCalls);
 
             popCalls++;
 
@@ -46,7 +46,7 @@ namespace Regseed.Parser.PrimitiveParsers
             
             return value.TrySetRange(startCharacterResult.Value.Item1, endCharacterResult.Value.Item1, _alphabet).IsSuccess 
                 ? (IParseResult<CharacterRange>) new SuccessParseResult<CharacterRange>(initialPosition, value)
-                : new FailureParseResult<CharacterRange>(stream.CurrentPosition, RegSeedErrorType.InvalidRange);            
+                : new FailureParseResult<CharacterRange>(initialPosition, RegSeedErrorType.InvalidRange);            
         }
 
         public IParseResult<int> TryParseInteger(IStringStream stream)

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Regseed.Common.Builder;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
-using Regseed.Factories;
 using Regseed.Parser;
 
 namespace Regseed.Expressions

@@ -1,5 +1,6 @@
 using System;
 using Regseed.Common.Results;
+using Regseed.Parser.ParserFactories;
 using Regseed.Resources;
 using Regseed.Streams;
 
@@ -7,11 +8,11 @@ namespace Regseed.Parser
 {
     internal class Lexer : ILexer
     {
-        public IParserAlphabet ParserAlphabet { get; }
-        
-        public Lexer(IParserAlphabet alphabet)
+        private readonly IParserFactory _parserFactory;
+               
+        public Lexer(IParserFactory factory)
         {
-            ParserAlphabet = alphabet ?? throw new ArgumentNullException();
+             _parserFactory = factory ?? throw new ArgumentNullException();
         }
 
         public IParseResult TryConvertToTokenStream(IStringStream inputStream, out ITokenStream tokenStream)
@@ -23,9 +24,9 @@ namespace Regseed.Parser
             
             while (!inputStream.IsEmpty())
             {
-                var letter = inputStream.LookAhead(0);
+                var character = inputStream.LookAhead(0);
                 
-                if(!ParserAlphabet.TryGetTokenParser(letter, out var tokenParser) || !ParserAlphabet.IsValid(letter))
+                if(!_parserFactory.TryGetTokenParser(character, out var tokenParser))
                     return new FailureParseResult(inputStream.CurrentPosition, RegSeedErrorType.InvalidInput);
                     
                 var parseResult = tokenParser.TryGetToken(inputStream, out var token);

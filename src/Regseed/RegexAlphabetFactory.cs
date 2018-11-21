@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Regseed.Factories;
 using Regseed.Parser;
 using Regseed.Parser.PrimitiveParsers;
 using Regseed.Parser.TokenParser;

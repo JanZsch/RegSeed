@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
+using Regseed.Common.Builder;
 using Regseed.Common.Helper;
-using Regseed.Factories;
 
 namespace Regseed.Test.Common.Helper
 {

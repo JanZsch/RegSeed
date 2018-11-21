@@ -3,7 +3,7 @@ namespace Regseed.Resources
     public static class SpecialCharacters
     {
         public const string Escape = "\\";
-        public const string RangeSeparator = "-";
+        public const string CharacterRangeSeparator = "-";
         public const string Minus = "-";
         public const string OpenCharacterClass = "[";
         public const string CloseCharacterClass = "]";

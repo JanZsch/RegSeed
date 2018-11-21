@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
+using Regseed.Common.Builder;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Expressions;
-using Regseed.Factories;
 using Regseed.Parser;
 
 namespace Regseed.Test.Expressions

@@ -4,7 +4,7 @@ using System.Linq;
 using Regseed.Expressions;
 using Regseed.Resources;
 
-namespace Regseed.Factories
+namespace Regseed.Common.Builder
 {
     internal class StringBuilder : IStringBuilder
     {

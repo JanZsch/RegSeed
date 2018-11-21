@@ -275,12 +275,14 @@ namespace Regseed.Test
         [TestCase("ul\trike", false)]
         [TestCase("(A|[a-m])+[a-z]{2,4}", true)]
         [TestCase("[^m-z0-9A-Z]+", true)]
+        [TestCase("[m-z0-9A-Z^]+", false)]
         [TestCase("[aaabbbaaa]+", true)]
         [TestCase("[f-i]+", true)]
         [TestCase("([0-9]|[a-z]|Ulrike){1,2}", false)]
         [TestCase("(F|R)", false)]
         [TestCase("(Fr([aA]n|A[nN])ziska){1,4}", false)]
-        [TestCase(@"^([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12})$", false)]
+        [TestCase(@"^([0-9A-Fa-f]{8}[\-][0-9A-Fa-f]{4}[\-][0-9A-Fa-f]{4}[\-][0-9A-Fa-f]{4}[\-][0-9A-Fa-f]{12})$", false)]
+        [TestCase(@"^([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})$", false)]
         public void Generate_ReturnsStringMatchingProvidedPattern(string pattern, bool restrictUpperBound)
         {
             var realRandomGenerator = new RandomGenerator(new Random());
@@ -478,6 +480,42 @@ namespace Regseed.Test
                 Assert.AreEqual(1, result.Length, $"Faulty result: {new string(result)}");
                 Assert.IsTrue(char.IsWhiteSpace(result[0]), $"Faulty result: {new string(result)}");
             }
+        }
+
+        [TestCase("[?]", "?")]
+        [TestCase("[+]", "+")]
+        [TestCase("[[]", "[")]
+        [TestCase("[$]", "$")]
+        [TestCase("[{]", "{")]
+        [TestCase("[}]", "}")]
+        [TestCase("[,]", ",")]
+        [TestCase("[.]", ".")]
+        [TestCase("[*]", "*")]
+        public void Generate_ReturnsExpectedResult_WhenPatternsContainsUnescapedSpecialCharacterInCharacterClass(string pattern, string expectedResult)
+        {
+            var regseed = new RegSeed();
+            
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
+            Assert.IsTrue(loadResult.IsSuccess);
+            
+            var result = regseed.Generate();
+            
+            Assert.AreEqual(expectedResult, result);
+        }
+        
+        [TestCase("[\\^]", "^")]
+        [TestCase("[\\]]", "]")]
+        [TestCase("[\\-]", "-")]
+        public void Generate_ReturnsExpectedResult_WhenPatternsContainsEscapedSpecialCharacterInCharacterClass(string pattern, string expectedResult)
+        {
+            var regseed = new RegSeed();
+            
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
+            Assert.IsTrue(loadResult.IsSuccess);
+            
+            var result = regseed.Generate();
+            
+            Assert.AreEqual(expectedResult, result);
         }
     }
 }

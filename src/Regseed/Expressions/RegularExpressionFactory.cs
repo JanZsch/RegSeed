@@ -1,14 +1,15 @@
+using System;
 using System.Collections.Generic;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Common.Results;
-using Regseed.Expressions;
 using Regseed.Parser;
+using Regseed.Parser.ParserFactories;
 using Regseed.Parser.RegexTokens;
 using Regseed.Resources;
 using Regseed.Streams;
 
-namespace Regseed.Factories
+namespace Regseed.Expressions
 {
     internal class RegularExpressionFactory
     {
@@ -44,7 +45,8 @@ namespace Regseed.Factories
         public IParseResult<ExpressionMetaData> TryGetRegularExpression(string pattern, out IExpression expression)
         {
             expression = null;
-            var lexer = new Lexer(_alphabet);
+            var parserFactory = new StatefulParserFactory(_alphabet ?? throw new ArgumentNullException());
+            var lexer = new Lexer(parserFactory);
             var inputStream = new StringStream(pattern);
 
             var parseResult = lexer.TryConvertToTokenStream(inputStream, out var tokenStream);

@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
+using Regseed.Common.Builder;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Expressions;
-using Regseed.Factories;
 using Regseed.Parser;
 using Regseed.Test.Mocks;
 

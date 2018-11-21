@@ -5,7 +5,6 @@ namespace Regseed.Parser
 {
     internal interface ILexer
     {
-        IParserAlphabet ParserAlphabet { get; }
         IParseResult TryConvertToTokenStream(IStringStream inputStream, out ITokenStream tokenStream);
     }
 }

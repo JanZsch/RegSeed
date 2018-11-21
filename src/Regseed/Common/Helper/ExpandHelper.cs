@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Regseed.Factories;
+using Regseed.Common.Builder;
 
 namespace Regseed.Common.Helper
 {

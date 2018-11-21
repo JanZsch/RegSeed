@@ -96,7 +96,7 @@ namespace Regseed.Test.Parser
             var result = parser.TryParseCharacterRange(stream);
 
             Assert.IsFalse(result.IsSuccess);
-            Assert.AreEqual(RegSeedErrorType.CharacterRangeExpected, result.ErrorType);
+            Assert.AreEqual(RegSeedErrorType.None, result.ErrorType);
             stream.Received(0).Pop();
         }
 
@@ -112,7 +112,7 @@ namespace Regseed.Test.Parser
             var result = parser.TryParseCharacterRange(stream);
 
             Assert.IsFalse(result.IsSuccess);
-            Assert.AreEqual(RegSeedErrorType.CharacterRangeExpected, result.ErrorType);
+            Assert.AreEqual(RegSeedErrorType.None, result.ErrorType);
             _alphabet.Received(1).IsValid(Arg.Any<string>());
             stream.Received(0).Pop();
         }
@@ -284,7 +284,7 @@ namespace Regseed.Test.Parser
             var result = parser.TryParseCharacterRange(stream);
 
             Assert.IsFalse(result.IsSuccess);
-            Assert.AreEqual(RegSeedErrorType.CharacterRangeExpected, result.ErrorType);
+            Assert.AreEqual(RegSeedErrorType.None, result.ErrorType);
             _alphabet.Received(1).IsValid(Arg.Any<string>());
             stream.Received(0).Pop();
         }

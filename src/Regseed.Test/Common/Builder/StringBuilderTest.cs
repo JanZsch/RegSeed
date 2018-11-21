@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
+using Regseed.Common.Builder;
 using Regseed.Common.Random;
 using Regseed.Expressions;
-using Regseed.Factories;
 using Regseed.Parser;
 using Regseed.Test.Mocks;
 
-namespace Regseed.Test.Factories
+namespace Regseed.Test.Common.Builder
 {
     [TestFixture]
     public class StringBuilderTest

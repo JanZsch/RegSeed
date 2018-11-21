@@ -1,4 +1,4 @@
-namespace Regseed.Factories
+namespace Regseed.Common.Builder
 {
     public interface IStringBuilder
     {
