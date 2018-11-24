@@ -20,5 +20,12 @@ namespace Regseed.Common.Ranges
             
             return new SuccessResult();
         }
+
+        public IntegerInterval Clone()
+        {
+            var clone = new IntegerInterval();
+            clone.TrySetValue(Start, End);
+            return clone;
+        }
     }
 }

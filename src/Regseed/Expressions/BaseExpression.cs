@@ -28,6 +28,7 @@ namespace Regseed.Expressions
         public abstract IList<IStringBuilder> Expand();
         
         public abstract IExpression GetInverse();
+        public abstract IExpression Clone();
 
         protected abstract IStringBuilder ToSingleStringBuilder();
     }

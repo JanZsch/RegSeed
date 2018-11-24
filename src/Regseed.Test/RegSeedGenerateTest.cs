@@ -47,6 +47,7 @@ namespace Regseed.Test
 
         [TestCase("^a{3}b$", "aaab")]
         [TestCase("a{2}", "aa")]
+        [TestCase("a{2}b{2}", "aabb")]
         [TestCase("Ja{2,2}n", "Jaan")]
         [TestCase("Ja{0}n", "Jn")]
         [TestCase("Ja{1}n", "Jan")]
@@ -88,6 +89,25 @@ namespace Regseed.Test
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
 
+        [TestCase("aabb&a{2}b{2}","aabb")]
+        [TestCase("a{2}b{2}&aabb","aabb")]
+        [TestCase(".{2}a.{3}&12a345","12a345")]
+        [TestCase(".{0,2}a.{0,3}&12a34","12a34")]
+        [TestCase(".{0,2}a.{0,3}&12a34","12a34")]
+        [TestCase("1(a|ab|[1-2]){0,2}a.{0,3}&12a34","12a34")]
+        [TestCase(".{0,1}a.{0,2}&1a3","1a3")]
+        [TestCase("[a-Z+*/.]{0,10}r.{0,10}&Marlene","Marlene")]
+        public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersectionAndConcatenation(string pattern, string expectedResult)
+        {
+            _random = new RandomGenerator(new Random());
+            var loadResult = TryLoadRegexPattern(pattern);
+
+            Assert.IsTrue(loadResult.IsSuccess, pattern);
+            var result = Generate();
+
+            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
+        }
+        
         [TestCase("~(f[0-8])&(f[0-9])","f9")]
         [TestCase("~(c[0-9])&~(f[0-8])&[cf][0-9]","f9")]
         [TestCase("~(f{1,2})&f{1,3}","fff")]
@@ -275,7 +295,7 @@ namespace Regseed.Test
         [TestCase("ul\trike", false)]
         [TestCase("(A|[a-m])+[a-z]{2,4}", true)]
         [TestCase("[^m-z0-9A-Z]+", true)]
-        [TestCase("[m-z0-9A-Z^]+", false)]
+        [TestCase("[m-z0-9A-Z^]+", true)]
         [TestCase("[aaabbbaaa]+", true)]
         [TestCase("[f-i]+", true)]
         [TestCase("([0-9]|[a-z]|Ulrike){1,2}", false)]

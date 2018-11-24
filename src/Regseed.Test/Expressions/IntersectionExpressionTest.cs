@@ -3,6 +3,7 @@ using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
+using Regseed.Common.Ranges;
 using Regseed.Expressions;
 using Regseed.Parser;
 
@@ -108,6 +109,24 @@ namespace Regseed.Test.Expressions
             Assert.AreEqual("", result);
         }
 
+        [Test]
+        public void Clone_ReturnsNewConcatenationInstanceWithSameValues()
+        {
+            var expression = Substitute.For<IExpression>();
+            var intersect = new IntersectionExpression(new List<IExpression>{expression},  _random)
+            {
+                RepeatRange = new IntegerInterval()
+            };
+            intersect.RepeatRange.TrySetValue(1, 3);
+
+            var result = intersect.Clone();
+            
+            Assert.AreNotEqual(intersect, result);
+            Assert.AreEqual(intersect.RepeatRange.Start, result.RepeatRange.Start);
+            Assert.AreEqual(intersect.RepeatRange.End, result.RepeatRange.End);
+            expression.Received(1).Clone();
+        }
+        
         [Test]
         public void GetInverse_ReturnsStringBuilderReturningComplementOfSingleCharacterClass_WhenIntersectionExpressionContainsSingleElementWithCharactersRA()
         {

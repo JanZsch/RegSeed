@@ -32,6 +32,12 @@ namespace Regseed.Expressions
             };
         }
 
+        public override IExpression Clone() =>
+            new UnionExpression(_intersectExpressions.Select(x => x.Clone()).ToList(), _random)
+            {
+                RepeatRange = RepeatRange?.Clone()
+            };
+
         protected override IStringBuilder ToSingleStringBuilder()
         {
             if (_intersectExpressions.Count == 0)

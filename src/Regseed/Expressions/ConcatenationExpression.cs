@@ -33,15 +33,16 @@ namespace Regseed.Expressions
             return new IntersectionExpression(intersectInverseList, _random);
         }
 
-        private IExpression GetInverseOfExpandedConcatRepresentation(List<IExpression> expandedConcatRepresentation)
+        public override IExpression Clone()
         {
-            var inverseList 
-                = expandedConcatRepresentation
-                    .Select((t, position) => GetInverseOfExpandedConcatForPosition(expandedConcatRepresentation, position))
-                    .Cast<IExpression>()
-                    .ToList();
+            var clone = new ConcatenationExpression(_random)
+            {
+                RepeatRange = RepeatRange?.Clone()
+            };
 
-            return new UnionExpression(inverseList, _random);
+            clone.AppendRange(_elementaryExpressions.Select(x => x.Clone()));
+
+            return clone;
         }
 
         public override IList<IStringBuilder> Expand()
@@ -72,8 +73,6 @@ namespace Regseed.Expressions
 
             return builder;
         }
-
-        internal IList<IExpression> ToConcatExpressionList() => _elementaryExpressions.ToList();
         
         private static IList<IStringBuilder> CreateConcatenatedStringBuilderForEachExpansion(List<List<IList<IStringBuilder>>> expandedUnionList)
         {
@@ -113,7 +112,7 @@ namespace Regseed.Expressions
                 var distanceConcatPositionToListEnd = repeatExpressions.Count - concatElementPosition - 1;
                 var expandedExpressions = new List<IExpression>();
                 expandedExpressions.AddRange(repeatExpressions.GetRange(0, concatElementPosition));
-                expandedExpressions.AddRange(ConcatElementaryExpression(repeatExpression, i));
+                expandedExpressions.AddRange(ConcatElementaryExpressionTimes(repeatExpression, i));
                 expandedExpressions.AddRange(repeatExpressions.GetRange(concatElementPosition + 1,distanceConcatPositionToListEnd));
                 newExpandList.Add(expandedExpressions);
             }
@@ -121,16 +120,29 @@ namespace Regseed.Expressions
             return true;
         }
 
-        private static IEnumerable<IExpression> ConcatElementaryExpression(IExpression expression, int concatTimes)
+        private static IEnumerable<IExpression> ConcatElementaryExpressionTimes(IExpression expression, int concatTimes)
         {
             var expandedExpression = new List<IExpression>();
 
-            expression.RepeatRange = new IntegerInterval(1);
+            var expressionClone = expression.Clone();
+            
+            expressionClone.RepeatRange = new IntegerInterval(1);
             
             for (var i = 0; i < concatTimes; i++)
-                expandedExpression.Add(expression);
+                expandedExpression.Add(expressionClone);
             
             return expandedExpression;
+        }
+        
+        private IExpression GetInverseOfExpandedConcatRepresentation(List<IExpression> expandedConcatRepresentation)
+        {
+            var inverseList 
+                = expandedConcatRepresentation
+                    .Select((t, position) => GetInverseOfExpandedConcatForPosition(expandedConcatRepresentation, position))
+                    .Cast<IExpression>()
+                    .ToList();
+
+            return new UnionExpression(inverseList, _random);
         }
         
         private ConcatenationExpression GetInverseOfExpandedConcatForPosition(List<IExpression> expandedConcatRepresentation, int i)

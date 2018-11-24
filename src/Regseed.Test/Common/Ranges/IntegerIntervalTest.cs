@@ -27,5 +27,18 @@ namespace Regseed.Test.Common.Ranges
 
             Assert.IsFalse(result.IsSuccess);
         }
+
+        [Test]
+        public void Clone_ReturnsDifferentIntervalWithIdenticalValues()
+        {
+            var interval = new IntegerInterval();
+            interval.TrySetValue(1, 5);
+
+            var result = interval.Clone();
+            
+            Assert.AreNotEqual(interval, result);
+            Assert.AreEqual(1, result.Start);
+            Assert.AreEqual(5, result.End);
+        }
     }
 }

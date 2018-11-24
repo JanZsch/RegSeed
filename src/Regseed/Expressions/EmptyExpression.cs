@@ -16,5 +16,8 @@ namespace Regseed.Expressions
 
         public IExpression GetInverse() =>
             this;
+
+        public IExpression Clone() =>
+            this;
     }
 }

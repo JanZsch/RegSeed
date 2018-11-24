@@ -34,6 +34,12 @@ namespace Regseed.Expressions
             };
         }
 
+        public override IExpression Clone() =>
+            new IntersectionExpression(_concatExpressions.Select(x => x.Clone()).ToList(), _random)
+            {
+                RepeatRange = RepeatRange?.Clone()
+            };
+
         protected override IStringBuilder ToSingleStringBuilder()
         {
             if (_concatExpressions == null || !_concatExpressions.Any())

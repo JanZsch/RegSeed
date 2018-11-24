@@ -113,6 +113,24 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
+        public void Clone_ReturnsNewConcatenationInstanceWithSameValues()
+        {
+            var expression = Substitute.For<IExpression>();
+            var union = new UnionExpression(new List<IExpression>{expression},  _random)
+            {
+                RepeatRange = new IntegerInterval()
+            };
+            union.RepeatRange.TrySetValue(1, 3);
+
+            var result = union.Clone();
+            
+            Assert.AreNotEqual(union, result);
+            Assert.AreEqual(union.RepeatRange.Start, result.RepeatRange.Start);
+            Assert.AreEqual(union.RepeatRange.End, result.RepeatRange.End);
+            expression.Received(1).Clone();
+        }
+        
+        [Test]
         public void Expand_ReturnsListContainingForStringBuilder_WhenUnionContainsTwoInitialIntersecExpressionsReturningTwoStringBuildersEachOnExpand()
         {
             var intersect1 = Substitute.For<IExpression>();

@@ -128,18 +128,57 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void Expand_ReturnsListContaining3Elements_WhenSingleNotExpandableExpressionWithRepeatRangeFrom1To3IsContained()
+        public void Clone_ReturnsNewConcatenationInstanceWithSameValues()
         {
             var expression = Substitute.For<IExpression>();
+            var concat = new ConcatenationExpression(_random)
+            {
+                RepeatRange = new IntegerInterval()
+            };
+            concat.RepeatRange.TrySetValue(1, 3);
+            concat.Append(expression);
+
+            var result = concat.Clone();
+            
+            Assert.AreNotEqual(concat, result);
+            Assert.AreEqual(concat.RepeatRange.Start, result.RepeatRange.Start);
+            Assert.AreEqual(concat.RepeatRange.End, result.RepeatRange.End);
+            expression.Received(1).Clone();
+        }
+
+        [Test]
+        public void Expand_ReturnsListContaining3Elements_WhenSingleNotExpandableExpressionWithRepeatRangeFrom1To3IsContained()
+        {
+            var clone = Substitute.For<IExpression>();
+            clone.Expand().Returns(new List<IStringBuilder> {new StringBuilderMock(new List<CharacterClassExpression>())});
+            var expression = Substitute.For<IExpression>();
+            expression.Clone().Returns(clone);
             expression.RepeatRange = new IntegerInterval();
             expression.RepeatRange.TrySetValue(1, 3);
-            expression.Expand().Returns(new List<IStringBuilder> {new StringBuilderMock(new List<CharacterClassExpression>())});
             var concat = new ConcatenationExpression(_random);
             concat.Append(expression);
             
             var result = concat.Expand();
             
             Assert.AreEqual(3, result.Count);
+        }
+        
+        [Test]
+        public void Expand_DoesNotChangeRepeatRangeValue_WhenCalled()
+        {
+            var clone = Substitute.For<IExpression>();
+            clone.Expand().Returns(new List<IStringBuilder> {new StringBuilderMock(new List<CharacterClassExpression>())});
+            var expression = Substitute.For<IExpression>();
+            expression.Clone().Returns(clone);
+            expression.RepeatRange = new IntegerInterval();
+            expression.RepeatRange.TrySetValue(1, 3);
+            var concat = new ConcatenationExpression(_random);
+            concat.Append(expression);
+            
+            concat.Expand();
+            
+            Assert.AreEqual(1, expression.RepeatRange.Start);
+            Assert.AreEqual(3, expression.RepeatRange.End);
         }
 
         [Test]

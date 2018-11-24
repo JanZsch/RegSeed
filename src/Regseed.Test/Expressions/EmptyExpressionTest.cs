@@ -25,5 +25,15 @@ namespace Regseed.Test.Expressions
 
             Assert.AreEqual(string.Empty, result);
         }
+
+        [Test]
+        public void Clone_ReturnsEmptyExpression()
+        {
+            var expression = new EmptyExpression();
+
+            var result = expression.Clone();
+
+            Assert.IsInstanceOf<EmptyExpression>(result);
+        }
     }
 }

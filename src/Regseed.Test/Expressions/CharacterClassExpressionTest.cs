@@ -4,6 +4,7 @@ using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
+using Regseed.Common.Ranges;
 using Regseed.Expressions;
 using Regseed.Parser;
 
@@ -13,7 +14,7 @@ namespace Regseed.Test.Expressions
     internal class CharacterClassExpressionTest : CharacterClassExpression
     {
         private int _maxInverseLength;
-        
+
         [SetUp]
         public void Setup()
         {
@@ -21,8 +22,8 @@ namespace Regseed.Test.Expressions
             _alphabet.IsValid(Arg.Any<string>()).Returns(true);
             _randomGenerator = Substitute.For<IRandomGenerator>();
             _maxInverseLength = 1;
-            
-            _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (int)x[1]-(int)x[0] == 1 ? x[0] : 0);
+
+            _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (int) x[1] - (int) x[0] == 1 ? x[0] : 0);
         }
 
         private IParserAlphabet _alphabet;
@@ -32,7 +33,8 @@ namespace Regseed.Test.Expressions
         {
         }
 
-        public CharacterClassExpressionTest(IParserAlphabet alphabet, IRandomGenerator random, int maxLength) : base(alphabet, random, maxLength)
+        public CharacterClassExpressionTest(IParserAlphabet alphabet, IRandomGenerator random, int maxLength) : base(alphabet, random,
+            maxLength)
         {
         }
 
@@ -55,6 +57,26 @@ namespace Regseed.Test.Expressions
 
             Assert.AreEqual("F", result);
         }
+
+        [Test]
+        public void Clone_ReturnsNewConcatenationInstanceWithSameValues()
+        {
+            _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(1);
+            var charClass = new CharacterClassExpression(_alphabet, _randomGenerator, 2)
+            {
+                RepeatRange = new IntegerInterval()
+            };
+            charClass.RepeatRange.TrySetValue(1, 3);
+            charClass.AddCharacters(new List<string> {"f"});
+
+            var result = charClass.Clone();
+
+            Assert.AreNotEqual(charClass, result);
+            Assert.AreEqual(charClass.RepeatRange.Start, result.RepeatRange.Start);
+            Assert.AreEqual(charClass.RepeatRange.End, result.RepeatRange.End);
+            Assert.AreEqual("f", result.ToStringBuilder().GenerateString());
+        }
+
 
         [Test]
         public void ToSingleStringBuilder_DoesNotCallRandomGenerator_WhenCharacterClassEmpty()
@@ -101,11 +123,11 @@ namespace Regseed.Test.Expressions
 
             var result1 = charClassFf.GetIntersection(charClassF).ToStringBuilder().GenerateString();
             var result2 = charClassF.GetIntersection(charClassFf).ToStringBuilder().GenerateString();
-            
+
             Assert.AreEqual("F", result1, "charClassFf.GetIntersection(charClassF)");
             Assert.AreEqual("F", result2, "charClassF.GetIntersection(charClassFf)");
         }
-        
+
         [Test]
         public void GetIntersection_ReturnsEmptyString_WhenCharacterClassContainsFfAndIsIntersectedWithNull()
         {
@@ -113,10 +135,10 @@ namespace Regseed.Test.Expressions
             charClassFf.AddCharacters(new List<string> {"F", "f"});
 
             var result1 = charClassFf.GetIntersection(null).ToStringBuilder().GenerateString();
-            
+
             Assert.AreEqual(string.Empty, result1);
         }
-        
+
         [Test]
         public void GetIntersection_ReturnsEmptyString_WhenCharacterClassContainsFfAndIsIntersectedWithEmptyClass()
         {
@@ -125,10 +147,10 @@ namespace Regseed.Test.Expressions
             var charClassEmpty = new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength);
 
             var result1 = charClassFf.GetIntersection(charClassEmpty).ToStringBuilder().GenerateString();
-            
+
             Assert.AreEqual(string.Empty, result1);
         }
-        
+
         [Test]
         public void GetIntersection_ReturnsEmptyString_WhenCharacterClassIsEmptyAndIsIntersectedWithNonEmptyClass()
         {
@@ -137,10 +159,10 @@ namespace Regseed.Test.Expressions
             var charClassEmpty = new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength);
 
             var result1 = charClassEmpty.GetIntersection(charClassFf).ToStringBuilder().GenerateString();
-            
+
             Assert.AreEqual(string.Empty, result1);
         }
-        
+
         [Test]
         public void GetIntersection_ReturnsEmptyString_WhenIntersectedCharacterClassesContainDifferentCharacters()
         {
@@ -148,9 +170,9 @@ namespace Regseed.Test.Expressions
             charClassFr.AddCharacters(new List<string> {"F", "r"});
             var charClassJa = new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength);
             charClassJa.AddCharacters(new List<string> {"J", "a"});
-            
+
             var result = charClassJa.GetIntersection(charClassFr).ToStringBuilder().GenerateString();
-            
+
             Assert.AreEqual(string.Empty, result);
         }
 
@@ -160,10 +182,10 @@ namespace Regseed.Test.Expressions
             var charClassEmpty = new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength);
 
             var result = charClassEmpty.GetRandomCharacter();
-            
+
             Assert.AreEqual(string.Empty, result);
         }
-        
+
         [Test]
         public void GetCharacter_ReturnsFirstCharacter_WhenCharacterClassContainsSingleCharacter()
         {
@@ -171,11 +193,11 @@ namespace Regseed.Test.Expressions
             charClassF.AddCharacters(new List<string> {"F"});
 
             var result = charClassF.GetRandomCharacter();
-            
+
             Assert.AreEqual("F", result);
             _randomGenerator.Received(0).GetNextInteger(Arg.Any<int>(), Arg.Any<int>());
         }
-        
+
         [Test]
         public void GetCharacter_ReturnsThirdCharacter_WhenCharacterClassContainsThreeCharactersAndRandomGeneratorReturns2()
         {
@@ -184,11 +206,11 @@ namespace Regseed.Test.Expressions
             charClassF.AddCharacters(new List<string> {"F", "r", "a"});
 
             var result = charClassF.GetRandomCharacter();
-            
+
             Assert.AreEqual("a", result);
             _randomGenerator.Received(1).GetNextInteger(Arg.Any<int>(), Arg.Any<int>());
         }
-        
+
         [Test]
         public void GetUnion_ReturnsCharactersJAN_WhenCharacterClassContainsJAAndIsUnitedWithCharacterClassContainingAN()
         {
@@ -196,7 +218,7 @@ namespace Regseed.Test.Expressions
             charClassJA.AddCharacters(new List<string> {"J", "A"});
             var charClassNA = new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength);
             charClassNA.AddCharacters(new List<string> {"N", "A"});
-            
+
             var result = charClassJA.GetUnion(charClassNA);
 
             _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(0);
@@ -206,24 +228,24 @@ namespace Regseed.Test.Expressions
             _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(2);
             Assert.AreEqual("N", result.GetRandomCharacter());
         }
-        
+
         [Test]
         public void GetUnion_ReturnsCharactersJ_WhenCharacterClassContainsJndIsUnitedWithNull()
         {
             var charClassJA = new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength);
             charClassJA.AddCharacters(new List<string> {"J"});
-            
+
             var result = charClassJA.GetUnion(null);
 
             Assert.AreEqual("J", result.GetRandomCharacter());
         }
-        
+
         [Test]
         public void GetUnion_ReturnsCharactersJ_WhenCharacterClassContainsJndIsUnitedWithEmptyCharClass()
         {
             var charClassJA = new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength);
             charClassJA.AddCharacters(new List<string> {"J"});
-            
+
             var result = charClassJA.GetUnion(new CharacterClassExpression(_alphabet, _randomGenerator, _maxInverseLength));
 
             Assert.AreEqual("J", result.GetRandomCharacter());
@@ -236,15 +258,15 @@ namespace Regseed.Test.Expressions
             charClass.AddCharacters(characters);
 
             var result = charClass.GetCharacterCount();
-            
+
             Assert.AreEqual(expectedValue, result);
         }
 
         private static IEnumerable<object[]> GetCharacterCountTestData()
         {
             yield return new object[] {new List<string>(), 0};
-            yield return new object[] {new List<string>{"a"}, 1};
-            yield return new object[] {new List<string>{"a", "b"}, 2};
+            yield return new object[] {new List<string> {"a"}, 1};
+            yield return new object[] {new List<string> {"a", "b"}, 2};
         }
 
         [Test]
@@ -254,7 +276,7 @@ namespace Regseed.Test.Expressions
             charClass.AddCharacters(new List<string> {"a"});
 
             var result = charClass.Expand();
-            
+
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("a", result.FirstOrDefault()?.GenerateString());
         }

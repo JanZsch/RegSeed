@@ -34,6 +34,9 @@ namespace Regseed.Test.Expressions
         public override IExpression GetInverse() =>
             Substitute.For<IExpression>();
 
+        public override IExpression Clone() =>
+            Substitute.For<IExpression>();
+
         protected override IStringBuilder ToSingleStringBuilder()
         {
             var alphabet = Substitute.For<IParserAlphabet>();

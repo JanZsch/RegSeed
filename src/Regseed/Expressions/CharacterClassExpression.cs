@@ -53,6 +53,18 @@ namespace Regseed.Expressions
                 : GetAllCharacterClassInversesUpToMaxInverseLength();
         }
 
+        public override IExpression Clone()
+        {
+            var clone = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
+            {
+                RepeatRange = RepeatRange?.Clone()
+            };
+            
+            clone.AddCharacters(_characterList);
+            
+            return clone;
+        }
+
         public CharacterClassExpression GetComplement()
         {
             var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();

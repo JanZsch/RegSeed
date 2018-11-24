@@ -11,5 +11,6 @@ namespace Regseed.Expressions
         IList<IStringBuilder> Expand();
         IStringBuilder ToStringBuilder();
         IExpression GetInverse();
+        IExpression Clone();
     }
 }
