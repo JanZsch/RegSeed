@@ -28,6 +28,9 @@ namespace Regseed.Test.Expressions
         public BaseExpressionTest(IRandomGenerator random) : base(random)
         { }
 
+        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        { }
+
         public override IList<IStringBuilder> Expand() =>
             new List<IStringBuilder>();
 
@@ -36,6 +39,9 @@ namespace Regseed.Test.Expressions
 
         public override IExpression Clone() =>
             Substitute.For<IExpression>();
+
+        protected override int GetMaxExpansionLength() =>
+            1;
 
         protected override IStringBuilder ToSingleStringBuilder()
         {
@@ -86,8 +92,7 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToRegexString_ReturnsSingleString3Times_WhenRepeatIntervalIs3To3()
         {
-            var expression = new BaseExpressionTest(_randomGenerator);
-            expression.RepeatRange = new IntegerInterval(3);
+            var expression = new BaseExpressionTest(_randomGenerator) {RepeatRange = new IntegerInterval(3)};
             _randomGenerator.GetNextInteger(3, 4).Returns(3);
 
             var result = expression.ToStringBuilder().GenerateString();

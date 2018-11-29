@@ -9,5 +9,8 @@ namespace Regseed.Common.Ranges
             upperBound = repeatRange.End ?? int.MaxValue - 1;
             upperBound = upperBound + 1 < 0 ? 0 : upperBound + 1;
         }
+
+        public static int ToExpansionLengthFactor(this IntegerInterval interval) =>
+            interval == null ? 1 : interval.End ?? int.MaxValue;
     }
 }

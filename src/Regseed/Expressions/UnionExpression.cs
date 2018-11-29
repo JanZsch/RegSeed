@@ -14,12 +14,21 @@ namespace Regseed.Expressions
             _intersectExpressions = expressions;
         }
 
+        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        {           
+            foreach (var intersectExpression in _intersectExpressions)
+                intersectExpression.SetOptimalExpansionLength(expansionLength ?? intersectExpression.MaxExpansionLength);
+            
+            if (expansionLength != null)
+                ExpansionLength = expansionLength.Value;
+        }
+
         public override IList<IStringBuilder> Expand()
         {
             var expandedList = new List<IStringBuilder>();
 
             foreach (var intersectExpression in _intersectExpressions)
-                expandedList.AddRange(intersectExpression.Expand());
+                expandedList.AddRange(intersectExpression.Expand());                
 
             return expandedList;
         }
@@ -35,8 +44,27 @@ namespace Regseed.Expressions
         public override IExpression Clone() =>
             new UnionExpression(_intersectExpressions.Select(x => x.Clone()).ToList(), _random)
             {
-                RepeatRange = RepeatRange?.Clone()
+                RepeatRange = RepeatRange?.Clone(),
+                ExpansionLength = ExpansionLength
             };
+
+        protected override int GetMaxExpansionLength()
+        {
+            var maxExpansion = 0;
+
+            foreach (var intersectExpression in _intersectExpressions)
+            {
+                var expansionLength = intersectExpression.MaxExpansionLength;
+
+                if (expansionLength == int.MaxValue)
+                    return int.MaxValue;
+
+                if (expansionLength > maxExpansion)
+                    maxExpansion = expansionLength;
+            }
+
+            return maxExpansion;
+        }
 
         protected override IStringBuilder ToSingleStringBuilder()
         {

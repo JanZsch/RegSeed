@@ -15,6 +15,14 @@ namespace Regseed.Expressions
             _concatExpressions = concatExpressions;
         }
 
+        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        {
+            ExpansionLength = expansionLength ?? int.MaxValue;
+            
+            foreach (var concatExpression in _concatExpressions)
+                concatExpression.SetOptimalExpansionLength(expansionLength);
+        }
+
         public override IList<IStringBuilder> Expand()
         {
             var seedContent = _concatExpressions.Select(concatExpression => concatExpression.Expand()).ToList();
@@ -37,8 +45,27 @@ namespace Regseed.Expressions
         public override IExpression Clone() =>
             new IntersectionExpression(_concatExpressions.Select(x => x.Clone()).ToList(), _random)
             {
-                RepeatRange = RepeatRange?.Clone()
+                RepeatRange = RepeatRange?.Clone(),
+                ExpansionLength = ExpansionLength
             };
+
+        protected override int GetMaxExpansionLength()
+        {
+            var minExpansionLength = int.MaxValue;
+
+            foreach (var concatExpression in _concatExpressions)
+            {
+                var expansionLength = concatExpression.MaxExpansionLength;
+
+                if (expansionLength == 0)
+                    return 0;
+
+                if (expansionLength < minExpansionLength)
+                    minExpansionLength = expansionLength;
+            }
+
+            return minExpansionLength;
+        }
 
         protected override IStringBuilder ToSingleStringBuilder()
         {

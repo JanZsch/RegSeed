@@ -30,7 +30,7 @@ namespace Regseed.Test.Parser
         [Test]
         public void Constructor_ThrowsArgumentNullException_WhenParserAlphabetIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => _ = new Lexer(null));
+            Assert.Throws<ArgumentNullException>(() => _ = new Lexer((IParserAlphabet) null));
         }
 
         [Test]
@@ -99,7 +99,7 @@ namespace Regseed.Test.Parser
         {
             var lexer = new Lexer(_parserFactory);
 
-            Assert.Throws<ArgumentNullException>(() => lexer.TryConvertToTokenStream(null, out _));
+            Assert.Throws<ArgumentNullException>(() => lexer.TryConvertToTokenStream((IStringStream) null, out _));
         }
     }
 }

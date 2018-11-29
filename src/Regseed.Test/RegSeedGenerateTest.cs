@@ -93,19 +93,43 @@ namespace Regseed.Test
         [TestCase("a{2}b{2}&aabb","aabb")]
         [TestCase(".{2}a.{3}&12a345","12a345")]
         [TestCase(".{0,2}a.{0,3}&12a34","12a34")]
+        [TestCase(".*&a","a")]
+        [TestCase("(.*)&a","a")]
         [TestCase(".{0,2}a.{0,3}&12a34","12a34")]
         [TestCase("1(a|ab|[1-2]){0,2}a.{0,3}&12a34","12a34")]
         [TestCase(".{0,1}a.{0,2}&1a3","1a3")]
+        [TestCase(".*r.*&Ul[Rr]ike","Ulrike")]
         [TestCase("[a-Z+*/.]{0,10}r.{0,10}&Marlene","Marlene")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersectionAndConcatenation(string pattern, string expectedResult)
         {
-            _random = new RandomGenerator(new Random());
-            var loadResult = TryLoadRegexPattern(pattern);
+            var regseed = new RegSeed();
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess, pattern);
-            var result = Generate();
+            var result = regseed.Generate();
 
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
+        }
+        
+        [TestCase(0,7)]
+        public void Generate_ReturnsStringMatchingPattern_WhenResultMustContainSingleCharacterOrSpecialCharacterOrDigitAndIsBetweenMinAndMaxCharactersLong(int min, int max)
+        {
+            var pattern = $"(.*((\\d.*[A-Z]|[A-Z].*\\d)|(\\d.*[?+!]|[!+?].*\\d)|([!+?].*[A-Z]|[A-Z].*[!+?])).*)&\\w{{{min},{max}}}";
+            
+            var regseed = new RegSeed().EnableStandardWildCards();
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
+
+            Assert.IsTrue(loadResult.IsSuccess);
+            var result = regseed.Generate();
+
+            var specialCharMatcher = new Regex(".*[!+?].*");
+            var digitMatcherCharMatcher = new Regex(".*\\d.*");
+            var capitalCharMatcher = new Regex(".*[A-Z].*");
+            var matchResult = (specialCharMatcher.IsMatch(result) || 
+                               digitMatcherCharMatcher.IsMatch(result) ||
+                               capitalCharMatcher.IsMatch(result)) && result.Length <= max && result.Length >= min;
+            
+            Assert.IsTrue(matchResult, "Result was: {0} .", result);
         }
         
         [TestCase("~(f[0-8])&(f[0-9])","f9")]
@@ -367,7 +391,7 @@ namespace Regseed.Test
         public void Interval_BindsStrongerThanUnion_WhenRegexContainsIntervalWithUnion()
         {
             _random = new RandomGenerator(new Random());
-            const string regex = "Ja|Fran{2}";
+            const string regex = "Ja|Uli{2}";
             var regseed = new RegSeed(regex);
 
             for (var i = 0; i < 25; i++)

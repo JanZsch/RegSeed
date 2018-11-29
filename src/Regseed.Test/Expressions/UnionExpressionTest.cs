@@ -17,7 +17,7 @@ namespace Regseed.Test.Expressions
         public void SetUp()
         {
             _stringBuilder = Substitute.For<IStringBuilder>();
-            _stringBuilder.GenerateString().Returns("Till");
+            _stringBuilder.GenerateString().Returns("Claudia");
             
             _randomGenerator = Substitute.For<IRandomGenerator>();
             _expression = Substitute.For<IExpression>();
@@ -96,7 +96,7 @@ namespace Regseed.Test.Expressions
 
             var result = union.ToSingleStringBuilder().GenerateString();
 
-            Assert.AreEqual("Till", result);
+            Assert.AreEqual("Claudia", result);
             _expression.Received(1).ToStringBuilder();
             _randomGenerator.Received(1).GetNextInteger(Arg.Any<int>(), Arg.Any<int>());
         }
@@ -108,7 +108,7 @@ namespace Regseed.Test.Expressions
 
             var result = union.ToSingleStringBuilder().GenerateString();
 
-            Assert.AreEqual("Till", result);
+            Assert.AreEqual("Claudia", result);
             _expression.Received(1).ToStringBuilder();
         }
 
@@ -131,7 +131,7 @@ namespace Regseed.Test.Expressions
         }
         
         [Test]
-        public void Expand_ReturnsListContainingForStringBuilder_WhenUnionContainsTwoInitialIntersecExpressionsReturningTwoStringBuildersEachOnExpand()
+        public void Expand_ReturnsListContainingForStringBuilder_WhenUnionContainsTwoInitialIntersectionExpressionsReturningTwoStringBuildersEachOnExpand()
         {
             var intersect1 = Substitute.For<IExpression>();
             intersect1.Expand()

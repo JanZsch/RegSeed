@@ -27,7 +27,10 @@ namespace Regseed.Expressions
 
         public int GetCharacterCount() =>
             _characterList.Count;
-        
+
+        public override void SetOptimalExpansionLength(int? expansionLength = null) =>
+            ExpansionLength = expansionLength ?? int.MaxValue;
+
         public override IList<IStringBuilder> Expand()
         {
             var returnList = new List<IStringBuilder>();
@@ -57,13 +60,17 @@ namespace Regseed.Expressions
         {
             var clone = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
             {
-                RepeatRange = RepeatRange?.Clone()
+                RepeatRange = RepeatRange?.Clone(),
+                ExpansionLength = ExpansionLength
             };
             
             clone.AddCharacters(_characterList);
             
             return clone;
         }
+
+        protected override int GetMaxExpansionLength() =>
+            1;
 
         public CharacterClassExpression GetComplement()
         {

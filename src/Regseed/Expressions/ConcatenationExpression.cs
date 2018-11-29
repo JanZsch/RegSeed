@@ -37,12 +37,39 @@ namespace Regseed.Expressions
         {
             var clone = new ConcatenationExpression(_random)
             {
-                RepeatRange = RepeatRange?.Clone()
+                RepeatRange = RepeatRange?.Clone(),
+                ExpansionLength = ExpansionLength
             };
 
             clone.AppendRange(_elementaryExpressions.Select(x => x.Clone()));
 
             return clone;
+        }
+
+        protected override int GetMaxExpansionLength()
+        {
+            var maxExpansionLength = 0;
+            
+            foreach (var elementaryExpression in _elementaryExpressions)
+            {
+                var baseExpansionLength = elementaryExpression.MaxExpansionLength;
+                var expansionFactor = elementaryExpression.RepeatRange.ToExpansionLengthFactor();
+
+                if (!AreExpansionFactorsValid(baseExpansionLength, expansionFactor, maxExpansionLength))
+                    return int.MaxValue;
+
+                maxExpansionLength += baseExpansionLength * expansionFactor;
+            }
+
+            return maxExpansionLength;
+        }
+
+        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        {
+            ExpansionLength = expansionLength ?? int.MaxValue;
+            
+            foreach (var elementaryExpression in _elementaryExpressions)
+                elementaryExpression.SetOptimalExpansionLength(expansionLength);
         }
 
         public override IList<IStringBuilder> Expand()
@@ -107,6 +134,9 @@ namespace Regseed.Expressions
             if (start == 1 && end == start +1)
                 return false;
 
+            if (end == int.MaxValue)
+                end = repeatExpression.ExpansionLength + 1;
+            
             for (var i = start; i < end; i++)
             {
                 var distanceConcatPositionToListEnd = repeatExpressions.Count - concatElementPosition - 1;
@@ -157,5 +187,11 @@ namespace Regseed.Expressions
                             .AppendRange(successorRange);
             return concatExpression;
         }
+
+        private static bool AreExpansionFactorsValid(int baseExpansionLength, int expansionFactor, int maxExpansionLength) =>
+            baseExpansionLength != int.MaxValue &&
+            expansionFactor != int.MaxValue &&
+            (double) baseExpansionLength / int.MaxValue * expansionFactor < 1 &&
+            baseExpansionLength * expansionFactor < int.MaxValue - maxExpansionLength;
     }
 }

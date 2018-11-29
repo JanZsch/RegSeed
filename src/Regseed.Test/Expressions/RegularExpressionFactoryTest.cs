@@ -29,6 +29,30 @@ namespace Regseed.Test.Expressions
             var result = factory.TryGetRegularExpression(pattern, out _);
             
             Assert.IsFalse(result.Value.HasIntersection);
+        }        
+        
+        [TestCase("a", 1)]
+        [TestCase("a{0,2}b", 3)]
+        [TestCase("a{0,2}b{8}", 10)]
+        [TestCase("a*b{8}", int.MaxValue)]
+        [TestCase("a+b{8}", int.MaxValue)]
+        [TestCase("a?&b{8}", 1)]
+        [TestCase("a{0,2}|b{3}|franzi", 6)]
+        [TestCase("U(l{0,1}|r{2}|ike){1,2}!{1,4}", 11)]
+        [TestCase("U(l{0,1}|r{2}|[Ii]ke&ike){1,2}!{1,4}", 11)]
+        [TestCase("~(Trump)", int.MaxValue)]
+        [TestCase("[^1]", 1)]
+        [TestCase("~1", int.MaxValue)]
+        [TestCase("~1&12&3", 1)]
+        [TestCase("~1|12&3", int.MaxValue)]
+        public void TryLoadRegex_ReturnedExpressionYieldsExpectedMaxExpansionLength_WhenCalledForPattern(string pattern, int expectedMaxExpansionLength)
+        {
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
+
+            factory.TryGetRegularExpression(pattern, out var union);
+            var result = union.MaxExpansionLength;
+            
+            Assert.AreEqual(expectedMaxExpansionLength, result);
         }
     }
 }

@@ -32,11 +32,12 @@ namespace Regseed.Common.Builder
         {
             if(times < 0)
                 throw new ArgumentOutOfRangeException(RegSeedErrorMessages.InvalidNumberOfConcatenations);
-            
-            var builder = stringBuilder as StringBuilder ?? throw new ArgumentException();
-            
+                       
             var list = new List<CharacterClassExpression>();
             list.AddRange(_characterClasses);
+
+            if(!(stringBuilder is StringBuilder builder))
+                return new StringBuilder(list);
             
             for (var i = 0; i < times; i++)
                 list.AddRange(builder._characterClasses);

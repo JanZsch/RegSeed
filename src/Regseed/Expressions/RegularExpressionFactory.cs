@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
 using Regseed.Common.Results;
 using Regseed.Parser;
-using Regseed.Parser.ParserFactories;
 using Regseed.Parser.RegexTokens;
 using Regseed.Resources;
 using Regseed.Streams;
@@ -27,7 +25,7 @@ namespace Regseed.Expressions
             
             _regexTokenToExpressionMapper = new Dictionary<RegexTokenType, TryGetExpression>
             {
-                {RegexTokenType.Complement, TryGetComplementElementaryExpression},
+                {RegexTokenType.Complement, TryGetInverseElementaryExpression},
                 {RegexTokenType.OpenPrecedence, TryGetGroupExpression},
                 {RegexTokenType.OpenCharacterClass, TryGetCharacterClassExpression},
                 {RegexTokenType.OpenNegateCharacterClass, TryGetCharacterClassExpression},
@@ -45,16 +43,12 @@ namespace Regseed.Expressions
         public IParseResult<ExpressionMetaData> TryGetRegularExpression(string pattern, out IExpression expression)
         {
             expression = null;
-            var parserFactory = new StatefulParserFactory(_alphabet ?? throw new ArgumentNullException());
-            var lexer = new Lexer(parserFactory);
-            var inputStream = new StringStream(pattern);
+            var lexer = new Lexer(_alphabet);
 
-            var parseResult = lexer.TryConvertToTokenStream(inputStream, out var tokenStream);
+            var parseResult = lexer.TryConvertToTokenStream(pattern, out var tokenStream);
 
             if (!parseResult.IsSuccess)
                 return new FailureParseResult<ExpressionMetaData>(parseResult.Position, parseResult.ErrorType);
-
-            tokenStream.Append(new EndOfStreamToken(pattern.Length));
 
             var unionResult = TryGetUnionExpression(tokenStream, out var regex);
 
@@ -64,6 +58,8 @@ namespace Regseed.Expressions
             if (tokenStream.LookAhead(0).GetType<RegexTokenType>() != RegexTokenType.EndOfStream)
                 return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.UnionExpressionExpected);
 
+            regex.SetOptimalExpansionLength();
+            
             expression = regex;
             return unionResult;
         }
@@ -178,7 +174,7 @@ namespace Regseed.Expressions
                 : new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition);
         }
 
-        private IParseResult<ExpressionMetaData> TryGetComplementElementaryExpression(ITokenStream tokenStream, out IExpression expression)
+        private IParseResult<ExpressionMetaData> TryGetInverseElementaryExpression(ITokenStream tokenStream, out IExpression expression)
         {
             expression = null;
             tokenStream.Pop();
@@ -188,6 +184,7 @@ namespace Regseed.Expressions
                 return elementaryResult;
 
             expression = toInvertExpression.GetInverse();
+            expression.MaxExpansionLength = int.MaxValue;
 
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, elementaryResult.Value);
         }
