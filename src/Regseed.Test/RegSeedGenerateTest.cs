@@ -97,6 +97,7 @@ namespace Regseed.Test
         [TestCase(".{0,2}a.{0,3}&12a34","12a34")]
         [TestCase(".*&a","a")]
         [TestCase("(.*)&a","a")]
+        [TestCase("a{3,4}&b{1,2}","")]
         [TestCase(".{0,2}a.{0,3}&12a34","12a34")]
         [TestCase("1(a|ab|[1-2]){0,2}a.{0,3}&12a34","12a34")]
         [TestCase(".{0,1}a.{0,2}&1a3","1a3")]
@@ -112,8 +113,9 @@ namespace Regseed.Test
 
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
-        
-        [TestCase(3,3)]
+
+        [Ignore("")]
+        [TestCase(1,3)]
         public void Generate_ReturnsStringMatchingPattern_WhenResultMustContainSingleCharacterOrSpecialCharacterOrDigitAndIsBetweenMinAndMaxCharactersLong(int min, int max)
         {
             var pattern = $"(.*((\\d.*[A-Z]|[A-Z].*\\d)|(\\d.*[?+!]|[!+?].*\\d)|([!+?].*[A-Z]|[A-Z].*[!+?])).*)&\\w{{{min},{max}}}";
@@ -126,7 +128,7 @@ namespace Regseed.Test
             var result = regseed.Generate();
             var end = DateTime.Now;
 
-            Debug.WriteLine((end - start).TotalMilliseconds); // 25904,7446 ms
+            Debug.WriteLine((end - start).TotalMilliseconds); // 25904,7446 ms für 3-7(??)
             
             var specialCharMatcher = new Regex(".*[!+?].*");
             var digitMatcherCharMatcher = new Regex(".*\\d.*");

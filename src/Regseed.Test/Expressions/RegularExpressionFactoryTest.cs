@@ -36,7 +36,7 @@ namespace Regseed.Test.Expressions
         [TestCase("a{0,2}b{8}", 10)]
         [TestCase("a*b{8}", int.MaxValue)]
         [TestCase("a+b{8}", int.MaxValue)]
-        [TestCase("a?&b{8}", 1)]
+        [TestCase("a?&b{8}", 0)]
         [TestCase("a{0,2}|b{3}|franzi", 6)]
         [TestCase("Ul|rik|e", 3)]
         [TestCase("U(l{0,1}|r{2}|ike){1,2}!{1,4}", 11)]
@@ -44,8 +44,11 @@ namespace Regseed.Test.Expressions
         [TestCase("~(Trump)", int.MaxValue)]
         [TestCase("[^1]", 1)]
         [TestCase("~1", int.MaxValue)]
-        [TestCase("~1&12&3", 1)]
+        [TestCase("~1&12&3", 0)]
+        [TestCase("~1&12&34", 2)]
         [TestCase("~1|12&3", int.MaxValue)]
+        [TestCase(".*&a", 1)]
+        [TestCase("a{3,4}&c{1,2}", 0)]
         public void TryLoadRegex_ReturnedExpressionYieldsExpectedMaxExpansionLength_WhenCalledForPattern(string pattern, int expectedMaxExpansionLength)
         {
             var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
@@ -71,6 +74,9 @@ namespace Regseed.Test.Expressions
         [TestCase("~1", 0)]
         [TestCase("~1&12&3", 0)]
         [TestCase("~1|12&3", 0)]
+        [TestCase(".*&a", 1)]
+        [TestCase(".+&ab", 2)]
+        [TestCase("a{3,4}&c{1,2}", 0)]
         public void TryLoadRegex_ReturnedExpressionYieldsExpectedMinExpansionLength_WhenCalledForPattern(string pattern, int expectedMinExpansionLength)
         {
             var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);

@@ -12,11 +12,11 @@ namespace Regseed.Expressions
         {
         }
 
-        public override void SetExpansionLength(int expansionLength)
+        public override void SetExpansionLength(int _ = 0)
         {
             foreach (var intersectExpression in _intersectExpressions)
             {
-                MaxExpansionInterval.ToBounds(out var lower, out var upper);
+                intersectExpression.MaxExpansionInterval.ToBounds(out var lower, out var upper);
                 var rand = _random.GetNextInteger(lower, upper);
                 intersectExpression.SetExpansionLength(upper);
             }

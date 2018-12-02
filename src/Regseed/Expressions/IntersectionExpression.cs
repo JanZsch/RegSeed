@@ -52,14 +52,17 @@ namespace Regseed.Expressions
 
         protected override IntegerInterval GetMaxExpansionInterval ()
         {
-            var minExpansion = int.MaxValue;
+            var minExpansion = 0;
             var maxExpansion = int.MaxValue;
 
             foreach (var concatExpression in _concatExpressions)
             {
                 concatExpression.MaxExpansionInterval.ToExpansionBounds(out var minExpansionLength, out var maxExpansionLength);
 
-                if (minExpansionLength < minExpansion)
+                if(minExpansionLength > maxExpansion || maxExpansionLength < minExpansion)
+                    return new IntegerInterval(0);
+                
+                if (minExpansion < minExpansionLength)
                     minExpansion = minExpansionLength;
                 
                 if (maxExpansionLength < maxExpansion)

@@ -122,7 +122,7 @@ namespace Regseed.Test
         [Test]
         public void SetMaxCharInverseLength_GenerateReturnsStringsOfAtMostLength3_WhenCalledWith3()
         {
-            const int runs = 15;
+            const int runs = 200;
             var lengthCounts = new[] {0, 0, 0, 0};
             var regseed = new RegSeed().SetMaxCharClassInverseLength(3);
             regseed.TryLoadRegexPattern("~a");
