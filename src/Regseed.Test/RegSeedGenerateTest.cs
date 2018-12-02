@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NSubstitute;
@@ -65,6 +66,7 @@ namespace Regseed.Test
         
         [TestCase("jan&[Jj][Aa][Nn]","jan")]
         [TestCase("jan&Fra","")]
+        [TestCase("1&2|3&4","")]
         [TestCase("[Ulr][Ulr][Ulr]&Ul","")]
         [TestCase("ulri\\-[0-9]\\-ke&ulri\\-9\\-ke","ulri-9-ke")]
         [TestCase("franziska&franziska","franziska")]
@@ -111,7 +113,7 @@ namespace Regseed.Test
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
         
-        [TestCase(0,7)]
+        [TestCase(3,3)]
         public void Generate_ReturnsStringMatchingPattern_WhenResultMustContainSingleCharacterOrSpecialCharacterOrDigitAndIsBetweenMinAndMaxCharactersLong(int min, int max)
         {
             var pattern = $"(.*((\\d.*[A-Z]|[A-Z].*\\d)|(\\d.*[?+!]|[!+?].*\\d)|([!+?].*[A-Z]|[A-Z].*[!+?])).*)&\\w{{{min},{max}}}";
@@ -120,8 +122,12 @@ namespace Regseed.Test
             var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess);
+            var start = DateTime.Now;
             var result = regseed.Generate();
+            var end = DateTime.Now;
 
+            Debug.WriteLine((end - start).TotalMilliseconds); // 25904,7446 ms
+            
             var specialCharMatcher = new Regex(".*[!+?].*");
             var digitMatcherCharMatcher = new Regex(".*\\d.*");
             var capitalCharMatcher = new Regex(".*[A-Z].*");
@@ -288,7 +294,7 @@ namespace Regseed.Test
         [TestCase("[abaaaa]","a", "b")]
         public void Generate_ReturnsEquallyDistributedResults_WhenRegexContainsCharacterClassesAndOrIntersection(string pattern, string resultA, string resultB)
         {
-            const int totalRuns = 500;
+            const int totalRuns = 750;
             _random = new RandomGenerator(new Random());
             var loadResult = TryLoadRegexPattern(pattern);
 

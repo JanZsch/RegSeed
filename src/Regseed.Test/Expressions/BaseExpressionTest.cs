@@ -28,7 +28,7 @@ namespace Regseed.Test.Expressions
         public BaseExpressionTest(IRandomGenerator random) : base(random)
         { }
 
-        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        public override void SetExpansionLength(int expansionLength = 0)
         { }
 
         public override IList<IStringBuilder> Expand() =>
@@ -40,8 +40,8 @@ namespace Regseed.Test.Expressions
         public override IExpression Clone() =>
             Substitute.For<IExpression>();
 
-        protected override int GetMaxExpansionLength() =>
-            1;
+        protected override IntegerInterval GetMaxExpansionInterval() =>
+            new IntegerInterval(1);
 
         protected override IStringBuilder ToSingleStringBuilder()
         {

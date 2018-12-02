@@ -46,30 +46,40 @@ namespace Regseed.Expressions
             return clone;
         }
 
-        protected override int GetMaxExpansionLength()
+        protected override IntegerInterval GetMaxExpansionInterval()
         {
             var maxExpansionLength = 0;
+            var minExpansionLength = 0;
             
             foreach (var elementaryExpression in _elementaryExpressions)
             {
-                var baseExpansionLength = elementaryExpression.MaxExpansionLength;
-                var expansionFactor = elementaryExpression.RepeatRange.ToExpansionLengthFactor();
+                elementaryExpression.MaxExpansionInterval.ToExpansionBounds(out var baseMinLength, out var baseMaxLength);
+                
+                elementaryExpression.RepeatRange.ToExpansionBounds(out var minExpansionFactor, out var maxExpansionFactor);
 
-                if (!AreExpansionFactorsValid(baseExpansionLength, expansionFactor, maxExpansionLength))
-                    return int.MaxValue;
-
-                maxExpansionLength += baseExpansionLength * expansionFactor;
+                if (!IsExpansionFactorValid(baseMaxLength, maxExpansionFactor, maxExpansionLength))
+                    maxExpansionLength = int.MaxValue;
+                else
+                    maxExpansionLength += maxExpansionFactor * baseMaxLength;
+                
+                if (!IsExpansionFactorValid(baseMinLength, minExpansionFactor, minExpansionLength))
+                    minExpansionLength = int.MaxValue;
+                else
+                    minExpansionLength += minExpansionFactor * baseMinLength;
             }
 
-            return maxExpansionLength;
+            var maxExpansionInterval = new IntegerInterval();
+            maxExpansionInterval.TrySetValue(minExpansionLength, maxExpansionLength);
+            
+            return maxExpansionInterval;
         }
 
-        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        public override void SetExpansionLength(int expansionLength = 0)
         {
-            ExpansionLength = expansionLength ?? int.MaxValue;
+            ExpansionLength = expansionLength;
             
             foreach (var elementaryExpression in _elementaryExpressions)
-                elementaryExpression.SetOptimalExpansionLength(expansionLength);
+                elementaryExpression.SetExpansionLength(expansionLength);
         }
 
         public override IList<IStringBuilder> Expand()
@@ -188,7 +198,7 @@ namespace Regseed.Expressions
             return concatExpression;
         }
 
-        private static bool AreExpansionFactorsValid(int baseExpansionLength, int expansionFactor, int maxExpansionLength) =>
+        private static bool IsExpansionFactorValid(int baseExpansionLength, int expansionFactor, int maxExpansionLength) =>
             baseExpansionLength != int.MaxValue &&
             expansionFactor != int.MaxValue &&
             (double) baseExpansionLength / int.MaxValue * expansionFactor < 1 &&

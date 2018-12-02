@@ -28,8 +28,8 @@ namespace Regseed.Expressions
         public int GetCharacterCount() =>
             _characterList.Count;
 
-        public override void SetOptimalExpansionLength(int? expansionLength = null) =>
-            ExpansionLength = expansionLength ?? int.MaxValue;
+        public override void SetExpansionLength(int expansionLength = 0) =>
+            ExpansionLength = expansionLength;
 
         public override IList<IStringBuilder> Expand()
         {
@@ -69,8 +69,8 @@ namespace Regseed.Expressions
             return clone;
         }
 
-        protected override int GetMaxExpansionLength() =>
-            1;
+        protected override IntegerInterval GetMaxExpansionInterval() =>
+            new IntegerInterval(1);
 
         public CharacterClassExpression GetComplement()
         {

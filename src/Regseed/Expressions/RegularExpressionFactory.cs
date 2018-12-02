@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
@@ -17,6 +18,10 @@ namespace Regseed.Expressions
         private readonly IDictionary<RegexTokenType, TryGetExpression> _regexTokenToExpressionListMapper;
         private readonly int _maxCharClassInverseLength;
 
+        private readonly  IDictionary<Type, Func<List<IExpression>, IExpression>> _listTypeExpressionFactories;
+        private readonly  IDictionary<Type, RegexTokenType> _expressionTokenTypeMapper;
+
+        
         public RegularExpressionFactory(IParserAlphabet alphabet, IRandomGenerator random, int maxCharClassInverseLength)
         {
             _random = random;
@@ -38,6 +43,21 @@ namespace Regseed.Expressions
                 {RegexTokenType.Union, TryGetIntersectionExpression},
                 {RegexTokenType.Intersection, TryGetConcatenationExpression}
             };
+
+            _listTypeExpressionFactories = new Dictionary<Type, Func<List<IExpression>, IExpression>>
+            {
+                {typeof(SeedUnionExpression), x => new SeedUnionExpression(x, _random)},
+                {typeof(UnionExpression), x => new UnionExpression(x, _random)},
+                {typeof(IntersectionExpression), x => new IntersectionExpression(x, _random)}
+            };
+            
+            _expressionTokenTypeMapper = new Dictionary<Type, RegexTokenType>
+            {
+                {typeof(SeedUnionExpression), RegexTokenType.Union},
+                {typeof(UnionExpression), RegexTokenType.Union},
+                {typeof(IntersectionExpression), RegexTokenType.Intersection}
+            };
+            
         }
 
         public IParseResult<ExpressionMetaData> TryGetRegularExpression(string pattern, out IExpression expression)
@@ -50,7 +70,7 @@ namespace Regseed.Expressions
             if (!parseResult.IsSuccess)
                 return new FailureParseResult<ExpressionMetaData>(parseResult.Position, parseResult.ErrorType);
 
-            var unionResult = TryGetUnionExpression(tokenStream, out var regex);
+            var unionResult = TryGetUnionExpression<SeedUnionExpression>(tokenStream, out var regex);
 
             if (!unionResult.IsSuccess)
                 return unionResult;
@@ -58,32 +78,33 @@ namespace Regseed.Expressions
             if (tokenStream.LookAhead(0).GetType<RegexTokenType>() != RegexTokenType.EndOfStream)
                 return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.UnionExpressionExpected);
 
-            regex.SetOptimalExpansionLength();
+            regex.SetExpansionLength();
             
             expression = regex;
             return unionResult;
         }
 
-        private IParseResult<ExpressionMetaData> TryGetUnionExpression(ITokenStream tokenStream, out IExpression unionExpression) =>
-            TryGetExpressionListSeparatedByToken(RegexTokenType.Union, tokenStream, out unionExpression);
+        private IParseResult<ExpressionMetaData> TryGetUnionExpression<TExpression>(ITokenStream tokenStream, out IExpression unionExpression) where TExpression : UnionExpression =>
+            TryGetExpressionListSeparatedByToken<TExpression>(tokenStream, out unionExpression);
 
 
         private IParseResult<ExpressionMetaData> TryGetIntersectionExpression(ITokenStream tokenStream, out IExpression intersectionExpression) =>
-            TryGetExpressionListSeparatedByToken(RegexTokenType.Intersection, tokenStream, out intersectionExpression);
+            TryGetExpressionListSeparatedByToken<IntersectionExpression>(tokenStream, out intersectionExpression);
 
-        private IParseResult<ExpressionMetaData> TryGetExpressionListSeparatedByToken(RegexTokenType token, ITokenStream tokenStream, out IExpression expression)
+        private IParseResult<ExpressionMetaData> TryGetExpressionListSeparatedByToken<TExpression>(ITokenStream tokenStream, out IExpression expression)
         {
             expression = new EmptyExpression();
             
             if (tokenStream.LookAhead(0).GetType<RegexTokenType>() == RegexTokenType.EndOfStream)
                 return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
 
+            var token = _expressionTokenTypeMapper[typeof(TExpression)];
             var subExpressionResult = TryGetSubExpressionList(token, tokenStream, out var subExpressionList);
 
             if(!subExpressionResult.IsSuccess)
                 return subExpressionResult;
 
-            expression = CreateExpression(token, subExpressionList);
+            expression = CreateExpression<TExpression>(subExpressionList);
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, subExpressionResult.Value);
         }
 
@@ -121,18 +142,10 @@ namespace Regseed.Expressions
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, metaData);
         }
 
-        private IExpression CreateExpression(RegexTokenType token, List<IExpression> expressions)
-        {
-            switch (token)
-            {
-                case RegexTokenType.Union:
-                    return new UnionExpression(expressions, _random);
-                case RegexTokenType.Intersection:
-                    return new IntersectionExpression(expressions, _random);
-                default:
-                    return new EmptyExpression();
-            }
-        }
+        private IExpression CreateExpression<TExpression>(List<IExpression> expressions) =>
+         _listTypeExpressionFactories.TryGetValue(typeof(TExpression), out var factory)
+                ? factory(expressions)
+                : new EmptyExpression();
         
         private IParseResult<ExpressionMetaData> TryGetConcatenationExpression(ITokenStream tokenStream, out IExpression expression)
         {
@@ -184,7 +197,7 @@ namespace Regseed.Expressions
                 return elementaryResult;
 
             expression = toInvertExpression.GetInverse();
-            expression.MaxExpansionLength = int.MaxValue;
+            expression.MaxExpansionInterval = IntegerInterval.MaxInterval;
 
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, elementaryResult.Value);
         }
@@ -214,7 +227,7 @@ namespace Regseed.Expressions
                 return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, new ExpressionMetaData());
             }
 
-            var unionExpressionResult = TryGetUnionExpression(tokenStream, out expression);
+            var unionExpressionResult = TryGetUnionExpression<UnionExpression>(tokenStream, out expression);
 
             if (!unionExpressionResult.IsSuccess)
                 return unionExpressionResult;

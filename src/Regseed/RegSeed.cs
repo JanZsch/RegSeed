@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Regseed.Common.Builder;
 using Regseed.Common.Random;
 using Regseed.Common.Results;
 using Regseed.Expressions;
@@ -19,7 +17,6 @@ namespace Regseed
         private readonly IParserAlphabet _alphabet;
         private ExpressionMetaData _expressionMetaData;
         private IExpression _regularExpression;
-        private IList<IStringBuilder> _expandedStringBuilderListCache;
         protected IRandomGenerator _random;
 
         public int MaxCharClassInverseLength { get; private set; }
@@ -58,7 +55,6 @@ namespace Regseed
             _wasInitialised = false;
             _expressionMetaData = null;
             _regularExpression = null;
-            _expandedStringBuilderListCache = null;
 
             if (_replaceWildCards)
                 regex = regex.ReplaceRegexWildCards();
@@ -105,13 +101,13 @@ namespace Regseed
             if (!_expressionMetaData.HasIntersection && !_expressionMetaData.HasComplement)
                 return _regularExpression.ToStringBuilder().GenerateString();
 
-            _expandedStringBuilderListCache = _expandedStringBuilderListCache ?? _regularExpression.Expand();
+            var expandedStringBuilder = _regularExpression.Expand();
 
-            if (!_expandedStringBuilderListCache.Any()) 
+            if (!expandedStringBuilder.Any()) 
                 return string.Empty;
             
-            var random = _random.GetNextInteger(0, _expandedStringBuilderListCache.Count);
-            return _expandedStringBuilderListCache[random].GenerateString();
+            var random = _random.GetNextInteger(0, expandedStringBuilder.Count);
+            return expandedStringBuilder[random].GenerateString();
         }
     }
 }

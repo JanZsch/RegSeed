@@ -6,21 +6,21 @@ namespace Regseed.Expressions
 {
     internal class EmptyExpression : IExpression
     {
-        private int _maxExpansionLength;
+        private IntegerInterval _maxExpansionInterval;
         
         public IntegerInterval RepeatRange { get; set; }
 
         public int ExpansionLength =>
             0;
 
-        public int MaxExpansionLength
+        public IntegerInterval MaxExpansionInterval
         {
-            get => _maxExpansionLength; 
-            set => _maxExpansionLength = 0;
+            get => _maxExpansionInterval; 
+            set => _maxExpansionInterval = new IntegerInterval(0);
         }
 
-        public void SetOptimalExpansionLength(int? expansionLength = null) =>
-            _maxExpansionLength = 0;
+        public void SetExpansionLength(int expansionLength) =>
+            _maxExpansionInterval = new IntegerInterval(0);
 
         public IList<IStringBuilder> Expand() =>
             new List<IStringBuilder>{StringBuilder.Empty};

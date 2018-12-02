@@ -7,10 +7,10 @@ namespace Regseed.Expressions
     internal interface IExpression
     {
         int ExpansionLength { get; }
-        int MaxExpansionLength { get; set; }
+        IntegerInterval MaxExpansionInterval { get; set; }
         IntegerInterval RepeatRange { get; set; }
 
-        void SetOptimalExpansionLength(int? expansionLength = null);
+        void SetExpansionLength(int expansionLength = 0);
         IList<IStringBuilder> Expand();
         IStringBuilder ToStringBuilder();
         IExpression GetInverse();

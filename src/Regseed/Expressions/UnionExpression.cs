@@ -2,25 +2,25 @@ using System.Collections.Generic;
 using System.Linq;
 using Regseed.Common.Builder;
 using Regseed.Common.Random;
+using Regseed.Common.Ranges;
 
 namespace Regseed.Expressions
 {
     internal class UnionExpression : BaseExpression
     {
-        private readonly List<IExpression> _intersectExpressions;
+        protected readonly List<IExpression> _intersectExpressions;
         
         public UnionExpression(List<IExpression> expressions, IRandomGenerator random) : base(random)
         {
             _intersectExpressions = expressions;
         }
 
-        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        public override void SetExpansionLength(int expansionLength = 0)
         {           
             foreach (var intersectExpression in _intersectExpressions)
-                intersectExpression.SetOptimalExpansionLength(expansionLength ?? intersectExpression.MaxExpansionLength);
+                intersectExpression.SetExpansionLength(expansionLength);
             
-            if (expansionLength != null)
-                ExpansionLength = expansionLength.Value;
+            ExpansionLength = expansionLength;
         }
 
         public override IList<IStringBuilder> Expand()
@@ -33,13 +33,11 @@ namespace Regseed.Expressions
             return expandedList;
         }
 
-        public override IExpression GetInverse()
-        {
-            return new IntersectionExpression(_intersectExpressions.Select(x => x.GetInverse()).ToList(), _random)
+        public override IExpression GetInverse() =>
+            new IntersectionExpression(_intersectExpressions.Select(x => x.GetInverse()).ToList(), _random)
             {
                 RepeatRange = RepeatRange
             };
-        }
 
         public override IExpression Clone() =>
             new UnionExpression(_intersectExpressions.Select(x => x.Clone()).ToList(), _random)
@@ -48,22 +46,29 @@ namespace Regseed.Expressions
                 ExpansionLength = ExpansionLength
             };
 
-        protected override int GetMaxExpansionLength()
+        protected override IntegerInterval GetMaxExpansionInterval()
         {
             var maxExpansion = 0;
+            var minExpansion = int.MaxValue;
 
             foreach (var intersectExpression in _intersectExpressions)
             {
-                var expansionLength = intersectExpression.MaxExpansionLength;
+                intersectExpression.MaxExpansionInterval.ToExpansionBounds(out var lowerBound, out var upperBound);
 
-                if (expansionLength == int.MaxValue)
-                    return int.MaxValue;
+                if (upperBound > maxExpansion)
+                    maxExpansion = upperBound;
+                
+                if (lowerBound < minExpansion)
+                    minExpansion = lowerBound;
 
-                if (expansionLength > maxExpansion)
-                    maxExpansion = expansionLength;
+                if (minExpansion == 0 && maxExpansion == int.MaxValue)
+                    return IntegerInterval.MaxInterval;
             }
 
-            return maxExpansion;
+            var maxExpansionInterval = new IntegerInterval();
+            maxExpansionInterval.TrySetValue(minExpansion, maxExpansion);
+            
+            return maxExpansionInterval;
         }
 
         protected override IStringBuilder ToSingleStringBuilder()

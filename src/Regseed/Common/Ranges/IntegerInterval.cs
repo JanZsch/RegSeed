@@ -27,5 +27,15 @@ namespace Regseed.Common.Ranges
             clone.TrySetValue(Start, End);
             return clone;
         }
+
+        public static IntegerInterval MaxInterval
+        {
+            get
+            {
+                var interval = new IntegerInterval();
+                interval.TrySetValue(0, int.MaxValue);
+                return interval;
+            }
+        }
     }
 }

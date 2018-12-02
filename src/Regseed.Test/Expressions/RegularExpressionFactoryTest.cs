@@ -38,6 +38,7 @@ namespace Regseed.Test.Expressions
         [TestCase("a+b{8}", int.MaxValue)]
         [TestCase("a?&b{8}", 1)]
         [TestCase("a{0,2}|b{3}|franzi", 6)]
+        [TestCase("Ul|rik|e", 3)]
         [TestCase("U(l{0,1}|r{2}|ike){1,2}!{1,4}", 11)]
         [TestCase("U(l{0,1}|r{2}|[Ii]ke&ike){1,2}!{1,4}", 11)]
         [TestCase("~(Trump)", int.MaxValue)]
@@ -50,9 +51,34 @@ namespace Regseed.Test.Expressions
             var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
 
             factory.TryGetRegularExpression(pattern, out var union);
-            var result = union.MaxExpansionLength;
+            var result = union.MaxExpansionInterval.End;
             
             Assert.AreEqual(expectedMaxExpansionLength, result);
+        }
+        
+        [TestCase("a", 1)]
+        [TestCase("a{0,2}b", 1)]
+        [TestCase("a{0,2}b{8}", 8)]
+        [TestCase("a*b{8}", 8)]
+        [TestCase("a+b{8}", 9)]
+        [TestCase("a?&b{8}", 0)]
+        [TestCase("a{0,2}|b{3}|franzi", 0)]
+        [TestCase("Ul|rik|e", 1)]
+        [TestCase("U(l{0,1}|r{2}|ike){1,2}!{1,4}", 2)]
+        [TestCase("U(l{0,1}|r{2}|[Ii]ke&ike){1,2}!{1,4}", 2)]
+        [TestCase("~(Trump)", 0)]
+        [TestCase("[^1]", 1)]
+        [TestCase("~1", 0)]
+        [TestCase("~1&12&3", 0)]
+        [TestCase("~1|12&3", 0)]
+        public void TryLoadRegex_ReturnedExpressionYieldsExpectedMinExpansionLength_WhenCalledForPattern(string pattern, int expectedMinExpansionLength)
+        {
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
+
+            factory.TryGetRegularExpression(pattern, out var union);
+            var result = union.MaxExpansionInterval.Start;
+            
+            Assert.AreEqual(expectedMinExpansionLength, result);
         }
     }
 }

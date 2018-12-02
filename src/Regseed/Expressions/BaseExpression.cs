@@ -7,14 +7,14 @@ namespace Regseed.Expressions
 {
     internal abstract class BaseExpression : IExpression
     {
-        private int? _maxExpansionLength;
+        private IntegerInterval _maxExpansionInterval;
 
         public int ExpansionLength { get; protected set; }
 
-        public int MaxExpansionLength
+        public IntegerInterval MaxExpansionInterval
         {
-            get => _maxExpansionLength ?? GetMaxExpansionLength();
-            set => _maxExpansionLength = value;
+            get => _maxExpansionInterval ?? GetMaxExpansionInterval();
+            set => _maxExpansionInterval = value;
         }
         
         public IntegerInterval RepeatRange { get; set; }
@@ -35,12 +35,12 @@ namespace Regseed.Expressions
             return StringBuilder.Empty.ConcatWith(singleStringBuilder, repeatedTimes);
         }
 
-        public abstract void SetOptimalExpansionLength(int? expansionLength = null);
+        public abstract void SetExpansionLength(int expansionLength = 0);
         public abstract IList<IStringBuilder> Expand();
         public abstract IExpression GetInverse();
         public abstract IExpression Clone();
 
-        protected abstract int GetMaxExpansionLength();
+        protected abstract IntegerInterval GetMaxExpansionInterval();
         protected abstract IStringBuilder ToSingleStringBuilder();
     }
 }

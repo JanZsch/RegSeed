@@ -3,6 +3,7 @@ using System.Linq;
 using Regseed.Common.Builder;
 using Regseed.Common.Helper;
 using Regseed.Common.Random;
+using Regseed.Common.Ranges;
 
 namespace Regseed.Expressions
 {
@@ -15,12 +16,12 @@ namespace Regseed.Expressions
             _concatExpressions = concatExpressions;
         }
 
-        public override void SetOptimalExpansionLength(int? expansionLength = null)
+        public override void SetExpansionLength(int expansionLength = 0)
         {
-            ExpansionLength = expansionLength ?? int.MaxValue;
+            ExpansionLength = expansionLength;
             
             foreach (var concatExpression in _concatExpressions)
-                concatExpression.SetOptimalExpansionLength(expansionLength);
+                concatExpression.SetExpansionLength(expansionLength);
         }
 
         public override IList<IStringBuilder> Expand()
@@ -49,22 +50,29 @@ namespace Regseed.Expressions
                 ExpansionLength = ExpansionLength
             };
 
-        protected override int GetMaxExpansionLength()
+        protected override IntegerInterval GetMaxExpansionInterval ()
         {
-            var minExpansionLength = int.MaxValue;
+            var minExpansion = int.MaxValue;
+            var maxExpansion = int.MaxValue;
 
             foreach (var concatExpression in _concatExpressions)
             {
-                var expansionLength = concatExpression.MaxExpansionLength;
+                concatExpression.MaxExpansionInterval.ToExpansionBounds(out var minExpansionLength, out var maxExpansionLength);
 
-                if (expansionLength == 0)
-                    return 0;
-
-                if (expansionLength < minExpansionLength)
-                    minExpansionLength = expansionLength;
+                if (minExpansionLength < minExpansion)
+                    minExpansion = minExpansionLength;
+                
+                if (maxExpansionLength < maxExpansion)
+                    maxExpansion = maxExpansionLength;
+                
+                if(minExpansion == 0 && maxExpansion == 0)
+                    return new IntegerInterval(0);
             }
 
-            return minExpansionLength;
+            var minExpansionInterval = new IntegerInterval();
+            minExpansionInterval.TrySetValue(minExpansion, maxExpansion);
+            
+            return minExpansionInterval;
         }
 
         protected override IStringBuilder ToSingleStringBuilder()
@@ -89,6 +97,11 @@ namespace Regseed.Expressions
         
         private static void MergeAndAddStringBuilderForSingleUnionRepresentation(List<IList<IStringBuilder>> intersectStringBuilders, List<IStringBuilder> result)
         {
+            //TODO: hier die abbruchbedingung noch mal ueberprüfen: abbrecen sobald einer der stringbuilder leer ist
+            
+            if(ContainsNullOrEmptyStringBuilder(intersectStringBuilders))
+                return;
+            
             var intersection = intersectStringBuilders.FirstOrDefault()?.FirstOrDefault();
 
             if (intersection == null)
@@ -112,6 +125,13 @@ namespace Regseed.Expressions
             if (doAllStringBuildersCreateStringsOfSameLength && intersection.GeneratedStringLength() != 0)
                 result.Add(intersection);
         }
+
+        private static bool ContainsNullOrEmptyStringBuilder(List<IList<IStringBuilder>> intersectStringBuilders) =>
+            intersectStringBuilders.Any(x =>
+            {
+                var builder = x.FirstOrDefault();
+                return builder == null || builder.GeneratedStringLength() == 0;
+            });
         
         private static IStringBuilder IntersectStringBuilderWith(IStringBuilder toIntersectStringBuilder, IStringBuilder intersectionResult)
         {
