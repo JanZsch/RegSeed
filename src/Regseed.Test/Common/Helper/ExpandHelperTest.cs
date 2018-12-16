@@ -16,7 +16,7 @@ namespace Regseed.Test.Common.Helper
          
             var result = ExpandHelper.WasExpandedStringBuilderListAddedToList(seed, initialExpandedList, 0);
             
-            Assert.IsFalse(result);
+            Assert.AreEqual(ExpansionStatus.NotExpanded, result);
             Assert.AreEqual(1, initialExpandedList.Count);
         }
 
@@ -37,7 +37,7 @@ namespace Regseed.Test.Common.Helper
          
             var result = ExpandHelper.WasExpandedStringBuilderListAddedToList(seed, resultExpandedList, 0);
             
-            Assert.IsTrue(result);
+            Assert.AreEqual(ExpansionStatus.Expanded, result);
             Assert.AreEqual(2, resultExpandedList.Count);
         }
 
@@ -64,10 +64,10 @@ namespace Regseed.Test.Common.Helper
         [Test]
         public void ExpandListRepresentation_ReturnedListHasOneElement_WhenSeedContainsNoElementToBeExpanded()
         {
-            bool WasNotExpanded(List<int> expression, List<List<int>> expandedElements, int pos) => false;
+            ExpansionStatus  WasNotExpanded(List<int> expression, List<List<int>> expandedElements, int pos) => ExpansionStatus.NotExpanded;
             var seed = new List<List<int>> {new List<int>{1}};
 
-            var result = ExpandHelper.ExpandListRepresentation(seed, WasNotExpanded);
+            var result = ExpandHelper.ExpandListRepresentation(seed, null, WasNotExpanded);
             
             Assert.AreEqual(1, result.Count);
         }
@@ -75,16 +75,16 @@ namespace Regseed.Test.Common.Helper
         [Test]
         public void ExpandListRepresentation_ReturnedListHasThreeElements_WhenSeedContainsElementToBeExpandedIntoThreeSubelements()
         {
-            bool WasExpanded(List<int> expression, List<List<int>> expandedElements, int pos)
+            ExpansionStatus WasExpanded(IEnumerable<int> expression, ICollection<List<int>> expandedElements, int pos)
             {
                 foreach (var i in expression)
                     expandedElements.Add(new List<int>{i});
 
-                return true;
+                return ExpansionStatus.Expanded;
             }
             var seed = new List<List<int>> {new List<int>{1,2,3}};
 
-            var result = ExpandHelper.ExpandListRepresentation(seed, WasExpanded);
+            var result = ExpandHelper.ExpandListRepresentation(seed, null, WasExpanded);
             
             Assert.AreEqual(3, result.Count);
         }

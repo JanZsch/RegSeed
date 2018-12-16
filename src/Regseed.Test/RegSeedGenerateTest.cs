@@ -114,8 +114,8 @@ namespace Regseed.Test
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
 
-        [Ignore("")]
-        [TestCase(1,3)]
+        [TestCase(2,6)]
+        [TestCase(8,8)]
         public void Generate_ReturnsStringMatchingPattern_WhenResultMustContainSingleCharacterOrSpecialCharacterOrDigitAndIsBetweenMinAndMaxCharactersLong(int min, int max)
         {
             var pattern = $"(.*((\\d.*[A-Z]|[A-Z].*\\d)|(\\d.*[?+!]|[!+?].*\\d)|([!+?].*[A-Z]|[A-Z].*[!+?])).*)&\\w{{{min},{max}}}";
@@ -128,7 +128,7 @@ namespace Regseed.Test
             var result = regseed.Generate();
             var end = DateTime.Now;
 
-            Debug.WriteLine((end - start).TotalMilliseconds); // 25904,7446 ms für 3-7(??)
+            Debug.WriteLine((end - start).TotalMilliseconds);
             
             var specialCharMatcher = new Regex(".*[!+?].*");
             var digitMatcherCharMatcher = new Regex(".*\\d.*");
@@ -143,6 +143,7 @@ namespace Regseed.Test
         [TestCase("~(f[0-8])&(f[0-9])","f9")]
         [TestCase("~(c[0-9])&~(f[0-8])&[cf][0-9]","f9")]
         [TestCase("~(f{1,2})&f{1,3}","fff")]
+        [TestCase("~(f{1,2}f)&f{1,4}","ffff")]
         [TestCase("~f&f{1,2}","ff")]
         [TestCase("F(R|r)a&~(FRa)","Fra")]
         [TestCase("x|jan&~jan","x")]
@@ -223,7 +224,7 @@ namespace Regseed.Test
         [TestCase("[{2}-{1}]&{0}|{0}|{2}", 0.6666, 0, 0.3333)]
         public void Generate_ResultsAreEssentiallyEquallyDistributed_WhenRegexContainsUnion(string regexPattern, double frequencyF, double frequencyR, double frequencyA)
         {
-            const int runs = 800;
+            const int runs = 1000;
             var countOfF = 0; 
             var countOfR = 0; 
             var countOfA = 0; 

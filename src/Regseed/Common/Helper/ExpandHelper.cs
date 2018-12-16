@@ -7,11 +7,11 @@ namespace Regseed.Common.Helper
 {
     internal static class ExpandHelper
     {
-        public static bool WasExpandedStringBuilderListAddedToList(List<IList<IStringBuilder>> stringBuilderList, List<List<IList<IStringBuilder>>> newExpandList, int concatElementPosition)
+        public static ExpansionStatus WasExpandedStringBuilderListAddedToList(List<IList<IStringBuilder>> stringBuilderList, List<List<IList<IStringBuilder>>> newExpandList, int concatElementPosition)
         {
             var stringBuilders = stringBuilderList[concatElementPosition];
             if (stringBuilders.Count <= 1)
-                return false;
+                return ExpansionStatus.NotExpanded;
 
             foreach (var stringBuilder in stringBuilders)
             {
@@ -22,38 +22,46 @@ namespace Regseed.Common.Helper
                 newExpandList.Add(expandedExpressions);
             }
 
-            return true;
+            return ExpansionStatus.Expanded;
         }
         
-        public static List<List<T>> ExpandListRepresentation<T>(List<List<T>> seed, Func<List<T>, List<List<T>>, int, bool> multiplier)
+        public static List<List<T>> ExpandListRepresentation<T>(List<List<T>> seed, int? maxLength, Func<List<T>, List<List<T>>, int, ExpansionStatus> multiplier)
         {
             var oldCount = 0;
                        
             var expandedUnionList = seed;
+            var wasExpandedUnionListTrimmed = false;
             
-            while (oldCount != expandedUnionList.Count)
+            while (oldCount != expandedUnionList.Count || wasExpandedUnionListTrimmed)
             {
+                wasExpandedUnionListTrimmed = false;
                 oldCount = expandedUnionList.Count;
                 var newExpandList = new List<List<T>>();
 
                 foreach (var repeatExpressions in expandedUnionList)
                     AddExpressionWithExpandedSubexpression(repeatExpressions, newExpandList, multiplier);
 
-                expandedUnionList = newExpandList;
+                expandedUnionList =  RemoveExpressionsExceedingMaxExpansionLength(newExpandList, maxLength);
+
+                if (expandedUnionList.Count != newExpandList.Count)
+                    wasExpandedUnionListTrimmed = true;
             }
 
             return expandedUnionList;
         }
 
-        private static void AddExpressionWithExpandedSubexpression<T>(List<T> repeatExpressions, List<List<T>> newExpandList, Func<List<T>, List<List<T>>, int, bool> multiplier)
+        private static void AddExpressionWithExpandedSubexpression<T>(List<T> repeatExpressions, List<List<T>> newExpandList, Func<List<T>, List<List<T>>, int, ExpansionStatus> multiplier)
         {
-            var wasExpanded 
+            var expansionResults
                 = repeatExpressions
-                    .Where((t, concatElementPosition) => multiplier(repeatExpressions, newExpandList, concatElementPosition))
-                    .Any();
+                    .Where((t, concatElementPosition) =>
+                        multiplier(repeatExpressions, newExpandList, concatElementPosition) == ExpansionStatus.Expanded);
 
-            if(!wasExpanded)
+            if (!expansionResults.Any())
                 newExpandList.Add(repeatExpressions);
-        }        
+        }
+
+        private static List<List<T>> RemoveExpressionsExceedingMaxExpansionLength<T>(List<List<T>> newExpandList, int? maxLength) =>
+            maxLength == null ? newExpandList : newExpandList.Where(x => x.Count <= maxLength).ToList();
     }
 }

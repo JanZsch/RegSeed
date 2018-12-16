@@ -26,7 +26,7 @@ namespace Regseed.Expressions
         {
             var seed = new List<List<IExpression>> {_elementaryExpressions};
             
-            var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, WasExpandedRepeatExpressionAddedToList);
+            var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, null, WasExpandedRepeatExpressionAddedToList);
 
             var intersectInverseList = expandedRepeatRepresentation.Select(GetInverseOfExpandedConcatRepresentation).ToList();
             
@@ -86,7 +86,7 @@ namespace Regseed.Expressions
         {
             var seed = new List<List<IExpression>> {_elementaryExpressions};
             
-            var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, WasExpandedRepeatExpressionAddedToList);
+            var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, ExpansionLength, WasExpandedRepeatExpressionAddedToList);
 
             var convertedExpressions = new List<List<IList<IStringBuilder>>>();
 
@@ -96,7 +96,7 @@ namespace Regseed.Expressions
                 convertedExpressions.Add(expandedExpression);
             }
 
-            var expandedUnionList = ExpandHelper.ExpandListRepresentation(convertedExpressions, ExpandHelper.WasExpandedStringBuilderListAddedToList);
+            var expandedUnionList = ExpandHelper.ExpandListRepresentation(convertedExpressions, ExpansionLength, ExpandHelper.WasExpandedStringBuilderListAddedToList);
 
             return CreateConcatenatedStringBuilderForEachExpansion(expandedUnionList);
         }
@@ -111,7 +111,7 @@ namespace Regseed.Expressions
             return builder;
         }
         
-        private static IList<IStringBuilder> CreateConcatenatedStringBuilderForEachExpansion(List<List<IList<IStringBuilder>>> expandedUnionList)
+        private static IList<IStringBuilder> CreateConcatenatedStringBuilderForEachExpansion(IEnumerable<List<IList<IStringBuilder>>> expandedUnionList)
         {
             var resultList = new List<IStringBuilder>();
 
@@ -136,13 +136,13 @@ namespace Regseed.Expressions
             return this;
         }
         
-        private static bool WasExpandedRepeatExpressionAddedToList(List<IExpression> repeatExpressions, List<List<IExpression>> newExpandList, int concatElementPosition)
+        private static ExpansionStatus WasExpandedRepeatExpressionAddedToList(List<IExpression> repeatExpressions, ICollection<List<IExpression>> newExpandList, int concatElementPosition)
         {
             var repeatExpression = repeatExpressions[concatElementPosition];
             repeatExpression.RepeatRange.ToBounds(out var start, out var end);
 
             if (start == 1 && end == start +1)
-                return false;
+                return ExpansionStatus.NotExpanded;
 
             if (end == int.MaxValue)
                 end = repeatExpression.ExpansionLength + 1;
@@ -157,7 +157,7 @@ namespace Regseed.Expressions
                 newExpandList.Add(expandedExpressions);
             }
 
-            return true;
+            return ExpansionStatus.Expanded;
         }
 
         private static IEnumerable<IExpression> ConcatElementaryExpressionTimes(IExpression expression, int concatTimes)

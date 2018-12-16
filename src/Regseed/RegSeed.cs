@@ -100,12 +100,12 @@ namespace Regseed
 
             if (!_expressionMetaData.HasIntersection && !_expressionMetaData.HasComplement)
                 return _regularExpression.ToStringBuilder().GenerateString();
-
+            
             var expandedStringBuilder = _regularExpression.Expand();
 
             if (!expandedStringBuilder.Any()) 
                 return string.Empty;
-            
+                        
             var random = _random.GetNextInteger(0, expandedStringBuilder.Count);
             return expandedStringBuilder[random].GenerateString();
         }

@@ -147,7 +147,7 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void Expand_ReturnsListContaining3Elements_WhenSingleNotExpandableExpressionWithRepeatRangeFrom1To3IsContained()
+        public void Expand_ReturnsListContainingTwoElement_WhenSingleNotExpandableExpressionWithRepeatRangeFrom1To3IsContainedAndMaxExpansionLengthIs2()
         {
             var clone = Substitute.For<IExpression>();
             clone.Expand().Returns(new List<IStringBuilder> {new StringBuilderMock(new List<CharacterClassExpression>())});
@@ -157,10 +157,11 @@ namespace Regseed.Test.Expressions
             expression.RepeatRange.TrySetValue(1, 3);
             var concat = new ConcatenationExpression(_random);
             concat.Append(expression);
+            concat.SetExpansionLength(2);
             
             var result = concat.Expand();
             
-            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(2, result.Count);
         }
         
         [Test]
@@ -199,6 +200,7 @@ namespace Regseed.Test.Expressions
             expandableExpression.Expand().Returns(new List<IStringBuilder> { mock1, mock2, mock3 });
 
             var concat = new ConcatenationExpression(_random);
+            concat.SetExpansionLength(4);
             concat.Append(simpleExpression).Append(expandableExpression).Append(simpleExpression).Append(simpleExpression);
             
             var result = concat.Expand();

@@ -18,7 +18,7 @@ namespace Regseed.Expressions
             {
                 intersectExpression.MaxExpansionInterval.ToBounds(out var lower, out var upper);
                 var rand = _random.GetNextInteger(lower, upper);
-                intersectExpression.SetExpansionLength(upper);
+                intersectExpression.SetExpansionLength(rand);
             }
         }
 
@@ -31,7 +31,7 @@ namespace Regseed.Expressions
 
             while (n < indexList.Count)
             {
-                var expandedExpression = _intersectExpressions[indexList[n]].Expand();
+                var expandedExpression = ExpandIntersectionExpression(_intersectExpressions[indexList[n]]);
 
                 if (expandedExpression.Any())
                     return expandedExpression;
@@ -40,6 +40,29 @@ namespace Regseed.Expressions
             }
 
             return new List<IStringBuilder>();
+        }
+
+        private IList<IStringBuilder> ExpandIntersectionExpression(IExpression intersectExpression)
+        {
+            intersectExpression.MaxExpansionInterval.ToBounds(out var lower, out var upper);
+            var expansionLengthRange = Enumerable.Range(lower, upper - 1).ToList();
+            expansionLengthRange.Shuffle(_random);
+
+            IList<IStringBuilder> stringBuilderList = new List<IStringBuilder>();
+
+            var n = 0;
+            while ( n < expansionLengthRange.Count)
+            {
+                intersectExpression.SetExpansionLength(expansionLengthRange[n]);
+                stringBuilderList = intersectExpression.Expand();
+
+                if (stringBuilderList.Any())
+                    return stringBuilderList;
+
+                n++;
+            }
+
+            return stringBuilderList;
         }
     }
 }

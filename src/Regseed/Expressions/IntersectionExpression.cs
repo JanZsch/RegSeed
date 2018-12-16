@@ -30,7 +30,7 @@ namespace Regseed.Expressions
 
             var seed = new List<List<IList<IStringBuilder>>> { seedContent };
             
-            var expandedStringBuilderList = ExpandHelper.ExpandListRepresentation(seed, ExpandHelper.WasExpandedStringBuilderListAddedToList);
+            var expandedStringBuilderList = ExpandHelper.ExpandListRepresentation(seed, null, ExpandHelper.WasExpandedStringBuilderListAddedToList);
             
             return MergeStringBuildersForEachUnion(expandedStringBuilderList);
         }
@@ -100,8 +100,6 @@ namespace Regseed.Expressions
         
         private static void MergeAndAddStringBuilderForSingleUnionRepresentation(List<IList<IStringBuilder>> intersectStringBuilders, List<IStringBuilder> result)
         {
-            //TODO: hier die abbruchbedingung noch mal ueberprüfen: abbrecen sobald einer der stringbuilder leer ist
-            
             if(ContainsNullOrEmptyStringBuilder(intersectStringBuilders))
                 return;
             
@@ -129,7 +127,7 @@ namespace Regseed.Expressions
                 result.Add(intersection);
         }
 
-        private static bool ContainsNullOrEmptyStringBuilder(List<IList<IStringBuilder>> intersectStringBuilders) =>
+        private static bool ContainsNullOrEmptyStringBuilder(IEnumerable<IList<IStringBuilder>> intersectStringBuilders) =>
             intersectStringBuilders.Any(x =>
             {
                 var builder = x.FirstOrDefault();

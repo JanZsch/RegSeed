@@ -77,8 +77,6 @@ namespace Regseed.Expressions
 
             if (tokenStream.LookAhead(0).GetType<RegexTokenType>() != RegexTokenType.EndOfStream)
                 return new FailureParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, RegSeedErrorType.UnionExpressionExpected);
-
-            regex.SetExpansionLength();
             
             expression = regex;
             return unionResult;
