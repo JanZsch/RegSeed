@@ -53,7 +53,7 @@ namespace Regseed.Expressions
 
             foreach (var intersectExpression in _intersectExpressions)
             {
-                intersectExpression.MaxExpansionInterval.ToExpansionBounds(out var lowerBound, out var upperBound);
+                intersectExpression.MaxExpansionRange.ToExpansionBounds(out var lowerBound, out var upperBound);
 
                 if (upperBound > maxExpansion)
                     maxExpansion = upperBound;

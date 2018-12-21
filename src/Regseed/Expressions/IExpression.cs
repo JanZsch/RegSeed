@@ -7,7 +7,7 @@ namespace Regseed.Expressions
     internal interface IExpression
     {
         int ExpansionLength { get; }
-        IntegerInterval MaxExpansionInterval { get; set; }
+        IntegerInterval MaxExpansionRange { get; set; }
         IntegerInterval RepeatRange { get; set; }
 
         void SetExpansionLength(int expansionLength = 0);

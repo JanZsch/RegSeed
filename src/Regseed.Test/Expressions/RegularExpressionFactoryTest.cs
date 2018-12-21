@@ -54,7 +54,7 @@ namespace Regseed.Test.Expressions
             var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
 
             factory.TryGetRegularExpression(pattern, out var union);
-            var result = union.MaxExpansionInterval.End;
+            var result = union.MaxExpansionRange.End;
             
             Assert.AreEqual(expectedMaxExpansionLength, result);
         }
@@ -82,7 +82,7 @@ namespace Regseed.Test.Expressions
             var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
 
             factory.TryGetRegularExpression(pattern, out var union);
-            var result = union.MaxExpansionInterval.Start;
+            var result = union.MaxExpansionRange.Start;
             
             Assert.AreEqual(expectedMinExpansionLength, result);
         }

@@ -11,7 +11,7 @@ namespace Regseed.Expressions
 
         public int ExpansionLength { get; protected set; }
 
-        public IntegerInterval MaxExpansionInterval
+        public IntegerInterval MaxExpansionRange
         {
             get => _maxExpansionInterval ?? GetMaxExpansionInterval();
             set => _maxExpansionInterval = value;

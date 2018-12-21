@@ -113,7 +113,7 @@ namespace Regseed.Test
 
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
-
+    
         [TestCase(2,6)]
         [TestCase(8,8)]
         public void Generate_ReturnsStringMatchingPattern_WhenResultMustContainSingleCharacterOrSpecialCharacterOrDigitAndIsBetweenMinAndMaxCharactersLong(int min, int max)

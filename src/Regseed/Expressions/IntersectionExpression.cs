@@ -25,8 +25,9 @@ namespace Regseed.Expressions
         }
 
         public override IList<IStringBuilder> Expand()
-        {
-            var seedContent = _concatExpressions.Select(concatExpression => concatExpression.Expand()).ToList();
+        {           
+            var seedContent = RemoveTooLongExpressions(ExpansionLength, _concatExpressions)
+                                .Select(concatExpression => concatExpression.Expand()).ToList();
 
             var seed = new List<List<IList<IStringBuilder>>> { seedContent };
             
@@ -34,6 +35,13 @@ namespace Regseed.Expressions
             
             return MergeStringBuildersForEachUnion(expandedStringBuilderList);
         }
+
+        private static IEnumerable<IExpression> RemoveTooLongExpressions(int maxExpansionLength, IEnumerable<IExpression> expressions) =>
+            expressions.Where(x =>
+            {
+                x.MaxExpansionRange.ToLowerExpansionBound(out var lowerBound);
+                return lowerBound <= maxExpansionLength;
+            });
 
         public override IExpression GetInverse()
         {
@@ -51,13 +59,13 @@ namespace Regseed.Expressions
             };
 
         protected override IntegerInterval GetMaxExpansionInterval ()
-        {
+        {          
             var minExpansion = 0;
             var maxExpansion = int.MaxValue;
 
             foreach (var concatExpression in _concatExpressions)
             {
-                concatExpression.MaxExpansionInterval.ToExpansionBounds(out var minExpansionLength, out var maxExpansionLength);
+                concatExpression.MaxExpansionRange.ToExpansionBounds(out var minExpansionLength, out var maxExpansionLength);
 
                 if(minExpansionLength > maxExpansion || maxExpansionLength < minExpansion)
                     return new IntegerInterval(0);

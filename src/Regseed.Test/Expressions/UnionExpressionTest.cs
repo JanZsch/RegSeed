@@ -131,7 +131,7 @@ namespace Regseed.Test.Expressions
         }
         
         [Test]
-        public void Expand_ReturnsListContainingForStringBuilder_WhenUnionContainsTwoInitialIntersectionExpressionsReturningTwoStringBuildersEachOnExpand()
+        public void Expand_ReturnsListContainingFourStringBuilder_WhenUnionContainsTwoInitialIntersectionExpressionsReturningTwoStringBuildersEachOnExpand()
         {
             var intersect1 = Substitute.For<IExpression>();
             intersect1.Expand()

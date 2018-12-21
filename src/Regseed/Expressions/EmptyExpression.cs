@@ -13,7 +13,7 @@ namespace Regseed.Expressions
         public int ExpansionLength =>
             0;
 
-        public IntegerInterval MaxExpansionInterval
+        public IntegerInterval MaxExpansionRange
         {
             get => _maxExpansionInterval; 
             set => _maxExpansionInterval = new IntegerInterval(0);

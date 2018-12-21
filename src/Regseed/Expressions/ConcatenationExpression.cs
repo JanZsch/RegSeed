@@ -53,7 +53,7 @@ namespace Regseed.Expressions
             
             foreach (var elementaryExpression in _elementaryExpressions)
             {
-                elementaryExpression.MaxExpansionInterval.ToExpansionBounds(out var baseMinLength, out var baseMaxLength);
+                elementaryExpression.MaxExpansionRange.ToExpansionBounds(out var baseMinLength, out var baseMaxLength);
                 
                 elementaryExpression.RepeatRange.ToExpansionBounds(out var minExpansionFactor, out var maxExpansionFactor);
 
@@ -77,13 +77,30 @@ namespace Regseed.Expressions
         public override void SetExpansionLength(int expansionLength = 0)
         {
             ExpansionLength = expansionLength;
+
+            MaxExpansionRange.ToLowerExpansionBound(out var totalLowerBound);
+
+            if (totalLowerBound == 0)
+            {
+                foreach (var elementaryExpression in _elementaryExpressions)
+                    elementaryExpression.SetExpansionLength(expansionLength);
+
+                return;
+            }
             
             foreach (var elementaryExpression in _elementaryExpressions)
-                elementaryExpression.SetExpansionLength(expansionLength);
+            {
+                elementaryExpression.RepeatRange.ToLowerExpansionBound(out var minimalExpansionFactor);
+                elementaryExpression.MaxExpansionRange.ToLowerExpansionBound(out var minimalExpansionLength);
+
+                var expansionLengthCorrection = totalLowerBound - minimalExpansionFactor * minimalExpansionLength;
+                
+                elementaryExpression.SetExpansionLength(expansionLength - expansionLengthCorrection);
+            }
         }
 
         public override IList<IStringBuilder> Expand()
-        {
+        {           
             var seed = new List<List<IExpression>> {_elementaryExpressions};
             
             var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, ExpansionLength, WasExpandedRepeatExpressionAddedToList);

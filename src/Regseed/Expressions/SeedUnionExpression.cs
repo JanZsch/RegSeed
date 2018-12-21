@@ -16,7 +16,7 @@ namespace Regseed.Expressions
         {
             foreach (var intersectExpression in _intersectExpressions)
             {
-                intersectExpression.MaxExpansionInterval.ToBounds(out var lower, out var upper);
+                intersectExpression.MaxExpansionRange.ToBounds(out var lower, out var upper);
                 var rand = _random.GetNextInteger(lower, upper);
                 intersectExpression.SetExpansionLength(rand);
             }
@@ -44,8 +44,8 @@ namespace Regseed.Expressions
 
         private IList<IStringBuilder> ExpandIntersectionExpression(IExpression intersectExpression)
         {
-            intersectExpression.MaxExpansionInterval.ToBounds(out var lower, out var upper);
-            var expansionLengthRange = Enumerable.Range(lower, upper - 1).ToList();
+            intersectExpression.MaxExpansionRange.ToBounds(out var lower, out var upper);
+            var expansionLengthRange = Enumerable.Range(lower, upper - lower).ToList();
             expansionLengthRange.Shuffle(_random);
 
             IList<IStringBuilder> stringBuilderList = new List<IStringBuilder>();

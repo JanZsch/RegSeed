@@ -195,7 +195,7 @@ namespace Regseed.Expressions
                 return elementaryResult;
 
             expression = toInvertExpression.GetInverse();
-            expression.MaxExpansionInterval = IntegerInterval.MaxInterval;
+            expression.MaxExpansionRange = IntegerInterval.MaxInterval;
 
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, elementaryResult.Value);
         }
