@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
@@ -12,10 +12,9 @@
         <Description>Regseed is a small class library for generating random strings from a given regular expression</Description>
         <SignAssembly>false</SignAssembly>
         <AssemblyOriginatorKeyFile>RegSeed-AssemblySignature.pfx</AssemblyOriginatorKeyFile>
-        <PackageLicenseUrl>https://github.com/janzsch/regseed/blob/master/LICENSE.txt</PackageLicenseUrl>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
         <Version>1.0.1</Version>
-        <PackageReleaseNotes>- Correct calculation of a character classes complement
-- only the required interfaces and classes are now not internal</PackageReleaseNotes>
+        <PackageReleaseNotes>- Correct calculation of a character classes complement - only the required interfaces and classes are now not internal</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -23,4 +22,7 @@
       <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+    </ItemGroup>
 </Project>

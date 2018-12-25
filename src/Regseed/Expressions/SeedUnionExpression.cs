@@ -44,8 +44,8 @@ namespace Regseed.Expressions
 
         private IList<IStringBuilder> ExpandIntersectionExpression(IExpression intersectExpression)
         {
-            intersectExpression.MaxExpansionRange.ToBounds(out var lower, out var upper);
-            var expansionLengthRange = Enumerable.Range(lower, upper - lower).ToList();
+            intersectExpression.MaxExpansionRange.ToExpansionBounds(out var lower, out var upper);
+            var expansionLengthRange = Enumerable.Range(lower, upper - lower + 1).ToList();
             expansionLengthRange.Shuffle(_random);
 
             IList<IStringBuilder> stringBuilderList = new List<IStringBuilder>();

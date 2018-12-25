@@ -35,10 +35,11 @@ namespace Regseed.Expressions
         {
             var returnList = new List<IStringBuilder>();
             
-            RepeatRange.ToBounds(out var lowerBound, out var upperBound);
             var singleStringBuilder = ToSingleStringBuilder();
 
-            for (var stringBuilderLength = lowerBound; stringBuilderLength < upperBound; stringBuilderLength++)
+            RepeatRange.ToExpansionBounds(out var lowerBound, out var upperBound);
+
+            for (var stringBuilderLength = lowerBound; stringBuilderLength <= upperBound; stringBuilderLength++)
             {
                 IStringBuilder finalStringBuilder = StringBuilder.Empty;
                 finalStringBuilder = finalStringBuilder.ConcatWith(singleStringBuilder, stringBuilderLength);
