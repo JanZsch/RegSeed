@@ -106,7 +106,7 @@ namespace Regseed
             if (!expandedStringBuilder.Any()) 
                 return string.Empty;
                         
-            var random = _random.GetNextInteger(0, expandedStringBuilder.Count);
+            var random = _random.GetNextInteger(0, expandedStringBuilder.Count - 1);
             return expandedStringBuilder[random].GenerateString();
         }
     }

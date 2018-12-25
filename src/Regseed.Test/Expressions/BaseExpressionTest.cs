@@ -68,12 +68,12 @@ namespace Regseed.Test.Expressions
 
             expression.ToStringBuilder();
 
-            _randomGenerator.Received(1).GetNextInteger(expectedValue, 13);
+            _randomGenerator.Received(1).GetNextInteger(expectedValue, 12);
         }
 
         [TestCase(null, int.MaxValue)]
         [TestCase(-1, 0)]
-        [TestCase(2, 3)]
+        [TestCase(2, 2)]
         public void ToRegexString_CallsRandomGeneratorWithExpectedUpperBound_WhenIntegerIntervalsUpperBoundHasSpecifiedValue(int? value, int expectedValue)
         {
             var interval = new IntegerInterval();
@@ -93,18 +93,18 @@ namespace Regseed.Test.Expressions
         public void ToRegexString_ReturnsSingleString3Times_WhenRepeatIntervalIs3To3()
         {
             var expression = new BaseExpressionTest(_randomGenerator) {RepeatRange = new IntegerInterval(3)};
-            _randomGenerator.GetNextInteger(3, 4).Returns(3);
+            _randomGenerator.GetNextInteger(3, 3).Returns(3);
 
             var result = expression.ToStringBuilder().GenerateString();
 
             Assert.AreEqual("FFF", result);
-            _randomGenerator.Received(1).GetNextInteger(3, 4);
+            _randomGenerator.Received(1).GetNextInteger(3, 3);
         }
 
         [Test]
         public void ToRegexString_ReturnsSingleStringOnce_WhenNoRepeatIntervalWasProvided()
         {
-            _randomGenerator.GetNextInteger(1, 2).Returns(1);
+            _randomGenerator.GetNextInteger(1, 1).Returns(1);
             var expression = new BaseExpressionTest(_randomGenerator);
 
             var result = expression.ToStringBuilder().GenerateString();

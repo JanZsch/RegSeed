@@ -89,7 +89,7 @@ namespace Regseed.Expressions
             
             return  _characterList.Count == 1 
             ? _characterList[0]
-            :_characterList[_random.GetNextInteger(0, _characterList.Count)];
+            :_characterList[_random.GetNextInteger(0, _characterList.Count - 1)];
         }
 
         public CharacterClassExpression GetIntersection(CharacterClassExpression charClass)

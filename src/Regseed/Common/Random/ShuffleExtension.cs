@@ -9,7 +9,7 @@ namespace Regseed.Common.Random
             var n = list.Count;
             while (n-- > 0)
             {
-                var k = rand.GetNextInteger(0, n + 1);  
+                var k = rand.GetNextInteger(0, n);  
                 var value = list[k];  
                 list[k] = list[n];  
                 list[n] = value;  

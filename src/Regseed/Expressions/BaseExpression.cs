@@ -28,7 +28,7 @@ namespace Regseed.Expressions
         
         public virtual IStringBuilder ToStringBuilder()
         {
-            RepeatRange.ToBounds(out var lowerBound, out var upperBound);
+            RepeatRange.ToExpansionBounds(out var lowerBound, out var upperBound);
             var repeatedTimes = _random.GetNextInteger(lowerBound, upperBound);
             var singleStringBuilder = ToSingleStringBuilder();
             

@@ -19,7 +19,7 @@ namespace Regseed.Test.Expressions
         public void SetUp()
         {
             _randomGenerator = Substitute.For<IRandomGenerator>();
-            _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (int)x[1]-(int)x[0] == 1 ? x[0] : 0);
+            _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (int)x[1]-(int)x[0] == 0 ? x[0] : 0);
             _alphabet = Substitute.For<IParserAlphabet>();
             _alphabet.IsValid(Arg.Any<string>()).Returns(true);
             _alphabet.GetAllCharacters().Returns(new List<string> {"F", "r", "a"});

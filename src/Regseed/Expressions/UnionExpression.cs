@@ -78,7 +78,7 @@ namespace Regseed.Expressions
 
             return _intersectExpressions.Count == 1
                 ? _intersectExpressions[0].ToStringBuilder()
-                : _intersectExpressions[_random.GetNextInteger(0, _intersectExpressions.Count)].ToStringBuilder();
+                : _intersectExpressions[_random.GetNextInteger(0, _intersectExpressions.Count - 1)].ToStringBuilder();
         }
 
         internal IList<IExpression> ToIntersectionExpressionList() => 

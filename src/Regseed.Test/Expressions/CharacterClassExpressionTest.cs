@@ -23,7 +23,7 @@ namespace Regseed.Test.Expressions
             _randomGenerator = Substitute.For<IRandomGenerator>();
             _maxInverseLength = 1;
 
-            _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (int) x[1] - (int) x[0] == 1 ? x[0] : 0);
+            _randomGenerator.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (int) x[1] - (int) x[0] == 0 ? x[0] : 0);
         }
 
         private IParserAlphabet _alphabet;

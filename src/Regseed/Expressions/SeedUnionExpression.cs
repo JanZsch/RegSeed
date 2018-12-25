@@ -16,7 +16,7 @@ namespace Regseed.Expressions
         {
             foreach (var intersectExpression in _intersectExpressions)
             {
-                intersectExpression.MaxExpansionRange.ToBounds(out var lower, out var upper);
+                intersectExpression.MaxExpansionRange.ToExpansionBounds(out var lower, out var upper);
                 var rand = _random.GetNextInteger(lower, upper);
                 intersectExpression.SetExpansionLength(rand);
             }
