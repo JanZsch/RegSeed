@@ -9,7 +9,7 @@ namespace Regseed.Expressions
     {
         private IntegerInterval _maxExpansionInterval;
 
-        public int ExpansionLength { get; protected set; }
+        public int? ExpansionLength { get; protected set; }
 
         public IntegerInterval MaxExpansionRange
         {

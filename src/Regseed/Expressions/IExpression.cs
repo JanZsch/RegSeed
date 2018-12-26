@@ -6,7 +6,7 @@ namespace Regseed.Expressions
 {
     internal interface IExpression
     {
-        int ExpansionLength { get; }
+        int? ExpansionLength { get; }
         IntegerInterval MaxExpansionRange { get; set; }
         IntegerInterval RepeatRange { get; set; }
 

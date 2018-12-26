@@ -156,13 +156,11 @@ namespace Regseed.Expressions
         private static ExpansionStatus WasExpandedRepeatExpressionAddedToList(List<IExpression> repeatExpressions, ICollection<List<IExpression>> newExpandList, int concatElementPosition)
         {
             var repeatExpression = repeatExpressions[concatElementPosition];
-            repeatExpression.RepeatRange.ToExpansionBounds(out var start, out var end);
+            
+            repeatExpression.ToRepeatExpansionBounds(out var start, out var end);
 
             if (start == 1 && end == 1)
                 return ExpansionStatus.NotExpanded;
-
-            if (end == int.MaxValue)
-                end = repeatExpression.ExpansionLength + 1;
             
             for (var i = start; i <= end; i++)
             {

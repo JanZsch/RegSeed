@@ -36,12 +36,18 @@ namespace Regseed.Expressions
             return MergeStringBuildersForEachUnion(expandedStringBuilderList);
         }
 
-        private static IEnumerable<IExpression> RemoveTooLongExpressions(int maxExpansionLength, IEnumerable<IExpression> expressions) =>
-            expressions.Where(x =>
+        private static IEnumerable<IExpression> RemoveTooLongExpressions(int? maxExpansionLength,
+            IEnumerable<IExpression> expressions)
+        {
+            if (maxExpansionLength == null)
+                return expressions;
+            
+            return expressions.Where(x =>
             {
                 x.MaxExpansionRange.ToLowerExpansionBound(out var lowerBound);
                 return lowerBound <= maxExpansionLength;
-            });
+            });            
+        }
 
         public override IExpression GetInverse()
         {

@@ -41,8 +41,9 @@ namespace Regseed.Test.Expressions
             var subExpression = Substitute.For<IExpression>();
             subExpression.GetInverse().Returns(inverseSubExpression);
             subExpression.RepeatRange.Returns(repeatInterval);
+            subExpression.ExpansionLength.Returns(2);
             var concatExpression = new ConcatenationExpression(_randomGenerator);
-            concatExpression.Append(subExpression);            
+            concatExpression.Append(subExpression);
 
             var result = concatExpression.GetInverse();
             Assert.IsInstanceOf<IntersectionExpression>(result);
@@ -63,6 +64,7 @@ namespace Regseed.Test.Expressions
             var subExpression = Substitute.For<IExpression>();
             subExpression.GetInverse().Returns(inverseSubExpression);
             subExpression.RepeatRange.Returns(repeatInterval);
+            subExpression.ExpansionLength.Returns(2);
             var concatExpression = new ConcatenationExpression(_randomGenerator);
             concatExpression.Append(inverseSubExpression).Append(subExpression).Append(inverseSubExpression);            
 
@@ -147,14 +149,16 @@ namespace Regseed.Test.Expressions
         }
 
         [Test]
-        public void Expand_ReturnsListContainingTwoElement_WhenSingleNotExpandableExpressionWithRepeatRangeFrom1To3IsContainedAndMaxExpansionLengthIs2()
+        public void Expand_ReturnsListContainingTwoElements_WhenSingleNotExpandableExpressionWithRepeatRangeFrom1To3IsContainedAndMaxExpansionLengthIs2()
         {
             var clone = Substitute.For<IExpression>();
             clone.Expand().Returns(new List<IStringBuilder> {new StringBuilderMock(new List<CharacterClassExpression>())});
+            clone.ExpansionLength.Returns(2);
             var expression = Substitute.For<IExpression>();
             expression.Clone().Returns(clone);
             expression.RepeatRange = new IntegerInterval();
             expression.RepeatRange.TrySetValue(1, 3);
+            expression.ExpansionLength.Returns(2);
             var concat = new ConcatenationExpression(_random);
             concat.Append(expression);
             concat.SetExpansionLength(2);

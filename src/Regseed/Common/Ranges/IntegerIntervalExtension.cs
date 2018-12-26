@@ -9,7 +9,7 @@ namespace Regseed.Common.Ranges
             upperBound = repeatRange.End ?? int.MaxValue;
             upperBound = upperBound < 0 ? 0 : upperBound;
         }
-        
+
         public static void ToLowerExpansionBound(this IntegerInterval interval, out int lowerBound)
         {
             var repeatRange = interval ?? new IntegerInterval(1);

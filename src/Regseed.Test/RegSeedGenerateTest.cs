@@ -114,7 +114,8 @@ namespace Regseed.Test
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
     
-        [TestCase(2,6)]
+        [TestCase(2,2)]
+        [TestCase(3,6)]
         [TestCase(8,8)]
         public void Generate_ReturnsStringMatchingPattern_WhenResultMustContainSingleCharacterOrSpecialCharacterOrDigitAndIsBetweenMinAndMaxCharactersLong(int min, int max)
         {
@@ -143,6 +144,7 @@ namespace Regseed.Test
         [TestCase("~(f[0-8])&(f[0-9])","f9")]
         [TestCase("~(c[0-9])&~(f[0-8])&[cf][0-9]","f9")]
         [TestCase("~(f{1,2})&f{1,3}","fff")]
+        [TestCase("~(f|(ff){1,2})&f{1,4}","fff")]
         [TestCase("~(f{1,2}f)&f{1,4}","ffff")]
         [TestCase("~f&f{1,2}","ff")]
         [TestCase("F(R|r)a&~(FRa)","Fra")]
@@ -153,9 +155,10 @@ namespace Regseed.Test
             var loadResult = TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess, "Faulty pattern: {0}", pattern);
+            
             var result = Generate();
 
-            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
+            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);                
         }
               
         [TestCase("[^{0}]", "F")]

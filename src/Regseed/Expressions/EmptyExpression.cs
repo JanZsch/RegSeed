@@ -10,7 +10,7 @@ namespace Regseed.Expressions
         
         public IntegerInterval RepeatRange { get; set; }
 
-        public int ExpansionLength =>
+        public int? ExpansionLength =>
             0;
 
         public IntegerInterval MaxExpansionRange
