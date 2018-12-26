@@ -157,8 +157,11 @@ namespace Regseed.Expressions
         {
             var repeatExpression = repeatExpressions[concatElementPosition];
             
-            repeatExpression.ToRepeatExpansionBounds(out var start, out var end);
+            repeatExpression.RepeatRange.ToExpansionBounds(out var start, out var end);
 
+            if (repeatExpression.ExpansionLength != null &&  repeatExpression.ExpansionLength < end)
+                end = repeatExpression.ExpansionLength.Value + 1;
+            
             if (start == 1 && end == 1)
                 return ExpansionStatus.NotExpanded;
             

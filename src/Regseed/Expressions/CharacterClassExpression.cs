@@ -37,7 +37,7 @@ namespace Regseed.Expressions
             
             var singleStringBuilder = ToSingleStringBuilder();
 
-            this.ToRepeatExpansionBounds(out var lowerBound, out var upperBound);
+            RepeatRange.ToExpansionBounds(out var lowerBound, out var upperBound);
 
             for (var stringBuilderLength = lowerBound; stringBuilderLength <= upperBound; stringBuilderLength++)
             {
