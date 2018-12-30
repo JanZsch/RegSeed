@@ -16,17 +16,23 @@ namespace Regseed.Expressions
         private readonly IRandomGenerator _random;
         private readonly IDictionary<RegexTokenType, TryGetExpression> _regexTokenToExpressionMapper;
         private readonly IDictionary<RegexTokenType, TryGetExpression> _regexTokenToExpressionListMapper;
-        private readonly int _maxCharClassInverseLength;
 
         private readonly  IDictionary<Type, Func<List<IExpression>, IExpression>> _listTypeExpressionFactories;
         private readonly  IDictionary<Type, RegexTokenType> _expressionTokenTypeMapper;
 
-        
-        public RegularExpressionFactory(IParserAlphabet alphabet, IRandomGenerator random, int maxCharClassInverseLength)
+        private static RegularExpressionFactory _factorySingleton;
+
+        public int MaxInverseLength { get; }
+
+        private RegularExpressionFactory(IParserAlphabet alphabet, IRandomGenerator random, int maxInverseLength)
         {
             _random = random;
             _alphabet = alphabet;
-            _maxCharClassInverseLength = maxCharClassInverseLength;
+            
+            if(maxInverseLength < 1)
+                throw new ArgumentException("The maximal inverse length must at least be 1.");
+            
+            MaxInverseLength = maxInverseLength;
             
             _regexTokenToExpressionMapper = new Dictionary<RegexTokenType, TryGetExpression>
             {
@@ -56,8 +62,32 @@ namespace Regseed.Expressions
                 {typeof(SeedUnionExpression), RegexTokenType.Union},
                 {typeof(UnionExpression), RegexTokenType.Union},
                 {typeof(IntersectionExpression), RegexTokenType.Intersection}
-            };
-            
+            };   
+        }
+
+        public static void Reset()
+        {
+            _factorySingleton = null;
+        }
+
+        public static void InitFactory(IParserAlphabet alphabet, IRandomGenerator random, int maxInverseLength)
+        {
+            _factorySingleton = new RegularExpressionFactory(alphabet, random, maxInverseLength);
+        }
+
+        public static RegularExpressionFactory GetFactoryAsSingleton()
+        {
+            if(_factorySingleton == null)
+                throw new ArgumentException("RegularExpressionFactory needs to be initialised first.");
+
+            return _factorySingleton;
+        }
+
+        public CharacterClassExpression GetFullCharacterClassExpression()
+        {
+            var charClass = new CharacterClassExpression(_alphabet, _random, MaxInverseLength);
+            charClass.AddCharacters(_alphabet.GetAllCharacters());
+            return charClass;
         }
 
         public IParseResult<ExpressionMetaData> TryGetRegularExpression(string pattern, out IExpression expression)
@@ -84,7 +114,6 @@ namespace Regseed.Expressions
 
         private IParseResult<ExpressionMetaData> TryGetUnionExpression<TExpression>(ITokenStream tokenStream, out IExpression unionExpression) where TExpression : UnionExpression =>
             TryGetExpressionListSeparatedByToken<TExpression>(tokenStream, out unionExpression);
-
 
         private IParseResult<ExpressionMetaData> TryGetIntersectionExpression(ITokenStream tokenStream, out IExpression intersectionExpression) =>
             TryGetExpressionListSeparatedByToken<IntersectionExpression>(tokenStream, out intersectionExpression);
@@ -204,7 +233,7 @@ namespace Regseed.Expressions
         {
             tokenStream.Pop();
             
-            var characterExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
+            var characterExpression = new CharacterClassExpression(_alphabet, _random, MaxInverseLength);
             characterExpression.AddCharacters(_alphabet.GetAllCharacters());
             
             expression = characterExpression;
@@ -268,7 +297,7 @@ namespace Regseed.Expressions
 
             tokenStream.Pop();
 
-            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, MaxInverseLength);
 
             characterClassExpression.AddCharacters(characters);
 
@@ -280,7 +309,7 @@ namespace Regseed.Expressions
         {
             expression = null;
             var tokenValue = tokenStream.Pop().GetValue<string>();
-            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, _maxCharClassInverseLength);
+            var characterClassExpression = new CharacterClassExpression(_alphabet, _random, MaxInverseLength);
 
             characterClassExpression.AddCharacters(new List<string> {tokenValue});
                 

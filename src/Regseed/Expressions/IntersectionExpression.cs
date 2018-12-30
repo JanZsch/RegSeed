@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Regseed.Common.Builder;
 using Regseed.Common.Helper;
 using Regseed.Common.Random;
@@ -26,32 +27,42 @@ namespace Regseed.Expressions
 
         public override IList<IStringBuilder> Expand()
         {           
-            var seedContent = RemoveTooLongExpressions(ExpansionLength, _concatExpressions)
-                                .Select(concatExpression => concatExpression.Expand()).ToList();
+            var seedContent = new List<IList<IStringBuilder>>();
+            var expandGuard = new object();
 
-            var seed = new List<List<IList<IStringBuilder>>> { seedContent };
+            var reducedList = RemoveTooLongExpressions(ExpansionLength, _concatExpressions);
+            
+            Parallel.ForEach(reducedList, concatExpression =>
+            {
+                var expansion = concatExpression.Expand();
+
+                lock (expandGuard)
+                    seedContent.Add(expansion);
+            });
+
+            var trimmedSeedContent = RemoveTooLongExpressions(ExpansionLength, seedContent);
+            
+            var seed = new List<List<IList<IStringBuilder>>> { trimmedSeedContent };
             
             var expandedStringBuilderList = ExpandHelper.ExpandListRepresentation(seed, null, ExpandHelper.WasExpandedStringBuilderListAddedToList);
             
             return MergeStringBuildersForEachUnion(expandedStringBuilderList);
         }
 
-        private static IEnumerable<IExpression> RemoveTooLongExpressions(int? maxExpansionLength,
-            IEnumerable<IExpression> expressions)
-        {
-            if (maxExpansionLength == null)
-                return expressions;
-            
-            return expressions.Where(x =>
-            {
-                x.MaxExpansionRange.ToLowerExpansionBound(out var lowerBound);
-                return lowerBound <= maxExpansionLength;
-            });            
-        }
-
         public override IExpression GetInverse()
         {
-            return new UnionExpression(_concatExpressions.Select(x => x.GetInverse()).ToList(), _random)
+            var concatInverses = new List<IExpression>();
+            var addGuard = new object();
+
+            Parallel.ForEach(_concatExpressions, expression =>
+            {
+                var inverse = expression.GetInverse();
+                
+                lock(addGuard)
+                    concatInverses.Add(inverse);
+            });
+            
+            return new UnionExpression(concatInverses, _random)
             {
                 RepeatRange = RepeatRange
             };
@@ -97,67 +108,87 @@ namespace Regseed.Expressions
             if (_concatExpressions == null || !_concatExpressions.Any())
                 return StringBuilder.Empty;
 
-            return _concatExpressions.Aggregate<IExpression, IStringBuilder>(null, (intersectionResult, concatExpression) => IntersectStringBuilderWith(concatExpression.ToStringBuilder(), intersectionResult));
+            var intersection = _concatExpressions[0].ToStringBuilder();
+
+            for (var i = 1; i < _concatExpressions.Count; i++)
+                intersection = intersection.IntersectWith(_concatExpressions[i].ToStringBuilder());
+
+            return intersection;
         }
 
         internal IList<IExpression> ToConcatExpressionList() => _concatExpressions.ToList();
+        
+        private static IEnumerable<IExpression> RemoveTooLongExpressions(int? maxExpansionLength, IEnumerable<IExpression> expressions)
+        {
+            if (maxExpansionLength == null)
+                return expressions;
+            
+            return expressions.Where(x =>
+            {
+                x.MaxExpansionRange.ToLowerExpansionBound(out var lowerBound);
+                return lowerBound <= maxExpansionLength;
+            });
+        }
+        
+        private static List<IList<IStringBuilder>> RemoveTooLongExpressions(int? expansionLength, List<IList<IStringBuilder>> seedContent)
+        {
+            if (expansionLength == null)
+                return seedContent;
+
+            var result = new List<IList<IStringBuilder>>();
+            
+            foreach (var intersectListRepresentation in seedContent)
+            {
+                var intersectCandidate = intersectListRepresentation.Where(y => y.GeneratedStringLength() <= expansionLength).ToList();
+                
+                if(intersectCandidate.Any())
+                    result.Add(intersectCandidate);                
+            }
+            
+            return result;
+        }
         
         private static IList<IStringBuilder> MergeStringBuildersForEachUnion(IEnumerable<List<IList<IStringBuilder>>> intersectedStringBuilderUnion)
         {
             var result = new List<IStringBuilder>();
 
-            foreach (var intersectStringBuilders in intersectedStringBuilderUnion)
-                MergeAndAddStringBuilderForSingleUnionRepresentation(intersectStringBuilders, result);
+            var addGuard = new object();
+            
+            Parallel.ForEach(intersectedStringBuilderUnion, intersectStringBuilders =>
+            {
+                MergeAndAddStringBuilderForSingleUnionRepresentation(intersectStringBuilders, result, addGuard);
+            });
 
             return result;
         }
         
-        private static void MergeAndAddStringBuilderForSingleUnionRepresentation(List<IList<IStringBuilder>> intersectStringBuilders, List<IStringBuilder> result)
+        private static void MergeAndAddStringBuilderForSingleUnionRepresentation(IList<IList<IStringBuilder>> intersectStringBuilders, List<IStringBuilder> result, object addGuard)
         {
-            if(ContainsNullOrEmptyStringBuilder(intersectStringBuilders))
+            if(!StringBuilderHelper.IsStringBuildMergingRequired(intersectStringBuilders))
                 return;
             
-            var intersection = intersectStringBuilders.FirstOrDefault()?.FirstOrDefault();
+            var intersection = intersectStringBuilders.LastOrDefault()?.FirstOrDefault();
 
             if (intersection == null)
                 return;
 
-            var resultStringLength = intersection.GeneratedStringLength();
-            var doAllStringBuildersCreateStringsOfSameLength = true;
-
-            foreach (var stringBuilder in intersectStringBuilders)
+            intersectStringBuilders.RemoveAt(intersectStringBuilders.Count-1);
+            
+            foreach (var intersectStringBuilderListRepresentation in intersectStringBuilders)
             {
-                var currentStringBuilder = stringBuilder.FirstOrDefault();
-                if (currentStringBuilder?.GeneratedStringLength() != resultStringLength)
-                {
-                    doAllStringBuildersCreateStringsOfSameLength = false;
-                    break;
-                }
+                var stringBuilder = intersectStringBuilderListRepresentation.FirstOrDefault();
+                
+                if(stringBuilder == null)
+                    return;
 
-                intersection = intersection.IntersectWith(currentStringBuilder);
+                intersection = intersection.IntersectWith(stringBuilder);
+                
+                if(intersection.GeneratedStringLength() == 0)
+                    return;
             }
-
-            if (doAllStringBuildersCreateStringsOfSameLength && intersection.GeneratedStringLength() != 0)
+            
+            lock(addGuard)
                 result.Add(intersection);
-        }
-
-        private static bool ContainsNullOrEmptyStringBuilder(IEnumerable<IList<IStringBuilder>> intersectStringBuilders) =>
-            intersectStringBuilders.Any(x =>
-            {
-                var builder = x.FirstOrDefault();
-                return builder == null || builder.GeneratedStringLength() == 0;
-            });
-        
-        private static IStringBuilder IntersectStringBuilderWith(IStringBuilder toIntersectStringBuilder, IStringBuilder intersectionResult)
-        {
-            if (intersectionResult == null)
-            {
-                intersectionResult = toIntersectStringBuilder;
-                return intersectionResult;
-            }
-
-            intersectionResult = intersectionResult.IntersectWith(toIntersectStringBuilder);
-            return intersectionResult;
         }
     }
 }

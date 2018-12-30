@@ -110,7 +110,7 @@ namespace Regseed.Expressions
             };
             intersection.AddCharacters(intersectList);
             
-            return intersection;            
+            return intersection;    
         }
 
         public CharacterClassExpression GetUnion(CharacterClassExpression charClass)

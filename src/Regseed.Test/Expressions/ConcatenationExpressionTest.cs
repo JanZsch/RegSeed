@@ -193,12 +193,12 @@ namespace Regseed.Test.Expressions
             var mock1 = new StringBuilderMock(ToCharacterClassList("1"));
             var mock2 = new StringBuilderMock(ToCharacterClassList("2"));
             var mock3 = new StringBuilderMock(ToCharacterClassList("3"));
-            
+
             var simpleExpression = Substitute.For<IExpression>();
             simpleExpression.RepeatRange = new IntegerInterval(1);
-            
+
             simpleExpression.Expand().Returns(new List<IStringBuilder> { mockA });
-            
+
             var expandableExpression = Substitute.For<IExpression>();
             expandableExpression.RepeatRange = new IntegerInterval(1);
             expandableExpression.Expand().Returns(new List<IStringBuilder> { mock1, mock2, mock3 });
@@ -206,13 +206,13 @@ namespace Regseed.Test.Expressions
             var concat = new ConcatenationExpression(_random);
             concat.SetExpansionLength(4);
             concat.Append(simpleExpression).Append(expandableExpression).Append(simpleExpression).Append(simpleExpression);
-            
-            var result = concat.Expand();
-            
+
+            var result = concat.Expand().Select(x => x.GenerateString()).ToList();
+
             Assert.AreEqual(3, result.Count);
-            Assert.AreEqual("a1aa", result[0].GenerateString());
-            Assert.AreEqual("a2aa", result[1].GenerateString());
-            Assert.AreEqual("a3aa", result[2].GenerateString());
+            Assert.Contains("a1aa", result);
+            Assert.Contains("a2aa", result);
+            Assert.Contains("a3aa", result);
         }
         
         private List<CharacterClassExpression> ToCharacterClassList(string returnValue)

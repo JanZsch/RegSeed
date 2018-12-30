@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Regseed.Common.Builder;
 
 namespace Regseed.Common.Helper
@@ -13,15 +14,19 @@ namespace Regseed.Common.Helper
             if (stringBuilders.Count <= 1)
                 return ExpansionStatus.NotExpanded;
 
-            foreach (var stringBuilder in stringBuilders)
+            var addGuard = new object();
+
+            Parallel.ForEach(stringBuilders, stringBuilder =>
             {
                 var expandedExpressions = new List<IList<IStringBuilder>>();
                 expandedExpressions.AddRange(stringBuilderList.GetRange(0, concatElementPosition));
                 expandedExpressions.Add(new List<IStringBuilder> {stringBuilder});
                 expandedExpressions.AddRange(stringBuilderList.GetRange(concatElementPosition + 1, stringBuilderList.Count - concatElementPosition - 1));
-                newExpandList.Add(expandedExpressions);
-            }
 
+                lock (addGuard)
+                    newExpandList.Add(expandedExpressions);
+            });
+            
             return ExpansionStatus.Expanded;
         }
         

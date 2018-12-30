@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NSubstitute;
@@ -114,9 +113,9 @@ namespace Regseed.Test
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
     
-        [TestCase(2,2)]
-        [TestCase(3,6)]
-        [TestCase(8,8)]
+        [TestCase(2, 2)]
+        [TestCase(3, 6)]
+        [TestCase(8, 8)]
         public void Generate_ReturnsStringMatchingPattern_WhenResultMustContainSingleCharacterOrSpecialCharacterOrDigitAndIsBetweenMinAndMaxCharactersLong(int min, int max)
         {
             var pattern = $"(.*((\\d.*[A-Z]|[A-Z].*\\d)|(\\d.*[?+!]|[!+?].*\\d)|([!+?].*[A-Z]|[A-Z].*[!+?])).*)&\\w{{{min},{max}}}";
@@ -125,12 +124,9 @@ namespace Regseed.Test
             var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess);
-            var start = DateTime.Now;
-            var result = regseed.Generate();
-            var end = DateTime.Now;
 
-            Debug.WriteLine((end - start).TotalMilliseconds);
-            
+            var result = regseed.Generate();
+
             var specialCharMatcher = new Regex(".*[!+?].*");
             var digitMatcherCharMatcher = new Regex(".*\\d.*");
             var capitalCharMatcher = new Regex(".*[A-Z].*");
@@ -148,7 +144,14 @@ namespace Regseed.Test
         [TestCase("~(f{1,2}f)&f{1,4}","ffff")]
         [TestCase("~f&f{1,2}","ff")]
         [TestCase("F(R|r)a&~(FRa)","Fra")]
+        [TestCase("~(m{0,1})&[Mm]","M")]
+        [TestCase("~(m{0})&M","M")]
+        [TestCase("~()&m","m")]
+        [TestCase("~((marlene){1,4})&[Mm]arlene","Marlene")]
         [TestCase("x|jan&~jan","x")]
+        [TestCase("ju\\-1{0,1}[0-9]{1}\\-le&~(ju\\-(0|1|9|3|5|4|6|7|8|10|11|19|13|15|14|16|17|18|12)\\-le)","ju-2-le")]
+        [TestCase("ju\\-[0-9]{1}\\-le&ju\\-~(0|1|9|3|5|4|6|7|8)\\-le","ju-2-le")]
+        [TestCase("[0-1][06]&~(00|10|06)","16")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersectionInCombinationWithInverse(string pattern, string expectedResult)
         {
             _random = new RandomGenerator(new Random());
@@ -184,84 +187,7 @@ namespace Regseed.Test
 
             Assert.AreEqual(expectedResult, result, regex);
         }
-
-        [TestCase("a{1}", 1, 1)]
-        [TestCase("a{2}", 2, 2)]
-        [TestCase("a{,4}", 0, 4)]
-        [TestCase(".{0,4}", 0, 4)]
-        [TestCase("a{4,6}", 4, 6)]
-        [TestCase("a?", 0, 1)]
-        [TestCase("u|ll|iii", 1, 3)]
-        public void Generate_ReturnsAllPossibleLengths_WhenRegexContainsVariableLengthExpressionAndIsCalledSufficientlyOften(string regex, int lowerBound, int upperBound)
-        {
-            const int runs = 100;
-            var counter = new int[upperBound-lowerBound+1];
-            var regseed = new RegSeed();
-            
-            var loadResult = regseed.TryLoadRegexPattern(regex);
-            Assert.IsTrue(loadResult.IsSuccess);
-            
-            for (var i = 0; i < runs; i++)
-            {
-                var result = regseed.Generate();
-                counter[result.Length-lowerBound]++;
-            }
-
-            var totalResults = 0;
-
-            foreach (var count in counter)
-            {
-                totalResults += count;
-                Assert.Greater(count, 0);
-            }
-            
-            Assert.AreEqual(runs, totalResults);
-        }
-        
-        [TestCase("{0}|{1}", 0.5, 0.5, 0)]
-        [TestCase("({0}|{1})", 0.5, 0.5, 0)]
-        [TestCase("{0}|{1}|{2}", 0.3333, 0.3333, 0.3333)]
-        [TestCase("{0}|{0}|{2}", 0.6666, 0, 0.3333)]
-        [TestCase("{0}&{1}|{1}|{2}", 0, 0.5, 0.5)]
-        [TestCase("[{0}-{0}]&{1}|{1}|{2}", 0, 0.5, 0.5)]
-        [TestCase("[{2}-{1}]&{0}|{0}|{2}", 0.6666, 0, 0.3333)]
-        public void Generate_ResultsAreEssentiallyEquallyDistributed_WhenRegexContainsUnion(string regexPattern, double frequencyF, double frequencyR, double frequencyA)
-        {
-            const int runs = 1000;
-            var countOfF = 0; 
-            var countOfR = 0; 
-            var countOfA = 0; 
-            _random = new RandomGenerator(new Random());
-            var regex = string.Format(regexPattern, "F", "R", "A");
-
-            var loadResult = TryLoadRegexPattern(regex);
-
-            Assert.IsTrue(loadResult.IsSuccess, regexPattern);
-            
-            for (var i = 0; i < runs; i++)
-            {
-                var result = Generate();
-
-                Assert.IsTrue(result.Contains("F") || result.Contains("R") || result.Contains("A"), result);
-
-                if (result.Equals("F"))
-                    countOfF++;
-                else if (result.Equals("R"))
-                    countOfR++;
-                else if (result.Equals("A"))
-                    countOfA++;
-            }
-
-            var derivationFromExpectedResultF = Math.Abs(countOfF / (double) runs - frequencyF);
-            var derivationFromExpectedResultR = Math.Abs(countOfR / (double) runs - frequencyR);
-            var derivationFromExpectedResultA = Math.Abs(countOfA / (double) runs - frequencyA);
-            
-            Assert.IsTrue(derivationFromExpectedResultF < 0.05, $"Actual derivation F: {derivationFromExpectedResultF}");
-            Assert.IsTrue(derivationFromExpectedResultR < 0.05, $"Actual derivation R: {derivationFromExpectedResultR}");
-            Assert.IsTrue(derivationFromExpectedResultA < 0.05, $"Actual derivation A: {derivationFromExpectedResultA}");
-            Assert.AreEqual(runs, countOfF+countOfR+countOfA);
-        }
-        
+       
         [Test]
         public void Generate_ReturnsAnythingButLettersABC_WhenPatternIsCharacterClassInverseOfABC()
         {
@@ -294,37 +220,6 @@ namespace Regseed.Test
             }
         }
         
-        [TestCase("a[a-zA-Z]c&a[Bb]c","abc", "aBc")]
-        [TestCase("[Jja]an&(Jan|jan)","jan", "Jan")]
-        [TestCase("a|b|AB&ab","a", "b")]
-        [TestCase("[abaaaa]","a", "b")]
-        public void Generate_ReturnsEquallyDistributedResults_WhenRegexContainsCharacterClassesAndOrIntersection(string pattern, string resultA, string resultB)
-        {
-            const int totalRuns = 750;
-            _random = new RandomGenerator(new Random());
-            var loadResult = TryLoadRegexPattern(pattern);
-
-            Assert.IsTrue(loadResult.IsSuccess, pattern);
-            var countA = 0;
-            var countB = 0;
-
-            for (var i = 0; i < totalRuns; i++)
-            {
-                var result = Generate();
-
-                if (result.Equals(resultA))
-                    countA++;
-                else if (result.Equals(resultB))
-                    countB++;
-            }
-
-            var relativeFrequencyA = countA / (double) totalRuns;
-            var relativeFrequencyB = countB / (double) totalRuns;
-
-            Assert.AreEqual(totalRuns, countA + countB);
-            Assert.IsTrue(Math.Abs(relativeFrequencyA - 0.5) <= 0.05, $"frequency {resultA}: {relativeFrequencyA}   frequency {resultB}: {relativeFrequencyB}");
-        }
-       
         [TestCase("[a-z]{0,5}", false)]
         [TestCase("ul rike", false)]
         [TestCase("ul\nrike", false)]

@@ -38,7 +38,6 @@ namespace Regseed.Test.Common.Random
 
                 for (var j = 0; j < numberOfElements; j++)
                     frequencies[j][range.IndexOf(j)]++;
-
             }
 
             var result = StatisticsHelper.IsEquallyDistributed(frequencies, shuffleRuns, 0.05, out var faultyFrequency);
@@ -52,7 +51,7 @@ namespace Regseed.Test.Common.Random
             
             var range = Enumerable.Range(0, numberOfElements).ToList();
 
-            foreach (var i in range)
+            foreach (var _ in range)
             {
                 var list = new List<int>();
                 foreach (var j in range)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Regseed.Common.Builder;
 using Regseed.Common.Random;
 using Regseed.Common.Ranges;
@@ -26,9 +27,15 @@ namespace Regseed.Expressions
         public override IList<IStringBuilder> Expand()
         {
             var expandedList = new List<IStringBuilder>();
+            var expandGuard = new object();
+            
+            Parallel.ForEach(_intersectExpressions, intersectExpression =>
+            {
+                var expansion = intersectExpression.Expand();
 
-            foreach (var intersectExpression in _intersectExpressions)
-                expandedList.AddRange(intersectExpression.Expand());                
+                lock (expandGuard)
+                    expandedList.AddRange(expansion);
+            });
 
             return expandedList;
         }

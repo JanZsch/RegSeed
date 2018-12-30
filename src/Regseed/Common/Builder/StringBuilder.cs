@@ -49,9 +49,22 @@ namespace Regseed.Common.Builder
         {
             var newCharacters = (builder as StringBuilder)?._characterClasses ?? throw new ArgumentException();
 
-            return _characterClasses.Count != newCharacters.Count 
-                ? Empty
-                : new StringBuilder(newCharacters.Select((t, i) => t.GetIntersection(_characterClasses[i])).ToList());
+            if(_characterClasses.Count != newCharacters.Count)
+                return  Empty;
+
+            var intersectionList = new List<CharacterClassExpression>();
+            
+            for (var i = 0; i < newCharacters.Count; i++)
+            {
+                var intersection = newCharacters[i].GetIntersection(_characterClasses[i]);
+
+                if(intersection.GetCharacterCount() == 0)
+                    return Empty;
+                
+                intersectionList.Add(intersection);
+            }
+            
+            return new StringBuilder(intersectionList);
         }
     }
 }

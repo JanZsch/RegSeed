@@ -58,10 +58,13 @@ namespace Regseed
 
             if (_replaceWildCards)
                 regex = regex.ReplaceRegexWildCards();
-            
+
             regex = regex.TrimStart(SpecialCharacters.StartsWith).TrimEnd(SpecialCharacters.EndsWith);
-            var result = new RegularExpressionFactory(_alphabet, _random, MaxCharClassInverseLength)
-                                .TryGetRegularExpression(regex, out var expression);
+
+            RegularExpressionFactory.InitFactory(_alphabet, _random, MaxCharClassInverseLength);
+            var regexFactory = RegularExpressionFactory.GetFactoryAsSingleton();
+
+            var result = regexFactory.TryGetRegularExpression(regex, out var expression);
 
             if (!result.IsSuccess)
                 return result;
@@ -105,7 +108,7 @@ namespace Regseed
 
             if (!expandedStringBuilder.Any()) 
                 return string.Empty;
-                        
+
             var random = _random.GetNextInteger(0, expandedStringBuilder.Count - 1);
             return expandedStringBuilder[random].GenerateString();
         }

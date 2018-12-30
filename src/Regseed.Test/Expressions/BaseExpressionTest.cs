@@ -72,7 +72,6 @@ namespace Regseed.Test.Expressions
         }
 
         [TestCase(null, int.MaxValue)]
-        [TestCase(-1, 0)]
         [TestCase(2, 2)]
         public void ToRegexString_CallsRandomGeneratorWithExpectedUpperBound_WhenIntegerIntervalsUpperBoundHasSpecifiedValue(int? value, int expectedValue)
         {

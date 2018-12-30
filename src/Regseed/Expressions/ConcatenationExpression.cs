@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Regseed.Common.Builder;
 using Regseed.Common.Helper;
 using Regseed.Common.Random;
@@ -28,8 +29,18 @@ namespace Regseed.Expressions
             
             var expandedRepeatRepresentation = ExpandHelper.ExpandListRepresentation(seed, null, WasExpandedRepeatExpressionAddedToList);
 
-            var intersectInverseList = expandedRepeatRepresentation.Select(GetInverseOfExpandedConcatRepresentation).ToList();
-            
+            var intersectInverseList = new List<IExpression>();
+
+            var addGuard = new object();
+
+            Parallel.ForEach(expandedRepeatRepresentation, representation =>
+            {
+                var inverse = GetInverseOfExpandedConcatRepresentation(representation);
+
+                lock (addGuard)
+                    intersectInverseList.Add(inverse);
+            });
+
             return new IntersectionExpression(intersectInverseList, _random);
         }
 
@@ -164,14 +175,19 @@ namespace Regseed.Expressions
             
             if (start == 1 && end == 1)
                 return ExpansionStatus.NotExpanded;
-            
+
             for (var i = start; i <= end; i++)
             {
                 var distanceConcatPositionToListEnd = repeatExpressions.Count - concatElementPosition - 1;
                 var expandedExpressions = new List<IExpression>();
+                
                 expandedExpressions.AddRange(repeatExpressions.GetRange(0, concatElementPosition));
                 expandedExpressions.AddRange(ConcatElementaryExpressionTimes(repeatExpression, i));
                 expandedExpressions.AddRange(repeatExpressions.GetRange(concatElementPosition + 1,distanceConcatPositionToListEnd));
+                
+                if(!expandedExpressions.Any())
+                    expandedExpressions.Add(new EmptyExpression());
+                
                 newExpandList.Add(expandedExpressions);
             }
 
