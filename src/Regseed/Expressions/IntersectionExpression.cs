@@ -10,11 +10,19 @@ namespace Regseed.Expressions
 {
     internal class IntersectionExpression : BaseExpression
     {
-        private readonly IList<IExpression> _concatExpressions;
+        private readonly List<IExpression> _concatExpressions;
         
-        public IntersectionExpression(IList<IExpression> concatExpressions, IRandomGenerator random) : base(random)
+        public IntersectionExpression(IEnumerable<IExpression> expressions, IRandomGenerator random) : base(random)
         {
-            _concatExpressions = concatExpressions;
+            _concatExpressions = new List<IExpression>();
+            
+            foreach (var expression in expressions)
+            {
+                if (expression is IntersectionExpression intersectionExpression)
+                    _concatExpressions.AddRange(intersectionExpression._concatExpressions);
+                else
+                    _concatExpressions.Add(expression);
+            }
         }
 
         public override void SetExpansionLength(int expansionLength = 0)

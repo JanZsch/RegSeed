@@ -11,9 +11,17 @@ namespace Regseed.Expressions
     {
         protected readonly List<IExpression> _intersectExpressions;
         
-        public UnionExpression(List<IExpression> expressions, IRandomGenerator random) : base(random)
+        public UnionExpression(IEnumerable<IExpression> expressions, IRandomGenerator random) : base(random)
         {
-            _intersectExpressions = expressions;
+            _intersectExpressions = new List<IExpression>();
+            
+            foreach (var expression in expressions)
+            {
+                if (expression is UnionExpression unionExpression)
+                    _intersectExpressions.AddRange(unionExpression._intersectExpressions);
+                else
+                    _intersectExpressions.Add(expression);
+            }
         }
 
         public override void SetExpansionLength(int expansionLength = 0)

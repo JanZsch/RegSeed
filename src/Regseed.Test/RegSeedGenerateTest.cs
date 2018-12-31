@@ -149,9 +149,10 @@ namespace Regseed.Test
         [TestCase("~()&m","m")]
         [TestCase("~((marlene){1,4})&[Mm]arlene","Marlene")]
         [TestCase("x|jan&~jan","x")]
-        [TestCase("ju\\-1{0,1}[0-9]{1}\\-le&~(ju\\-(0|1|9|3|5|4|6|7|8|10|11|19|13|15|14|16|17|18|12)\\-le)","ju-2-le")]
+        [TestCase("ju\\-1{0,1}[0-4]{1}\\-le&~(ju\\-(0|1|3|4|10|11|13|14|12)\\-le)","ju-2-le")]
         [TestCase("ju\\-[0-9]{1}\\-le&ju\\-~(0|1|9|3|5|4|6|7|8)\\-le","ju-2-le")]
         [TestCase("[0-1][06]&~(00|10|06)","16")]
+        [TestCase("[0-1][06]&~(0{1,2}|10|06)","16")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersectionInCombinationWithInverse(string pattern, string expectedResult)
         {
             _random = new RandomGenerator(new Random());
