@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +20,11 @@ namespace Regseed.Expressions
 
         public ConcatenationExpression Append(IExpression expression)
         {
-            _elementaryExpressions.Add(expression);
+            if (expression is ConcatenationExpression concatenationExpression)
+                _elementaryExpressions.AddRange(concatenationExpression._elementaryExpressions);
+            else
+                _elementaryExpressions.Add(expression);
+            
             return this;
         }
      
@@ -43,7 +48,7 @@ namespace Regseed.Expressions
 
             return new IntersectionExpression(intersectInverseList, _random);
         }
-
+       
         public override IExpression Clone()
         {
             var clone = new ConcatenationExpression(_random)
@@ -66,21 +71,20 @@ namespace Regseed.Expressions
             {
                 elementaryExpression.MaxExpansionRange.ToExpansionBounds(out var baseMinLength, out var baseMaxLength);
                 
-                elementaryExpression.RepeatRange.ToExpansionBounds(out var minExpansionFactor, out var maxExpansionFactor);
-
-                if (!IsExpansionFactorValid(baseMaxLength, maxExpansionFactor, maxExpansionLength))
+                if (!IsExpansionFactorValid(baseMaxLength, maxExpansionLength))
                     maxExpansionLength = int.MaxValue;
                 else
-                    maxExpansionLength += maxExpansionFactor * baseMaxLength;
+                    maxExpansionLength += baseMaxLength;
                 
-                if (!IsExpansionFactorValid(baseMinLength, minExpansionFactor, minExpansionLength))
+                if (!IsExpansionFactorValid(baseMinLength, minExpansionLength))
                     minExpansionLength = int.MaxValue;
                 else
-                    minExpansionLength += minExpansionFactor * baseMinLength;
+                    minExpansionLength += baseMinLength;
             }
 
+            RepeatRange.ToExpansionBounds(out var lowerFactor, out var upperFactor);
             var maxExpansionInterval = new IntegerInterval();
-            maxExpansionInterval.TrySetValue(minExpansionLength, maxExpansionLength);
+            maxExpansionInterval.TrySetValue(minExpansionLength*lowerFactor, maxExpansionLength*upperFactor);
             
             return maxExpansionInterval;
         }
@@ -213,13 +217,12 @@ namespace Regseed.Expressions
             var inverseList 
                 = expandedConcatRepresentation
                     .Select((t, position) => GetInverseOfExpandedConcatForPosition(expandedConcatRepresentation, position))
-                    .Cast<IExpression>()
                     .ToList();
-
+           
             return new UnionExpression(inverseList, _random);
         }
-        
-        private ConcatenationExpression GetInverseOfExpandedConcatForPosition(List<IExpression> expandedConcatRepresentation, int i)
+
+        private IExpression GetInverseOfExpandedConcatForPosition(List<IExpression> expandedConcatRepresentation, int i)
         {
             var predecessorRange = expandedConcatRepresentation.GetRange(0, i);
             var inverse = expandedConcatRepresentation[i].GetInverse();
@@ -232,10 +235,9 @@ namespace Regseed.Expressions
             return concatExpression;
         }
 
-        private static bool IsExpansionFactorValid(int baseExpansionLength, int expansionFactor, int maxExpansionLength) =>
+        private static bool IsExpansionFactorValid(int baseExpansionLength, int maxExpansionLength) =>
             baseExpansionLength != int.MaxValue &&
-            expansionFactor != int.MaxValue &&
-            (double) baseExpansionLength / int.MaxValue * expansionFactor < 1 &&
-            baseExpansionLength * expansionFactor < int.MaxValue - maxExpansionLength;
+            (double) baseExpansionLength / int.MaxValue  < 1 &&
+            baseExpansionLength < int.MaxValue - maxExpansionLength;
     }
 }

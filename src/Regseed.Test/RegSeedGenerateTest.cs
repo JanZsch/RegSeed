@@ -53,11 +53,13 @@ namespace Regseed.Test
         [TestCase("Ja{1}n", "Jan")]
         [TestCase("J(aa){2}n", "Jaaaan")]
         [TestCase("J(a|a){2}n", "Jaan")]
+        [TestCase("J([ab]&[ac]){2}n", "Jaan")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsConcatenation(string regex, string expectedValue)
         {
-            var loadResult = TryLoadRegexPattern(regex);
+            var regseed = new RegSeed();
+            var loadResult = regseed.TryLoadRegexPattern(regex);
 
-            var result = Generate();
+            var result = regseed.Generate();
 
             Assert.IsTrue(loadResult.IsSuccess);
             Assert.AreEqual(expectedValue, result);
@@ -79,13 +81,15 @@ namespace Regseed.Test
         [TestCase("a|[a-c]&a","a")]
         [TestCase("a(~(b|c))c&a([a-c])c", "aac")]
         [TestCase("[fr][fr]&[fr]r&f[fr]","fr")]
+        [TestCase("[^f]f&ff", "")]
+        [TestCase("([^f]f)&(ff)", "")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersection(string pattern, string expectedResult)
         {
-            _random = new RandomGenerator(new Random());
-            var loadResult = TryLoadRegexPattern(pattern);
+            var regseed = new RegSeed();
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess, pattern);
-            var result = Generate();
+            var result = regseed.Generate();
 
             Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
@@ -140,31 +144,35 @@ namespace Regseed.Test
         [TestCase("~(f[0-8])&(f[0-9])","f9")]
         [TestCase("~(c[0-9])&~(f[0-8])&[cf][0-9]","f9")]
         [TestCase("~(f{1,2})&f{1,3}","fff")]
+        [TestCase("~((f){2})&f{2,3}","fff")]
         [TestCase("~(f|(ff){1,2})&f{1,4}","fff")]
-        [TestCase("~(f{1,2}f)&f{1,4}","ffff")]
+        [TestCase("~(f{0,2}f)&f{1,4}","ffff")]
         [TestCase("~f&f{1,2}","ff")]
         [TestCase("F(R|r)a&~(FRa)","Fra")]
         [TestCase("~(m{0,1})&[Mm]","M")]
         [TestCase("~(m{0})&M","M")]
         [TestCase("~()&m","m")]
         [TestCase("~((marlene){1,4})&[Mm]arlene","Marlene")]
+        [TestCase("~((ma){1,4})&[Mm]a","Ma")]
         [TestCase("x|jan&~jan","x")]
         [TestCase("ju\\-1{0,1}[0-4]{1}\\-le&~(ju\\-(0|1|3|4|10|11|13|14|12)\\-le)","ju-2-le")]
         [TestCase("ju\\-[0-9]{1}\\-le&ju\\-~(0|1|9|3|5|4|6|7|8)\\-le","ju-2-le")]
-        [TestCase("[0-1][06]&~(00|10|06)","16")]
+        [TestCase("~(00|10|06)&[0-1][06]","16")]
         [TestCase("[0-1][06]&~(0{1,2}|10|06)","16")]
+        [TestCase("[0-1]&~0","1")]
+        [TestCase("[0-1]{2}&~(00|10|01)","11")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersectionInCombinationWithInverse(string pattern, string expectedResult)
         {
-            _random = new RandomGenerator(new Random());
-            var loadResult = TryLoadRegexPattern(pattern);
+            var regseed = new RegSeed();
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess, "Faulty pattern: {0}", pattern);
             
-            var result = Generate();
+            var result = regseed.Generate();
 
-            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);                
+            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
         }
-              
+
         [TestCase("[^{0}]", "F")]
         [TestCase("~~F", "F")]
         [TestCase("~[{0}]", "F")]
@@ -188,7 +196,7 @@ namespace Regseed.Test
 
             Assert.AreEqual(expectedResult, result, regex);
         }
-       
+
         [Test]
         public void Generate_ReturnsAnythingButLettersABC_WhenPatternIsCharacterClassInverseOfABC()
         {
@@ -336,6 +344,40 @@ namespace Regseed.Test
 
                 Assert.AreEqual(expectedResult, result);
             }
+        }
+
+        [Test]
+        public void Generate_ReturnsA_WhenExpressionIsSingleInverseAndInverseLengthIs1()
+        {
+            var regseed = new RegSeed();
+            regseed.SetMaxCharClassInverseLength(1);
+            regseed.TryLoadRegexPattern("~[^A]");
+
+            var result = regseed.Generate();
+            
+            Assert.AreEqual("A", result);
+        }
+        
+        [Test]
+        public void Generate_ReturnsAllPossibleInverseLengths_WhenExpressionIsSingleInverseAndInverseLengthIsLargerThan3()
+        {
+            const int maxInverseLength = 4;
+            var regseed = new RegSeed();
+            regseed.SetMaxCharClassInverseLength(maxInverseLength);
+            regseed.TryLoadRegexPattern("~[^A]");
+            var counter = new int[maxInverseLength];
+
+            for (var i = 0; i < 100; i++)
+            {            
+                var result = regseed.Generate();
+                counter[result.Length - 1]++;
+                
+                if(result.Length == 1)
+                    Assert.AreEqual("A", result);
+            }
+
+            foreach (var count in counter)
+                Assert.Greater(count, 0);
         }
 
         [Test]

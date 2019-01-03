@@ -31,7 +31,10 @@ namespace Regseed.Test
         [Test]
         public void ConstructorWithPattern_ThrowsArgumentException_WhenPatternInvalid()
         {
-            Assert.Throws<ArgumentException>(() => _ = new RegSeed("{"));
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var unused = new RegSeed("{");
+            });
         }
 
         [Test]

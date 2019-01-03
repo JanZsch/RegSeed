@@ -35,18 +35,34 @@ namespace Regseed.Test.Expressions
         }
 
         
-        [TestCase("x|y&1")]
-        [TestCase("y&1")]
-        [TestCase("y([1]&2)1")]
-        [TestCase("1(1|2|[3-4]&3)0")]
-        public void TryLoadRegex_ResultValueHasIntersectionIsTrue_WhenPatternContainsIntersectionToken(string pattern)
+        [TestCase("x|y&1", true)]
+        [TestCase("y&1", true)]
+        [TestCase("y([1]&2)1", true)]
+        [TestCase("1(1|2|[3-4]&3)0", true)]
+        [TestCase("1(1|2|[3-4]3)0", false)]
+        [TestCase("1(1{1,2}[^abs])0", false)]
+        public void TryLoadRegex_ResultValueHasIntersectionIsExpectedValue_DependingOnWhethernPatternContainsIntersectionTokenOrNot(string pattern, bool expectedResult)
         {
             RegularExpressionFactory.InitFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
             var factory = RegularExpressionFactory.GetFactoryAsSingleton();
             
             var result = factory.TryGetRegularExpression(pattern, out _);
             
-            Assert.IsTrue(result.Value.HasIntersection);
+            Assert.AreEqual(expectedResult, result.Value.HasIntersection);
+        }
+        
+        [TestCase("~1", true)]
+        [TestCase("x(~(12)|A)y", true)]
+        [TestCase("x((12)|A)y", false)]
+        [TestCase("x([^asd]y{0,12})y", false)]
+        public void TryLoadRegexPattern_ContainsComplementHasExpectedValue_DependingOnWhetherPatternContainsComplementOrNot(string pattern, bool expectedResult)
+        {
+            RegularExpressionFactory.InitFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
+            var factory = RegularExpressionFactory.GetFactoryAsSingleton();
+            
+            var result = factory.TryGetRegularExpression(pattern, out _);
+            
+            Assert.AreEqual(expectedResult, result.Value.HasComplement);
         }
         
         [TestCase("")]
@@ -102,6 +118,7 @@ namespace Regseed.Test.Expressions
         [TestCase("~(Trump)", 0)]
         [TestCase("[^1]", 1)]
         [TestCase("~1", 0)]
+        [TestCase("~(no)", 0)]
         [TestCase("~1&12&3", 0)]
         [TestCase("~1|12&3", 0)]
         [TestCase(".*&a", 1)]

@@ -71,7 +71,7 @@ namespace Regseed.Expressions
         }
 
         protected override IntegerInterval GetMaxExpansionInterval() =>
-            new IntegerInterval(1);
+            RepeatRange;
 
         public CharacterClassExpression GetComplement()
         {

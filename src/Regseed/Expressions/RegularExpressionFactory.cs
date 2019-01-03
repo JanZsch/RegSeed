@@ -218,13 +218,14 @@ namespace Regseed.Expressions
         {
             expression = null;
             tokenStream.Pop();
+            
             var elementaryResult = TryGetElementaryExpression(tokenStream, out var toInvertExpression);
-
+            elementaryResult.Value.HasComplement = true;
+            
             if (!elementaryResult.IsSuccess)
                 return elementaryResult;
 
             expression = toInvertExpression.GetInverse();
-            expression.MaxExpansionRange = IntegerInterval.MaxInterval;
 
             return new SuccessParseResult<ExpressionMetaData>(tokenStream.CurrentPosition, elementaryResult.Value);
         }

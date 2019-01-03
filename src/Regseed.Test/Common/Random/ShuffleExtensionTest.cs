@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using Regseed.Common.Random;
@@ -13,7 +12,7 @@ namespace Regseed.Test.Common.Random
         [Test]
         public void Shuffle_ChangesAtLeastOnePositionOfListElement_WhenListIs100ElementsLong()
         {
-            var integerRange = Enumerable.Range(0, 99).ToList();
+            var integerRange = Enumerable.Range(0, 100).ToList();
             
             integerRange.Shuffle(new RandomGenerator(new System.Random()));
 
@@ -54,7 +53,7 @@ namespace Regseed.Test.Common.Random
             foreach (var _ in range)
             {
                 var list = new List<int>();
-                foreach (var j in range)
+                foreach (var unused in range)
                     list.Add(0);
                 frequencies.Add(list);
             }

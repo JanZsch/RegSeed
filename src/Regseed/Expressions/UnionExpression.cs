@@ -80,8 +80,9 @@ namespace Regseed.Expressions
                     return IntegerInterval.MaxInterval;
             }
 
+            RepeatRange.ToExpansionBounds(out var lowerFactor, out var upperFactor);
             var maxExpansionInterval = new IntegerInterval();
-            maxExpansionInterval.TrySetValue(minExpansion, maxExpansion);
+            maxExpansionInterval.TrySetValue(minExpansion*lowerFactor, maxExpansion*upperFactor);
             
             return maxExpansionInterval;
         }

@@ -65,11 +65,11 @@ namespace Regseed.Expressions
             Parallel.ForEach(_concatExpressions, expression =>
             {
                 var inverse = expression.GetInverse();
-                
+            
                 lock(addGuard)
                     concatInverses.Add(inverse);
             });
-            
+
             return new UnionExpression(concatInverses, _random)
             {
                 RepeatRange = RepeatRange
@@ -105,8 +105,9 @@ namespace Regseed.Expressions
                     return new IntegerInterval(0);
             }
 
+            RepeatRange.ToExpansionBounds(out var lowerFactor, out var upperFactor);
             var minExpansionInterval = new IntegerInterval();
-            minExpansionInterval.TrySetValue(minExpansion, maxExpansion);
+            minExpansionInterval.TrySetValue(minExpansion*lowerFactor, maxExpansion*upperFactor);
             
             return minExpansionInterval;
         }

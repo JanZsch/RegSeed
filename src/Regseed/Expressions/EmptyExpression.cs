@@ -6,8 +6,6 @@ namespace Regseed.Expressions
 {
     internal class EmptyExpression : IExpression
     {
-        private IntegerInterval _maxExpansionInterval;
-
         public IntegerInterval RepeatRange { get; set; }
 
         public int? ExpansionLength =>
@@ -15,12 +13,12 @@ namespace Regseed.Expressions
 
         public IntegerInterval MaxExpansionRange
         {
-            get => _maxExpansionInterval; 
-            set => _maxExpansionInterval = new IntegerInterval(0);
+            get => new IntegerInterval(0);
+            set { }
         }
 
-        public void SetExpansionLength(int expansionLength) =>
-            _maxExpansionInterval = new IntegerInterval(0);
+        public void SetExpansionLength(int expansionLength)
+        {}
 
         public IList<IStringBuilder> Expand() =>
             new List<IStringBuilder>{StringBuilder.Empty};
