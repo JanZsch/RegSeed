@@ -15,20 +15,22 @@ namespace Regseed.Test.Expressions
     internal class ConcatenationExpressionTest : ConcatenationExpression
     {
         private IRandomGenerator _randomGenerator;
+        private IParserAlphabet _alphabet;
         private IExpression _expression;
        
         [SetUp]
         public void SetUp()
         {
             _randomGenerator = Substitute.For<IRandomGenerator>();
+            _alphabet = Substitute.For<IParserAlphabet>();
             _expression = Substitute.For<IExpression>();
         }
 
-        public ConcatenationExpressionTest() : base(null)
+        public ConcatenationExpressionTest() : base(null, null)
         {
         }
 
-        public ConcatenationExpressionTest(IRandomGenerator random) : base(random)
+        public ConcatenationExpressionTest(IRandomGenerator random) : base(null, random)
         {
         }
 
@@ -39,13 +41,13 @@ namespace Regseed.Test.Expressions
             repeatInterval.TrySetValue(1, 2);
             var inverseSubExpression = Substitute.For<IExpression>();
             var subExpression = Substitute.For<IExpression>();
-            subExpression.GetInverse().Returns(inverseSubExpression);
+            subExpression.GetInverse(Arg.Any<int>()).Returns(inverseSubExpression);
             subExpression.RepeatRange.Returns(repeatInterval);
             subExpression.ExpansionLength.Returns(2);
-            var concatExpression = new ConcatenationExpression(_randomGenerator);
+            var concatExpression = new ConcatenationExpression(_alphabet, _randomGenerator);
             concatExpression.Append(subExpression);
 
-            var result = concatExpression.GetInverse();
+            var result = concatExpression.GetInverse(10);
             Assert.IsInstanceOf<IntersectionExpression>(result);
 
             var resultAsList = ((IntersectionExpression) result).ToConcatExpressionList();
@@ -60,15 +62,15 @@ namespace Regseed.Test.Expressions
             var repeatInterval = new IntegerInterval();
             repeatInterval.TrySetValue(1, 2);
             var inverseSubExpression = Substitute.For<IExpression>();
-            inverseSubExpression.GetInverse().Returns(Substitute.For<IExpression>());
+            inverseSubExpression.GetInverse(Arg.Any<int>()).Returns(Substitute.For<IExpression>());
             var subExpression = Substitute.For<IExpression>();
-            subExpression.GetInverse().Returns(inverseSubExpression);
+            subExpression.GetInverse(Arg.Any<int>()).Returns(inverseSubExpression);
             subExpression.RepeatRange.Returns(repeatInterval);
             subExpression.ExpansionLength.Returns(2);
-            var concatExpression = new ConcatenationExpression(_randomGenerator);
+            var concatExpression = new ConcatenationExpression(_alphabet, _randomGenerator);
             concatExpression.Append(inverseSubExpression).Append(subExpression).Append(inverseSubExpression);            
 
-            var result = concatExpression.GetInverse();
+            var result = concatExpression.GetInverse(10);
             Assert.IsInstanceOf<IntersectionExpression>(result);
 
             var resultAsList = ((IntersectionExpression) result).ToConcatExpressionList();
@@ -84,10 +86,10 @@ namespace Regseed.Test.Expressions
             var concatExpression = new ConcatenationExpressionTest(_randomGenerator);
             concatExpression.Append(_expression).Append(secondExpression);
 
-            concatExpression.GetInverse();
+            concatExpression.GetInverse(10);
 
-            secondExpression.Received(1).GetInverse();
-            _expression.Received(1).GetInverse();
+            secondExpression.Received(1).GetInverse(Arg.Any<int>());
+            _expression.Received(1).GetInverse(Arg.Any<int>());
         }
 
         [Test]
@@ -133,7 +135,7 @@ namespace Regseed.Test.Expressions
         public void Clone_ReturnsNewConcatenationInstanceWithSameValues()
         {
             var expression = Substitute.For<IExpression>();
-            var concat = new ConcatenationExpression(_random)
+            var concat = new ConcatenationExpression(_alphabet, _random)
             {
                 RepeatRange = new IntegerInterval()
             };
@@ -159,7 +161,7 @@ namespace Regseed.Test.Expressions
             expression.RepeatRange = new IntegerInterval();
             expression.RepeatRange.TrySetValue(1, 3);
             expression.ExpansionLength.Returns(2);
-            var concat = new ConcatenationExpression(_random);
+            var concat = new ConcatenationExpression(_alphabet, _random);
             concat.Append(expression);
             concat.SetExpansionLength(2);
             
@@ -177,7 +179,7 @@ namespace Regseed.Test.Expressions
             expression.Clone().Returns(clone);
             expression.RepeatRange = new IntegerInterval();
             expression.RepeatRange.TrySetValue(1, 3);
-            var concat = new ConcatenationExpression(_random);
+            var concat = new ConcatenationExpression(_alphabet, _random);
             concat.Append(expression);
             
             concat.Expand();
@@ -203,7 +205,7 @@ namespace Regseed.Test.Expressions
             expandableExpression.RepeatRange = new IntegerInterval(1);
             expandableExpression.Expand().Returns(new List<IStringBuilder> { mock1, mock2, mock3 });
 
-            var concat = new ConcatenationExpression(_random);
+            var concat = new ConcatenationExpression(_alphabet, _random);
             concat.SetExpansionLength(4);
             concat.Append(simpleExpression).Append(expandableExpression).Append(simpleExpression).Append(simpleExpression);
 
@@ -222,7 +224,7 @@ namespace Regseed.Test.Expressions
                 var alphabet = Substitute.For<IParserAlphabet>();
                 alphabet.IsValid(Arg.Any<string>()).Returns(true);
 
-                var val = new CharacterClassExpression(alphabet, _randomGenerator, 0);
+                var val = new CharacterClassExpression(alphabet, _randomGenerator);
                 val.AddCharacters(new List<string> {x.ToString()});
                 return val;
             }).ToList();

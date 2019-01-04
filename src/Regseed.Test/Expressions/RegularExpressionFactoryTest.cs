@@ -1,40 +1,13 @@
-using System;
-using System.Collections.Generic;
 using NSubstitute;
 using NUnit.Framework;
 using Regseed.Common.Random;
 using Regseed.Expressions;
-using Regseed.Parser;
 
 namespace Regseed.Test.Expressions
 {
     [TestFixture]
     public class RegularExpressionFactoryTest
     {
-        [SetUp]
-        public void SetUp()
-        {
-            RegularExpressionFactory.Reset();
-        }
-
-        [Test]
-        public void GetFactorySingleton_ThrowsArgumentException_WhenFactoryWasNotInitialisedFirst()
-        {
-            Assert.Throws<ArgumentException>(() => RegularExpressionFactory.GetFactoryAsSingleton());
-        }
-
-        [Test]
-        public void GetFactorySingleton_ReturnsFactoryInstanceAsSingleton()
-        {
-            RegularExpressionFactory.InitFactory(Substitute.For<IParserAlphabet>(), Substitute.For<IRandomGenerator>(), 2);
-            
-            var result1 = RegularExpressionFactory.GetFactoryAsSingleton();
-            var result2 = RegularExpressionFactory.GetFactoryAsSingleton();
-            
-            Assert.AreEqual(result1, result2);
-        }
-
-        
         [TestCase("x|y&1", true)]
         [TestCase("y&1", true)]
         [TestCase("y([1]&2)1", true)]
@@ -43,8 +16,7 @@ namespace Regseed.Test.Expressions
         [TestCase("1(1{1,2}[^abs])0", false)]
         public void TryLoadRegex_ResultValueHasIntersectionIsExpectedValue_DependingOnWhethernPatternContainsIntersectionTokenOrNot(string pattern, bool expectedResult)
         {
-            RegularExpressionFactory.InitFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
-            var factory = RegularExpressionFactory.GetFactoryAsSingleton();
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
             
             var result = factory.TryGetRegularExpression(pattern, out _);
             
@@ -57,8 +29,7 @@ namespace Regseed.Test.Expressions
         [TestCase("x([^asd]y{0,12})y", false)]
         public void TryLoadRegexPattern_ContainsComplementHasExpectedValue_DependingOnWhetherPatternContainsComplementOrNot(string pattern, bool expectedResult)
         {
-            RegularExpressionFactory.InitFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
-            var factory = RegularExpressionFactory.GetFactoryAsSingleton();
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
             
             var result = factory.TryGetRegularExpression(pattern, out _);
             
@@ -68,8 +39,7 @@ namespace Regseed.Test.Expressions
         [TestCase("")]
         public void TryLoadRegex_ResultValueHasIntersectionIsFalse_WhenPatternDoesNotContainIntersectionToken(string pattern)
         {
-            RegularExpressionFactory.InitFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
-            var factory = RegularExpressionFactory.GetFactoryAsSingleton();
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
 
             var result = factory.TryGetRegularExpression(pattern, out _);
             
@@ -86,24 +56,36 @@ namespace Regseed.Test.Expressions
         [TestCase("Ul|rik|e", 3)]
         [TestCase("U(l{0,1}|r{2}|ike){1,2}!{1,4}", 11)]
         [TestCase("U(l{0,1}|r{2}|[Ii]ke&ike){1,2}!{1,4}", 11)]
-        [TestCase("~(Trump)", int.MaxValue)]
         [TestCase("[^1]", 1)]
-        [TestCase("~1", int.MaxValue)]
-        [TestCase("~1&12&3", 0)]
-        [TestCase("~1&12&34", 2)]
-        [TestCase("~1|12&3", int.MaxValue)]
         [TestCase(".*&a", 1)]
         [TestCase("a{3,4}&c{1,2}", 0)]
         public void TryLoadRegex_ReturnedExpressionYieldsExpectedMaxExpansionLength_WhenCalledForPattern(string pattern, int expectedMaxExpansionLength)
         {
-            RegularExpressionFactory.InitFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
-            var factory = RegularExpressionFactory.GetFactoryAsSingleton();
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
 
             factory.TryGetRegularExpression(pattern, out var union);
             var result = union.MaxExpansionRange.End;
             
             Assert.AreEqual(expectedMaxExpansionLength, result);
         }
+
+        [TestCase("~(Trump)", 5+2)]
+        [TestCase("~1", 1+2)]
+        [TestCase("~1&12&3", 0)]
+        [TestCase("~1&12&34", 2)]
+        [TestCase("~1|12&3", 1+2)]
+        public void TryLoadRegex_ReturnedMaxExpansionLengthIsMaxLengthOfInvertedExpressionPlusInverseLengthOffset_WhenPatternContainsInverse(string pattern, int expectedMaxExpansionLength)
+        {
+            const int inverseLengthOffset = 2;
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), inverseLengthOffset);
+
+
+            factory.TryGetRegularExpression(pattern, out var union);
+            var result = union.MaxExpansionRange.End;
+            
+            Assert.AreEqual(expectedMaxExpansionLength, result);
+        }
+
         
         [TestCase("a", 1)]
         [TestCase("a{0,2}b", 1)]
@@ -126,27 +108,12 @@ namespace Regseed.Test.Expressions
         [TestCase("a{3,4}&c{1,2}", 0)]
         public void TryLoadRegex_ReturnedExpressionYieldsExpectedMinExpansionLength_WhenCalledForPattern(string pattern, int expectedMinExpansionLength)
         {
-            RegularExpressionFactory.InitFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
-            var factory = RegularExpressionFactory.GetFactoryAsSingleton();
+            var factory = new RegularExpressionFactory(RegexAlphabetFactory.Default(), Substitute.For<IRandomGenerator>(), 1);
 
             factory.TryGetRegularExpression(pattern, out var union);
             var result = union.MaxExpansionRange.Start;
             
             Assert.AreEqual(expectedMinExpansionLength, result);
-        }
-        
-        [Test]
-        public void GetFullCharacterClassExpression_ReturnsCharacterClassContainingFullAlphabet()
-        {
-            var alphabet = Substitute.For<IParserAlphabet>();
-            alphabet.GetAllCharacters().Returns(new List<string> {"a", "1"});
-            RegularExpressionFactory.InitFactory(alphabet, Substitute.For<IRandomGenerator>(), 1);
-            var factory = RegularExpressionFactory.GetFactoryAsSingleton();
-            
-            var result = factory.GetFullCharacterClassExpression();
-            
-            Assert.IsInstanceOf<CharacterClassExpression>(result);
-            Assert.AreEqual(2, result.GetCharacterCount());
         }
     }
 }

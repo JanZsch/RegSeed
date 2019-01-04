@@ -9,14 +9,23 @@ namespace Regseed.Test.Expressions
     [TestFixture]
     public class EmptyExpressionTest
     {
+        private IParserAlphabet _alphabet;
+        private IRandomGenerator _random;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _alphabet = Substitute.For<IParserAlphabet>(); 
+            _random = Substitute.For<IRandomGenerator>();
+        }
+
         [Test]
         public void GetInverse_ReturnsCharClassExpressionWithRepeatRangeBetween1andMaxInverseLength()
         {
             const int maxInverseLength = 3;
-            RegularExpressionFactory.InitFactory(Substitute.For<IParserAlphabet>(), Substitute.For<IRandomGenerator>(), maxInverseLength);
-            var expression = new EmptyExpression();
+            var expression = new EmptyExpression(_alphabet,_random);
 
-            var result = expression.GetInverse();
+            var result = expression.GetInverse(maxInverseLength);
 
             Assert.IsInstanceOf<CharacterClassExpression>(result);
             Assert.AreEqual(1, result.RepeatRange.Start);
@@ -26,7 +35,7 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToStringBuilder_ReturnsEmptyString()
         {
-            var expression = new EmptyExpression();
+            var expression = new EmptyExpression(_alphabet,_random);
 
             var result = expression.ToStringBuilder().GenerateString();
 
@@ -36,7 +45,7 @@ namespace Regseed.Test.Expressions
         [Test]
         public void Clone_ReturnsEmptyExpression()
         {
-            var expression = new EmptyExpression();
+            var expression = new EmptyExpression(_alphabet,_random);
 
             var result = expression.Clone();
 

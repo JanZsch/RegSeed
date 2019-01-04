@@ -7,13 +7,13 @@ namespace Regseed.Expressions
     internal interface IExpression
     {
         int? ExpansionLength { get; }
-        IntegerInterval MaxExpansionRange { get; set; }
+        IntegerInterval MaxExpansionRange { get; }
         IntegerInterval RepeatRange { get; set; }
 
         void SetExpansionLength(int expansionLength = 0);
         IList<IStringBuilder> Expand();
         IStringBuilder ToStringBuilder();
-        IExpression GetInverse();
+        IExpression GetInverse(int inverseLength);
         IExpression Clone();
     }
 }

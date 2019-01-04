@@ -82,9 +82,9 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToSingleStringBuilder_ReturnedStringBuilderReturnsIntersection_WhenTwoConcatExpressionsContainedInIntersectionExpression()
         {
-            var concat1 = new ConcatenationExpression(_randomGenerator);
+            var concat1 = new ConcatenationExpression(_alphabet, _randomGenerator);
             concat1.Append(ToCharacterClass("F", "f")).Append(ToCharacterClass("R", "r"));
-            var concat2 = new ConcatenationExpression(_randomGenerator);
+            var concat2 = new ConcatenationExpression(_alphabet, _randomGenerator);
             concat2.Append(ToCharacterClass("F")).Append(ToCharacterClass("r"));
             var expression = new IntersectionExpressionTest(new List<IExpression>{concat1, concat2}, _randomGenerator);
 
@@ -97,9 +97,9 @@ namespace Regseed.Test.Expressions
         [Test]
         public void ToSingleStringBuilder_ReturnsEmpty_WhenTwoConcatExpressionsContainedInIntersectionExpressionWithLength2And1Respectively()
         {
-            var concat1 = new ConcatenationExpression(_randomGenerator);
+            var concat1 = new ConcatenationExpression(_alphabet, _randomGenerator);
             concat1.Append(ToCharacterClass("F", "f")).Append(ToCharacterClass("R", "r"));
-            var concat2 = new ConcatenationExpression(_randomGenerator);
+            var concat2 = new ConcatenationExpression(_alphabet, _randomGenerator);
             concat2.Append(ToCharacterClass("F", "a"));
             var expression = new IntersectionExpressionTest(new List<IExpression>{concat1, concat2}, _randomGenerator);
 
@@ -130,11 +130,11 @@ namespace Regseed.Test.Expressions
         [Test]
         public void GetInverse_ReturnsStringBuilderReturningComplementOfSingleCharacterClass_WhenIntersectionExpressionContainsSingleElementWithCharactersRA()
         {
-            var concat1 = new ConcatenationExpression(_randomGenerator);
+            var concat1 = new ConcatenationExpression(_alphabet, _randomGenerator);
             concat1.Append(ToCharacterClass("r", "a"));
             var expression = new IntersectionExpressionTest(new List<IExpression>{concat1}, _randomGenerator);
 
-            var result = expression.GetInverse().ToStringBuilder().GenerateString();
+            var result = expression.GetInverse(1).ToStringBuilder().GenerateString();
 
             Assert.IsNotNull(result);
             Assert.AreEqual("F", result);            
@@ -142,7 +142,7 @@ namespace Regseed.Test.Expressions
              
         private CharacterClassExpression ToCharacterClass(params string[] characters)
         {
-            var charClass = new CharacterClassExpression(_alphabet, _randomGenerator, 1);
+            var charClass = new CharacterClassExpression(_alphabet, _randomGenerator);
             charClass.AddCharacters(characters.ToList());
             return charClass;
         }

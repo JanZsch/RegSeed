@@ -20,9 +20,9 @@ namespace Regseed.Test.Common.Builder
             _alphabet = Substitute.For<IParserAlphabet>();
             _alphabet.IsValid(Arg.Any<string>()).Returns(true);
 
-            _charClass1 = new CharacterClassExpression(_alphabet, _random, 1);
+            _charClass1 = new CharacterClassExpression(_alphabet, _random);
             _charClass1.AddCharacters(new List<string> {"a", "b", "c"});
-            _charClass2 = new CharacterClassExpression(_alphabet, _random, 1);
+            _charClass2 = new CharacterClassExpression(_alphabet, _random);
             _charClass2.AddCharacters(new List<string> {"b", "c", "d"});
         }
 
@@ -47,7 +47,7 @@ namespace Regseed.Test.Common.Builder
         [Test]
         public void GenerateString_ReturnsTwoAA_WhenBuilderContainsTwoCharacterClassesWithSingleCharacterA()
         {
-            var charClass = new CharacterClassExpression(_alphabet, _random, 1);
+            var charClass = new CharacterClassExpression(_alphabet, _random);
             charClass.AddCharacters(new List<string> {"a"});
 
             var builder = new StringBuilder(new List<CharacterClassExpression> {charClass, charClass});

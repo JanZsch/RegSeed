@@ -11,12 +11,8 @@ namespace Regseed.Expressions
 
         public int? ExpansionLength { get; protected set; }
 
-        public IntegerInterval MaxExpansionRange
-        {
-            get => _maxExpansionInterval ?? GetMaxExpansionInterval();
-            set => _maxExpansionInterval = value;
-        }
-        
+        public IntegerInterval MaxExpansionRange => _maxExpansionInterval ?? (_maxExpansionInterval = GetMaxExpansionInterval());
+
         public IntegerInterval RepeatRange { get; set; }
         
         protected readonly IRandomGenerator _random;
@@ -37,7 +33,7 @@ namespace Regseed.Expressions
 
         public abstract void SetExpansionLength(int expansionLength = 0);
         public abstract IList<IStringBuilder> Expand();
-        public abstract IExpression GetInverse();
+        public abstract IExpression GetInverse(int inverseLength);
         public abstract IExpression Clone();
 
         protected abstract IntegerInterval GetMaxExpansionInterval();

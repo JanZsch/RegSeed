@@ -19,13 +19,13 @@ namespace Regseed
         private IExpression _regularExpression;
         protected IRandomGenerator _random;
 
-        public int MaxCharClassInverseLength { get; private set; }
+        public int InverseLengthOffset { get; private set; }
         
         public RegSeed(Random random = null, IParserAlphabet parserAlphabet = null)
         {
             _alphabet = parserAlphabet ?? RegexAlphabetFactory.Default();
             _random = new RandomGenerator(random ?? new Random());
-            MaxCharClassInverseLength = _defaultCharClassInverseLength;
+            InverseLengthOffset = _defaultCharClassInverseLength;
             _replaceWildCards = false;
         }
 
@@ -33,14 +33,14 @@ namespace Regseed
         {
             _alphabet = parserAlphabet ?? RegexAlphabetFactory.Default();
             _random = random ?? new RandomGenerator(new Random());
-            MaxCharClassInverseLength = _defaultCharClassInverseLength;
+            InverseLengthOffset = _defaultCharClassInverseLength;
             _replaceWildCards = false;
         }
 
         public RegSeed(string regex, Random random = null, IParserAlphabet parserAlphabet = null)
         {
             _replaceWildCards = false;
-            MaxCharClassInverseLength = _defaultCharClassInverseLength;
+            InverseLengthOffset = _defaultCharClassInverseLength;
             _alphabet = parserAlphabet ?? RegexAlphabetFactory.Default();
             _random = new RandomGenerator(random ?? new Random());
 
@@ -61,8 +61,7 @@ namespace Regseed
 
             regex = regex.TrimStart(SpecialCharacters.StartsWith).TrimEnd(SpecialCharacters.EndsWith);
 
-            RegularExpressionFactory.InitFactory(_alphabet, _random, MaxCharClassInverseLength);
-            var regexFactory = RegularExpressionFactory.GetFactoryAsSingleton();
+            var regexFactory = new RegularExpressionFactory(_alphabet, _random, InverseLengthOffset);
 
             var result = regexFactory.TryGetRegularExpression(regex, out var expression);
 
@@ -86,12 +85,12 @@ namespace Regseed
             return this;
         }
 
-        public RegSeed SetMaxCharClassInverseLength(int maxCharClassInverseLength)
+        public RegSeed SetInverseLengthOffset(int inverseLengthOffset)
         {
-            if(maxCharClassInverseLength < 1)
-                throw new ArgumentException(RegSeedErrorMessages.MaxCharClassInverseLengthOutOfRange);
+            if(inverseLengthOffset < 1)
+                throw new ArgumentException(RegSeedErrorMessages.InverseLengthOffsetOutOfRange);
             
-            MaxCharClassInverseLength = maxCharClassInverseLength;
+            InverseLengthOffset = inverseLengthOffset;
 
             return this;
         }

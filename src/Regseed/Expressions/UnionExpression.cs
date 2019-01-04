@@ -15,7 +15,7 @@ namespace Regseed.Expressions
         {
             _intersectExpressions = new List<IExpression>();
             
-            foreach (var expression in expressions)
+            foreach (var expression in expressions ?? new List<IExpression>())
             {
                 if (expression is UnionExpression unionExpression)
                     _intersectExpressions.AddRange(unionExpression._intersectExpressions);
@@ -48,8 +48,8 @@ namespace Regseed.Expressions
             return expandedList;
         }
 
-        public override IExpression GetInverse() =>
-            new IntersectionExpression(_intersectExpressions.Select(x => x.GetInverse()).ToList(), _random)
+        public override IExpression GetInverse(int inverseLength) =>
+            new IntersectionExpression(_intersectExpressions.Select(x => x.GetInverse(inverseLength)).ToList(), _random)
             {
                 RepeatRange = RepeatRange
             };

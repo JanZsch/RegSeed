@@ -123,11 +123,11 @@ namespace Regseed.Test
         }
 
         [Test]
-        public void SetMaxCharInverseLength_GenerateReturnsStringsOfAtMostLength3_WhenCalledWith3()
+        public void SetInverseLengthOffset_GenerateReturnsStringsWithAttMostLength4_WhenCalledWith3AndMaxLengthOfToBeInvertedExpressionIs1()
         {
             const int runs = 200;
-            var lengthCounts = new[] {0, 0, 0, 0};
-            var regseed = new RegSeed().SetMaxCharClassInverseLength(3);
+            var lengthCounts = new[] {0, 0, 0, 0, 0};
+            var regseed = new RegSeed().SetInverseLengthOffset(3);
             regseed.TryLoadRegexPattern("~a");
 
             for (var i = 0; i < runs; i++)
@@ -136,7 +136,7 @@ namespace Regseed.Test
             Assert.AreEqual(0, lengthCounts[0]);
 
             var totalCalls = 0;
-            for (var i = 1; i <= 3; i++)
+            for (var i = 1; i <= 4; i++)
             {
                 totalCalls += lengthCounts[i];
                 Assert.Greater(lengthCounts[i], 0);
@@ -146,11 +146,11 @@ namespace Regseed.Test
         }
 
         [Test]
-        public void MaxCharInverseLength_Returns5_WhenSetMaxCharInverseLengthNotCalled()
+        public void InverseLengthOffset_Returns5_WhenSetInverseLengthOffsetNotCalled()
         {
             var regseed = new RegSeed();
 
-            var result = regseed.MaxCharClassInverseLength;
+            var result = regseed.InverseLengthOffset;
 
             Assert.AreEqual(5, result);
         }

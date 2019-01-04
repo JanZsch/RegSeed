@@ -10,8 +10,7 @@ namespace Regseed.Expressions
 {
     internal class CharacterClassExpression : BaseExpression
     {
-        private readonly int _maxInverseLength;
-        private readonly IParserAlphabet _alphabet;
+        protected readonly IParserAlphabet _alphabet;
         private List<string> _characterList = new List<string>();
         private readonly IDictionary<string, string> _literals = new Dictionary<string, string>();
 
@@ -19,10 +18,9 @@ namespace Regseed.Expressions
         {
         }
 
-        public CharacterClassExpression(IParserAlphabet alphabet, IRandomGenerator random, int maxInverseLength) : base(random)
+        public CharacterClassExpression(IParserAlphabet alphabet, IRandomGenerator random) : base(random)
         {
             _alphabet = alphabet ?? throw new ArgumentNullException();
-            _maxInverseLength = maxInverseLength;
         }
 
         public int GetCharacterCount() =>
@@ -50,16 +48,16 @@ namespace Regseed.Expressions
             return returnList;
         }
 
-        public override IExpression GetInverse()
+        public override IExpression GetInverse(int inverseLength)
         {
-            return _maxInverseLength <= 1 
+            return inverseLength <= 1 
                 ? (IExpression) GetComplement() 
-                : GetAllCharacterClassInversesUpToMaxInverseLength();
+                : WrapAllNonComplementInversesUpToMaxInverseLengthAround(inverseLength, GetComplement());
         }
 
         public override IExpression Clone()
         {
-            var clone = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
+            var clone = new CharacterClassExpression(_alphabet, _random)
             {
                 RepeatRange = RepeatRange?.Clone(),
                 ExpansionLength = ExpansionLength
@@ -70,13 +68,10 @@ namespace Regseed.Expressions
             return clone;
         }
 
-        protected override IntegerInterval GetMaxExpansionInterval() =>
-            RepeatRange;
-
-        public CharacterClassExpression GetComplement()
+        public virtual CharacterClassExpression GetComplement()
         {
             var complementCharacters = _alphabet.GetAllCharacters().Where(x => !_literals.ContainsKey(x)).ToList();
-            var complement = new CharacterClassExpression(_alphabet, _random, _maxInverseLength);
+            var complement = new CharacterClassExpression(_alphabet, _random);
             
             complement.AddCharacters(complementCharacters);
 
@@ -93,18 +88,18 @@ namespace Regseed.Expressions
             :_characterList[_random.GetNextInteger(0, _characterList.Count - 1)];
         }
 
-        public CharacterClassExpression GetIntersection(CharacterClassExpression charClass)
+        public virtual CharacterClassExpression GetIntersection(CharacterClassExpression charClass)
         {
             if(charClass == null || !charClass._characterList.Any() || !_characterList.Any())
-                return new CharacterClassExpression(_alphabet, _random, _maxInverseLength);
-            
+                return new CharacterClassExpression(_alphabet, _random);
+
             ClassifyListsByLength(this, charClass, out var shortDict, out var longDict);
 
             var intersectList = shortDict.Where(x => longDict.ContainsKey(x.Key))
                                          .Select(y => y.Key)
                                          .ToList();
             
-            var intersection = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
+            var intersection = new CharacterClassExpression(_alphabet, _random)
             {
                 RepeatRange = RepeatRange
             };
@@ -113,9 +108,12 @@ namespace Regseed.Expressions
             return intersection;    
         }
 
-        public CharacterClassExpression GetUnion(CharacterClassExpression charClass)
+        public virtual CharacterClassExpression GetUnion(CharacterClassExpression charClass)
         {
-            var union = new CharacterClassExpression(_alphabet, _random, _maxInverseLength)
+            if (charClass?.GetType() == typeof(CompleteCharacterClassExpression))
+                return charClass;            
+            
+            var union = new CharacterClassExpression(_alphabet, _random)
             {
                 RepeatRange = RepeatRange
             };
@@ -128,30 +126,35 @@ namespace Regseed.Expressions
             return union;
         }
         
-        public void AddCharacters(IEnumerable<string> characters)
+        public virtual void AddCharacters(IEnumerable<string> characters)
         {
             foreach (var letter in characters)
                 _literals[letter] = null;
 
             _characterList = _literals.Keys.ToList();
         }
-        
+
+        protected override IntegerInterval GetMaxExpansionInterval() =>
+            RepeatRange;
+
         protected override IStringBuilder ToSingleStringBuilder() =>
             new StringBuilder(new List<CharacterClassExpression> {this});
         
-        private UnionExpression GetAllCharacterClassInversesUpToMaxInverseLength()
+        protected UnionExpression WrapAllNonComplementInversesUpToMaxInverseLengthAround(int inverseLength, IExpression complement = null)
         {
             var minimalLengthTwoRange = new IntegerInterval();
-            minimalLengthTwoRange.TrySetValue(2, _maxInverseLength);
-            
-            var atLeastLengthTwoWords = new CharacterClassExpression(_alphabet, _random, _maxInverseLength){ RepeatRange = minimalLengthTwoRange };
-            atLeastLengthTwoWords.AddCharacters(_alphabet.GetAllCharacters());
+            minimalLengthTwoRange.TrySetValue(2, inverseLength);
+
+            var atLeastLengthTwoWords = new CompleteCharacterClassExpression(_alphabet, _random) {RepeatRange = minimalLengthTwoRange};
 
             var inverseExpressions = new List<IExpression>
             {
-                GetComplement(), 
+                new EmptyExpression(_alphabet, _random),
                 atLeastLengthTwoWords
             };
+
+            if(complement != null)
+                inverseExpressions.Add(complement);
             
             return new UnionExpression(inverseExpressions, _random);            
         }

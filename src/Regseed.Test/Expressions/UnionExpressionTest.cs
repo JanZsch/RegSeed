@@ -43,10 +43,10 @@ namespace Regseed.Test.Expressions
             var unionExpressions = new List<IExpression> {expression1, expression2};
             var union = new UnionExpressionTest(unionExpressions, _randomGenerator);
 
-            union.GetInverse();
+            union.GetInverse(10);
 
-            expression1.Received(1).GetInverse();
-            expression2.Received(1).GetInverse();
+            expression1.Received(1).GetInverse(Arg.Any<int>());
+            expression2.Received(1).GetInverse(Arg.Any<int>());
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace Regseed.Test.Expressions
             repeatRange.TrySetValue(1, 2);
             var union = new UnionExpressionTest(new List<IExpression>(), _randomGenerator) {RepeatRange = repeatRange};
 
-            var result = union.GetInverse().RepeatRange;
+            var result = union.GetInverse(10).RepeatRange;
 
             Assert.AreEqual(repeatRange, result);
         }
@@ -66,7 +66,7 @@ namespace Regseed.Test.Expressions
         {
             var union = new UnionExpressionTest(new List<IExpression>(), _randomGenerator);
 
-            var result = union.GetInverse();
+            var result = union.GetInverse(10);
 
             Assert.IsInstanceOf<IntersectionExpression>(result);
         }

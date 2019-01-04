@@ -29,9 +29,9 @@ namespace Regseed.Resources
         public const string CallBeforeInitialisation = "RegSeed requires the method to be called before initialisation with regex pattern.";
         public const string InvalidNumberOfConcatenations = "The number of subsequent concatenations must be positive.";
         public const string GetValueCalledWithWrongGenericType = "GetValue called with wrong generic type.";
-        public const string MaxCharClassInverseLengthOutOfRange = "The parameter MaxCharClassInverseLength has to be at least 1.";
-
-        
+        public const string InverseLengthOffsetOutOfRange = "The parameter InverseLengthOffset has to be at least 1.";
+        public const string ExpandInverseOnlyWhenExpansionLengthSet = "InverseExpression can only be expanded when ExpansionLength was set.";
+         
         public static string ToExceptionMessage(this RegSeedErrorType errorType)
         {
             return _errorTypeMapper.TryGetValue(errorType, out var exceptionMessage) 

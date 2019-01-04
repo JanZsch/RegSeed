@@ -2,19 +2,12 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Regseed.Common.Random;
-using Regseed.Expressions;
 
 namespace Regseed.Test
 {
     [TestFixture]
     public class RegseedGenerateAbundanceTest : RegSeed
     {
-        [SetUp]
-        public void Setup()
-        {
-            RegularExpressionFactory.Reset();
-        }
-
         [TestCase("a{1}", 1, 1)]
         [TestCase("a{2}", 2, 2)]
         [TestCase("a{,4}", 0, 4)]

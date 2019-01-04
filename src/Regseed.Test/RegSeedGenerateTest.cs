@@ -9,15 +9,8 @@ using Regseed.Common.Random;
 namespace Regseed.Test
 {
     [TestFixture]
-    public class RegSeedGenerateTest : RegSeed
+    public class RegSeedGenerateTest
     {
-        [SetUp]
-        public void SetUp()
-        {
-            _random = Substitute.For<IRandomGenerator>();
-            _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x => x[0]);
-        }
-
         [TestCase("", "")]
         [TestCase("()", "")]
         [TestCase("a", "a")]
@@ -37,9 +30,10 @@ namespace Regseed.Test
         [TestCase("jan$", "jan")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsCharacterClasses(string regex, string expectedValue)
         {
-            var loadResult = TryLoadRegexPattern(regex);
+            var regseed = new RegSeed();
+            var loadResult = regseed.TryLoadRegexPattern(regex);
 
-            var result = Generate();
+            var result = regseed.Generate();
 
             Assert.IsTrue(loadResult.IsSuccess);
             Assert.AreEqual(expectedValue, result);
@@ -163,31 +157,33 @@ namespace Regseed.Test
         [TestCase("[0-1]{2}&~(00|10|01)","11")]
         public void Generate_ReturnsExpectedResult_WhenRegexContainsIntersectionInCombinationWithInverse(string pattern, string expectedResult)
         {
+            const int runs = 20;
             var regseed = new RegSeed();
             var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess, "Faulty pattern: {0}", pattern);
-            
-            var result = regseed.Generate();
 
-            Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);
+            for (var i = 0; i < runs; i++)
+            {
+                var result = regseed.Generate();
+
+                Assert.AreEqual(expectedResult, result, "Result was: {0} .", result);                
+            }
         }
-
+        
         [TestCase("[^{0}]", "F")]
         [TestCase("~~F", "F")]
-        [TestCase("~[{0}]", "F")]
-        [TestCase("~[{0}]ra", "Fra")]
-        [TestCase("~[{0}]{{2}}", "FF")]
-        public void Generate_ReturnsExpectedResult_WhenRegexIsComplementOfCharacterClassWithInverseLength1AndContainingCharactersButA(string regexPattern, string expectedResult)
+        [TestCase("~[{0}]&.{{1}}", "F")]
+        [TestCase("~[{0}]ra&.{{3}}", "Fra")]
+        public void Generate_ReturnsExpectedResult_WhenRegexIsComplementOfCharacterClassContainingAllCharactersButF(string regexPattern, string expectedResult)
         {
-            _random = new RandomGenerator(new Random());
+            var random = new RandomGenerator(new Random());
             var alphabet = RegexAlphabetFactory.Default();
             var alphabetCharacters = alphabet.GetAllCharacters();
             var alphabetAsString = alphabetCharacters.Aggregate(string.Empty, (current, character) => $"{current}\\{character}");
             var alphabetWithoutF = alphabetAsString.Replace("\\F", string.Empty);
-            var alphabetWithoutR = alphabetAsString.Replace("\\R", string.Empty);
-            var regex = string.Format(regexPattern, alphabetWithoutF, alphabetWithoutR);
-            var regseed = new RegSeed(_random, alphabet).SetMaxCharClassInverseLength(1);
+            var regex = string.Format(regexPattern, alphabetWithoutF);
+            var regseed = new RegSeed(random, alphabet).SetInverseLengthOffset(1);
 
             var loadResult = regseed.TryLoadRegexPattern(regex);
             Assert.IsTrue(loadResult.IsSuccess, $"faulty pattern: {regex}");
@@ -246,20 +242,22 @@ namespace Regseed.Test
         public void Generate_ReturnsStringMatchingProvidedPattern(string pattern, bool restrictUpperBound)
         {
             var realRandomGenerator = new RandomGenerator(new Random());
-            _random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x =>
+            var random = Substitute.For<IRandomGenerator>();
+            random.GetNextInteger(Arg.Any<int>(), Arg.Any<int>()).Returns(x =>
             {
                 var upperBound =  restrictUpperBound && (int) x[1] > 5 ? 5 : (int)x[1];
                 return realRandomGenerator.GetNextInteger((int) x[0], upperBound);
 
             });
+            var regseed = new RegSeed(random);
             var regex = new Regex($"^{pattern}$");
-            var loadResult = TryLoadRegexPattern(pattern);
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess);
 
             for (var i = 0; i < 25; i++)
             {
-                var result = Generate();
+                var result = regseed.Generate();
 
                 Assert.IsTrue(regex.IsMatch(result), $"pattern: {pattern}  result: {result}");
             }
@@ -281,11 +279,11 @@ namespace Regseed.Test
         [Test]
         public void Generate_ReturnsDifferentResult_WhenCalledTwice()
         {
-            _random = new RandomGenerator(new Random());
-            TryLoadRegexPattern(".{10}");
+            var regseed = new RegSeed();
+            regseed.TryLoadRegexPattern(".{10}");
 
-            var firstCallResult = Generate();
-            var secondCallResult = Generate();
+            var firstCallResult = regseed.Generate();
+            var secondCallResult = regseed.Generate();
 
             Assert.AreNotEqual(firstCallResult, secondCallResult, $"Output: {firstCallResult} {secondCallResult}");
         }
@@ -293,11 +291,11 @@ namespace Regseed.Test
         [Test]
         public void Generate_ReturnsFOrEmptyString_WhenRegexIsFQuestionMark()
         {
-            _random = new RandomGenerator(new Random());
+            var regseed = new RegSeed();
             const string regex = "F?";
 
-            var loadResult = TryLoadRegexPattern(regex);
-            var result = Generate();
+            var loadResult = regseed.TryLoadRegexPattern(regex);
+            var result = regseed.Generate();
 
             Assert.IsTrue(loadResult.IsSuccess);
             Assert.IsTrue(result.Contains("F") || string.IsNullOrEmpty(result));
@@ -306,7 +304,6 @@ namespace Regseed.Test
         [Test]
         public void Interval_BindsStrongerThanUnion_WhenRegexContainsIntervalWithUnion()
         {
-            _random = new RandomGenerator(new Random());
             const string regex = "Ja|Uli{2}";
             var regseed = new RegSeed(regex);
 
@@ -321,10 +318,10 @@ namespace Regseed.Test
         [Test]
         public void Generate_DoesNotThrow_WhenRegexContainsJustComplement()
         {
-            _random = new RandomGenerator(new Random());
-            TryLoadRegexPattern("~(trump)");
+            var regseed = new RegSeed();
+            regseed.TryLoadRegexPattern("~(trump)");
 
-            Assert.DoesNotThrow(() => Generate());
+            Assert.DoesNotThrow(() => regseed.Generate());
         }      
         
         [TestCase("~b&b", "")]
@@ -333,14 +330,14 @@ namespace Regseed.Test
         public void Generate_AlwaysReturnsExpectedResult_WhenExpressionIsUnionAndOneExpressionReturnsEmptyString(string pattern, string expectedResult)
         {
             const int totalRuns = 50;
-            _random = new RandomGenerator(new Random());
-            var loadResult = TryLoadRegexPattern(pattern);
+            var regseed = new RegSeed();
+            var loadResult = regseed.TryLoadRegexPattern(pattern);
 
             Assert.IsTrue(loadResult.IsSuccess);
 
             for (var i = 0; i < totalRuns; i++)
             {
-                var result = Generate();
+                var result = regseed.Generate();
 
                 Assert.AreEqual(expectedResult, result);
             }
@@ -349,35 +346,42 @@ namespace Regseed.Test
         [Test]
         public void Generate_ReturnsA_WhenExpressionIsSingleInverseAndInverseLengthIs1()
         {
+            const int runs = 20;
             var regseed = new RegSeed();
-            regseed.SetMaxCharClassInverseLength(1);
+            regseed.SetInverseLengthOffset(1);
             regseed.TryLoadRegexPattern("~[^A]");
 
-            var result = regseed.Generate();
+            for (var i = 0; i < runs; i++)
+            {            
+                var result = regseed.Generate();
             
-            Assert.AreEqual("A", result);
+                Assert.IsTrue("A" == result || result.Length == 2, $"Faulty result was: {result}");
+            }
         }
         
         [Test]
-        public void Generate_ReturnsAllPossibleInverseLengths_WhenExpressionIsSingleInverseAndInverseLengthIsLargerThan3()
+        public void Generate_ReturnsAllPossibleInverseLengthsExceptZero_WhenExpressionIsSingleInverseAndInverseLengthOffsetIsLargerThan3()
         {
             const int maxInverseLength = 4;
+            const int expressionLength = 1;
             var regseed = new RegSeed();
-            regseed.SetMaxCharClassInverseLength(maxInverseLength);
+            regseed.SetInverseLengthOffset(maxInverseLength);
             regseed.TryLoadRegexPattern("~[^A]");
-            var counter = new int[maxInverseLength];
+            var counter = new int[maxInverseLength+expressionLength+1];
 
             for (var i = 0; i < 100; i++)
             {            
                 var result = regseed.Generate();
-                counter[result.Length - 1]++;
+                counter[result.Length]++;
                 
                 if(result.Length == 1)
                     Assert.AreEqual("A", result);
             }
 
-            foreach (var count in counter)
-                Assert.Greater(count, 0);
+            Assert.AreEqual(0, counter[0]);
+            
+            for (var i = 1; i < counter.Length; i++ )
+                Assert.Greater(counter[i], 0, $"There was string with length {i} generated...");
         }
 
         [Test]
@@ -416,7 +420,7 @@ namespace Regseed.Test
         public void Generate_ReturnsAnythingButCharacter_WhenEnableWildCardsIsTrueAndPatternIsNotCharacterWildCardAndMaxInverseLengthIsOne()
         {
             const string pattern = "\\W";
-            var regseed = new RegSeed().SetMaxCharClassInverseLength(1).EnableStandardWildCards();
+            var regseed = new RegSeed().SetInverseLengthOffset(1).EnableStandardWildCards();
             regseed.TryLoadRegexPattern(pattern);
 
             for (var i = 0; i < 50; i++)
@@ -432,7 +436,7 @@ namespace Regseed.Test
         public void Generate_ReturnsAnythingButDigit_WhenEnableWildCardsIsTrueAndPatternIsNotDigitWildCardAndMaxInverseLengthIsOne()
         {
             const string pattern = "\\D";
-            var regseed = new RegSeed().EnableStandardWildCards().SetMaxCharClassInverseLength(1);
+            var regseed = new RegSeed().EnableStandardWildCards().SetInverseLengthOffset(1);
             regseed.TryLoadRegexPattern(pattern);
 
             for (var i = 0; i < 50; i++)
@@ -448,7 +452,7 @@ namespace Regseed.Test
         public void Generate_ReturnsAnythingButWhiteSpace_WhenEnableWildCardsIsTrueAndPatternIsNotWhiteSpaceWildCardAndMaxInverseLengthIsOne()
         {
             const string pattern = "\\S";
-            var regseed = new RegSeed().EnableStandardWildCards().SetMaxCharClassInverseLength(1);
+            var regseed = new RegSeed().EnableStandardWildCards().SetInverseLengthOffset(1);
             regseed.TryLoadRegexPattern(pattern);
 
             for (var i = 0; i < 50; i++)

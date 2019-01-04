@@ -16,7 +16,7 @@ namespace Regseed.Expressions
         {
             _concatExpressions = new List<IExpression>();
             
-            foreach (var expression in expressions)
+            foreach (var expression in expressions ?? new List<IExpression>())
             {
                 if (expression is IntersectionExpression intersectionExpression)
                     _concatExpressions.AddRange(intersectionExpression._concatExpressions);
@@ -57,14 +57,14 @@ namespace Regseed.Expressions
             return MergeStringBuildersForEachUnion(expandedStringBuilderList);
         }
 
-        public override IExpression GetInverse()
+        public override IExpression GetInverse(int inverseLength)
         {
             var concatInverses = new List<IExpression>();
             var addGuard = new object();
 
             Parallel.ForEach(_concatExpressions, expression =>
             {
-                var inverse = expression.GetInverse();
+                var inverse = expression.GetInverse(inverseLength);
             
                 lock(addGuard)
                     concatInverses.Add(inverse);
