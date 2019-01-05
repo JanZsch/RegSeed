@@ -70,10 +70,9 @@ namespace Regseed.Expressions
                     concatInverses.Add(inverse);
             });
 
-            return new UnionExpression(concatInverses, _random)
-            {
-                RepeatRange = RepeatRange
-            };
+            return concatInverses.Count == 1 
+            ? concatInverses[0]
+            : new UnionExpression(concatInverses, _random) {RepeatRange = RepeatRange};
         }
 
         public override IExpression Clone() =>

@@ -48,12 +48,15 @@ namespace Regseed.Expressions
             return expandedList;
         }
 
-        public override IExpression GetInverse(int inverseLength) =>
-            new IntersectionExpression(_intersectExpressions.Select(x => x.GetInverse(inverseLength)).ToList(), _random)
-            {
-                RepeatRange = RepeatRange
-            };
-
+        public override IExpression GetInverse(int inverseLength)
+        {
+            var inverses = _intersectExpressions.Select(x => x.GetInverse(inverseLength)).ToList();
+            
+            return inverses.Count == 1 
+                ? inverses[0]
+                : new IntersectionExpression(inverses, _random) { RepeatRange = RepeatRange };
+        }
+        
         public override IExpression Clone() =>
             new UnionExpression(_intersectExpressions.Select(x => x.Clone()).ToList(), _random)
             {

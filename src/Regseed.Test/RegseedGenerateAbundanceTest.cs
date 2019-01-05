@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Regseed.Common.Random;
 
@@ -40,7 +41,32 @@ namespace Regseed.Test
             
             Assert.AreEqual(runs, totalResults);
         }
-        
+
+        [Test]
+        public void Generate_ReturnsAllPossibleValues_WhenPatternContainsConcatenationOfInverse()
+        {
+            const int runs = 100;
+            const string pattern = "(~f){1,2}&[Ff][rf]{0,1}";
+            var resultCount = new Dictionary<string, int>();
+            var regseed = new RegSeed(pattern);
+
+            for (var i = 0; i < runs; i++)
+            {
+                var result = regseed.Generate();
+
+                if (resultCount.ContainsKey(result))
+                    resultCount[result]++;
+                else
+                    resultCount.Add(result, 1);
+            }
+            
+            Assert.AreEqual(5, resultCount.Count);
+
+            var results = resultCount.Values.Sum();
+            
+            Assert.AreEqual(100, results);
+        }
+
         [TestCase("{0}|{1}", 0.5, 0.5, 0)]
         [TestCase("({0}|{1})", 0.5, 0.5, 0)]
         [TestCase("{0}|{1}|{2}", 0.3333, 0.3333, 0.3333)]

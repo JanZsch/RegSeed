@@ -48,7 +48,9 @@ namespace Regseed.Expressions
                     intersectInverseList.Add(inverse);
             });
 
-            return new IntersectionExpression(intersectInverseList, _random);
+            return intersectInverseList.Count == 1 
+                ? intersectInverseList[0]
+                : new IntersectionExpression(intersectInverseList, _random);
         }
        
         public override IExpression Clone()
